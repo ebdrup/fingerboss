@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+	<title>Fingerwars</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+		}
+	</style>
+	<script src="/pixi.js"></script>
+</head>
+<body>
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+	var socket = io();
+
+	var renderer = PIXI.autoDetectRenderer(800, 600,{backgroundColor : 0x000000, antialias: true});
+	document.body.appendChild(renderer.view);
+	var bg = new PIXI.Graphics();
+	bg.interactive = true;
+	bg.beginFill(0x000000);
+	bg.drawRect(0,0,renderer.view.width, renderer.view.height);
+	var stage = new PIXI.Container();
+	var texture = PIXI.Texture.fromImage('circle.png');
+	bg.interactive = true;
+	bg.on('click', onClick);
+	bg.on('tap', onClick);
+	function onClick(e) {
+		socket.emit('click', {x:e.data.global.x,y:e.data.global.y});
+	}
+	socket.on('click', function(e){
+		console.log('click');
+		console.log(e);
+		var c = new PIXI.Sprite(texture);
+		// center the sprite's anchor point
+		c.anchor.x = 0.5;
+		c.anchor.y = 0.5;
+		c.position.x = e.x;
+		c.position.y = e.y;
+		stage.addChild(c);
+	});
+	var c = new PIXI.Sprite(texture);
+	// center the sprite's anchor point
+	c.anchor.x = 0.5;
+	c.anchor.y = 0.5;
+	c.position.x = 100;
+	c.position.y = 100;
+	stage.addChild(bg);
+	stage.addChild(c);
+	// start animating
+	animate();
+	function animate() {
+		requestAnimationFrame(animate);
+		//c.scale.x = c.scale.y += (Math.random()-0.5)*0.05;
+		// render the container
+		renderer.render(stage);
+	}
+</script>
+</body>
+</html>
