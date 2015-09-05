@@ -61,7 +61,7 @@
 			for(var j=i+1; j<circles.length; j++){
 				var c1 = circles[i];
 				var c2 = circles[j];
-				if(c1.owner === c2.owner){
+				if(!c1 || !c2 || c1.owner === c2.owner){
 					continue;
 				}
 				var distance = Math.sqrt(
@@ -81,24 +81,6 @@
 		circles = circles.filter(Boolean);
 		renderer.render(stage);
 	}
-
-	function resize() {
-		var screen_height = window.innerHeight;
-		var screen_width = window.innerWidth;
-		var width = screen_width;
-		var height = screen_height;
-		if(screen_height > screen_width){
-			var ratio = stage.canvas.height/stage.canvas.width;
-			height = ratio * screen_width;
-		}else{
-			var ratio = stage.canvas.width/stage.canvas.height;
-			var width = screen_height * ratio;
-		}
-		renderer.style.width = width+'px';
-		renderer.style.height = height+'px';
-	}
-	window.addEventListener('resize', resize, false);
-	resize();
 </script>
 </body>
 </html>

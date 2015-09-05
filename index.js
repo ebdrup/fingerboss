@@ -12,7 +12,7 @@ io.on('connection', function(socket){
 	var color = colors[colorIndex];
 	socket.on('click', function(msg){
 		msg.color = color;
-		msg.size = 10;
+		msg.size = Math.round(Math.random()*15) + 5;
 		console.log(msg);
 		io.emit('click', msg);
 	});
