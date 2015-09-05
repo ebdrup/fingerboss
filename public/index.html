@@ -12,12 +12,12 @@
 	<script src="/pixi.js"></script>
 </head>
 <body>
-<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script src="/socket.io-1.2.0.js"></script>
+<script src="/jquery-1.11.1.js"></script>
 <script>
 	var socket = io();
-
-	var renderer = PIXI.autoDetectRenderer(800, 600,{backgroundColor : 0x000000, antialias: true});
+	var circles = [];
+	var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {backgroundColor : 0x000000, antialias: true});
 	document.body.appendChild(renderer.view);
 	var bg = new PIXI.Graphics();
 	bg.interactive = true;
@@ -29,35 +29,76 @@
 	bg.on('click', onClick);
 	bg.on('tap', onClick);
 	function onClick(e) {
-		socket.emit('click', {x:e.data.global.x,y:e.data.global.y});
+		socket.emit('click', {
+			x:e.data.global.x/renderer.view.width,
+			y:e.data.global.y/renderer.view.height
+		});
 	}
 	socket.on('click', function(e){
 		console.log('click');
 		console.log(e);
-		var c = new PIXI.Sprite(texture);
+		var gfx = new PIXI.Graphics();
+		gfx.beginFill(e.color);
+		gfx.drawCircle(0,0, e.size);
+		var c = new PIXI.Sprite(gfx.generateTexture());
 		// center the sprite's anchor point
 		c.anchor.x = 0.5;
 		c.anchor.y = 0.5;
-		c.position.x = e.x;
-		c.position.y = e.y;
+		c.position.x = e.x*renderer.view.width;
+		c.position.y = e.y*renderer.view.height;
+		c.owner = e.color;
 		stage.addChild(c);
+		circles.push(c);
 	});
-	var c = new PIXI.Sprite(texture);
-	// center the sprite's anchor point
-	c.anchor.x = 0.5;
-	c.anchor.y = 0.5;
-	c.position.x = 100;
-	c.position.y = 100;
 	stage.addChild(bg);
-	stage.addChild(c);
 	// start animating
 	animate();
 	function animate() {
 		requestAnimationFrame(animate);
 		//c.scale.x = c.scale.y += (Math.random()-0.5)*0.05;
 		// render the container
+		for(var i= 0; i<circles.length-1; i++){
+			for(var j=i+1; j<circles.length; j++){
+				var c1 = circles[i];
+				var c2 = circles[j];
+				if(c1.owner === c2.owner){
+					continue;
+				}
+				var distance = Math.sqrt(
+						Math.pow(Math.abs(c1.position.x - c2.position.x),2) +
+						Math.pow(Math.abs(c1.position.y - c2.position.y),2)
+				);
+				var minDistance = (c1.height + c2.height)/2;
+				if(distance<minDistance){
+					console.log(distance, minDistance,Math.pow(Math.abs(c1.position.x - c2.position.x),2));
+					stage.removeChild(c1);
+					stage.removeChild(c2);
+					delete circles[i];
+					delete circles[j];
+				}
+			}
+		}
+		circles = circles.filter(Boolean);
 		renderer.render(stage);
 	}
+
+	function resize() {
+		var screen_height = window.innerHeight;
+		var screen_width = window.innerWidth;
+		var width = screen_width;
+		var height = screen_height;
+		if(screen_height > screen_width){
+			var ratio = stage.canvas.height/stage.canvas.width;
+			height = ratio * screen_width;
+		}else{
+			var ratio = stage.canvas.width/stage.canvas.height;
+			var width = screen_height * ratio;
+		}
+		renderer.style.width = width+'px';
+		renderer.style.height = height+'px';
+	}
+	window.addEventListener('resize', resize, false);
+	resize();
 </script>
 </body>
 </html>
