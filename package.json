@@ -2,7 +2,7 @@
   "name": "fingerboss",
   "version": "1.0.0",
   "description": "Webserver for the fingerboss game",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "mocha"
   },
