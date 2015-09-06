@@ -1,26 +1,27 @@
 {
-  "name": "fingerwars",
+  "name": "fingerboss",
   "version": "1.0.0",
-  "description": "Webserver for the fingerwars game",
+  "description": "Webserver for the fingerboss game",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ebdrup/fingerwars"
+    "url": "https://github.com/ebdrup/fingerboss"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ebdrup/fingerwars/issues"
+    "url": "https://github.com/ebdrup/fingerboss/issues"
   },
-  "homepage": "https://github.com/ebdrup/fingerwars",
+  "homepage": "https://github.com/ebdrup/fingerboss",
   "devDependencies": {
     "chai": "^2.2.0",
     "mocha": "^2.1.1",
     "mocha-eslint": "^0.1.7"
   },
   "dependencies": {
+    "compression": "^1.5.2",
     "express": "^4.13.3",
     "socket.io": "^1.3.6"
   }

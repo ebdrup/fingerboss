@@ -1,6 +1,6 @@
-# fingerwars
+# fingerboss
 
-Webserver for the fingerwars game
+Webserver for the fingerboss game
 
 # Principals
 - there should be no need for any text in the game

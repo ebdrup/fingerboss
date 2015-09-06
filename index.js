@@ -1,9 +1,16 @@
 var express = require('express');
+var compression = require('compression');
+var path = require('path');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-app.use(express.static('public'));
+app.disable('x-powered-by');
+//app.use(compression());
+app.use(express.static(path.join(__dirname, 'favicon')));
+app.use(express.static(path.join(__dirname, 'public')));
+var port = process.env.PORT || 7890;
+
 var colors = [0xefefef, 0x244f6a, 0xfeaa37, 0xe03e27];
 var colorIndex = Math.round(Math.random() * colors.length);
 
@@ -18,6 +25,6 @@ io.on('connection', function(socket){
 	});
 });
 
-http.listen(5678, function(){
-	console.log('listening on *:5678');
+http.listen(port, function(){
+	console.log('listening on http://localhost:%s', port);
 });

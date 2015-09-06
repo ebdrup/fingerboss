@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-	<title>Fingerwars</title>
+	<title>fingerboss</title>
 	<style>
 		body {
 			margin: 0;
@@ -9,93 +9,112 @@
 			background-color: #000000;
 		}
 	</style>
-	<script src="/pixi.js"></script>
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-title" content="Fingerboss">
+	<meta name="viewport"
+	      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	<meta name="viewport" content="minimal-ui">
 </head>
 <body>
+<script src="/pixi.js"></script>
 <script src="/socket.io-1.2.0.js"></script>
 <script src="/jquery-1.11.1.js"></script>
 <script>
-	var socket = io();
-	var circles = [];
-	var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
-		backgroundColor: 0x000000,
-		antialias: true
-	});
-	document.body.appendChild(renderer.view);
-	var bg = new PIXI.Graphics();
-	bg.interactive = true;
-	bg.beginFill(0x000000);
-	bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
-	var stage = new PIXI.Container();
-	var texture = PIXI.Texture.fromImage('circle.png');
-	bg.interactive = true;
-	bg.on('click', onClick);
-	bg.on('tap', onClick);
-	function onClick(e) {
-		socket.emit('click', {
-			x: e.data.global.x / renderer.view.width,
-			y: e.data.global.y / renderer.view.height
+
+	window.onerror = function () {
+		alert(JSON.stringify(arguments, null, '\t'));
+	};
+	game();
+
+	function game() {
+		var socket = io();
+		var circles = [];
+		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
+			backgroundColor: 0x000000,
+			antialias: true
 		});
-	}
-	function moveCirclesUp() {
-		for (var i = 0; i < circles.length; i++) {
-			var c = circles[i];
-			c.y -= 1;
-			if (c.y < -c.height / 2) {
-				console.log('delete circle %d', i);
-				delete circles[i];
-				stage.removeChild(c);
-			}
+		document.body.appendChild(renderer.view);
+		var stage = new PIXI.Container();
+		/*var mc = new Hammer(document.body);
+		 mc.on("rotate", function(ev) {
+		 alert(JSON.stringify(ev));
+		 });*/
+		var bg = new PIXI.Graphics();
+		bg.interactive = true;
+		bg.beginFill(0x000000);
+		bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
+		bg.interactive = true;
+		bg.on('click', onClick);
+		bg.on('tap', onClick);
+		function onClick(e) {
+			socket.emit('click', {
+				x: e.data.global.x / renderer.view.width,
+				y: e.data.global.y / renderer.view.height
+			});
 		}
-		circles = circles.filter(Boolean);
-	}
-	socket.on('click', function (e) {
-		console.log('click');
-		console.log(e);
-		moveCirclesUp();
-		var gfx = new PIXI.Graphics();
-		gfx.beginFill(e.color);
-		gfx.drawCircle(0, 0, e.size);
-		var c = new PIXI.Sprite(gfx.generateTexture());
-		// center the sprite's anchor point
-		c.anchor.x = 0.5;
-		c.anchor.y = 0.5;
-		c.position.x = e.x * renderer.view.width;
-		c.position.y = e.y * renderer.view.height;
-		c.owner = e.color;
-		stage.addChild(c);
-		circles.push(c);
-	});
-	stage.addChild(bg);
-	// start animating
-	animate();
-	function animate() {
-		requestAnimationFrame(animate);
-		//c.scale.x = c.scale.y += (Math.random()-0.5)*0.05;
-		// render the container
-		for (var i = 0; i < circles.length - 1; i++) {
-			for (var j = i + 1; j < circles.length; j++) {
-				var c1 = circles[i];
-				var c2 = circles[j];
-				if (!c1 || !c2 || c1.owner === c2.owner) {
-					continue;
-				}
-				var distance = Math.sqrt(
-						Math.pow(Math.abs(c1.position.x - c2.position.x), 2) +
-						Math.pow(Math.abs(c1.position.y - c2.position.y), 2)
-				);
-				var minDistance = (c1.height + c2.height) / 2;
-				if (distance < minDistance) {
-					console.log(distance, minDistance, Math.pow(Math.abs(c1.position.x - c2.position.x), 2));
-					stage.removeChild(c1);
-					stage.removeChild(c2);
+
+		function moveCirclesUp() {
+			for (var i = 0; i < circles.length; i++) {
+				var c = circles[i];
+				c.y -= 1;
+				if (c.y < -c.height / 2) {
+					console.log('delete circle %d', i);
 					delete circles[i];
-					delete circles[j];
+					stage.removeChild(c);
 				}
 			}
+			circles = circles.filter(Boolean);
 		}
-		circles = circles.filter(Boolean);
-		renderer.render(stage);
+
+		socket.on('click', function (e) {
+			console.log('click');
+			console.log(e);
+			moveCirclesUp();
+			var gfx = new PIXI.Graphics();
+			gfx.beginFill(e.color);
+			gfx.drawCircle(0, 0, e.size);
+			var c = new PIXI.Sprite(gfx.generateTexture());
+			// center the sprite's anchor point
+			c.anchor.x = 0.5;
+			c.anchor.y = 0.5;
+			c.position.x = e.x * renderer.view.width;
+			c.position.y = e.y * renderer.view.height;
+			c.owner = e.color;
+			stage.addChild(c);
+			circles.push(c);
+		});
+		stage.addChild(bg);
+		// start animating
+		animate();
+		function animate() {
+			requestAnimationFrame(animate);
+			//c.scale.x = c.scale.y += (Math.random()-0.5)*0.05;
+			// render the container
+			for (var i = 0; i < circles.length - 1; i++) {
+				for (var j = i + 1; j < circles.length; j++) {
+					var c1 = circles[i];
+					var c2 = circles[j];
+					if (!c1 || !c2 || c1.owner === c2.owner) {
+						continue;
+					}
+					var distance = Math.sqrt(
+							Math.pow(Math.abs(c1.position.x - c2.position.x), 2) +
+							Math.pow(Math.abs(c1.position.y - c2.position.y), 2)
+					);
+					var minDistance = (c1.height + c2.height) / 2;
+					if (distance < minDistance) {
+						console.log(distance, minDistance, Math.pow(Math.abs(c1.position.x - c2.position.x), 2));
+						stage.removeChild(c1);
+						stage.removeChild(c2);
+						delete circles[i];
+						delete circles[j];
+					}
+				}
+			}
+			circles = circles.filter(Boolean);
+			renderer.render(stage);
+		}
 	}
 </script>
 </body>
