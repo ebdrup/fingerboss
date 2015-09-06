@@ -36,11 +36,16 @@
 			antialias: true
 		});
 		document.body.appendChild(renderer.view);
+		/*$(window).resize(function () {
+			document.body.removeChild(renderer.view);
+			renderer.destroy();
+			renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
+				backgroundColor: 0x000000,
+				antialias: true
+			});
+			document.body.appendChild(renderer.view);
+		});*/
 		var stage = new PIXI.Container();
-		var mc = new Hammer(document.body);
-		mc.on("rotate", function (ev) {
-			alert(JSON.stringify(ev));
-		});
 		var bg = new PIXI.Graphics();
 		bg.interactive = true;
 		bg.beginFill(0x000000);
@@ -56,33 +61,32 @@
 		}
 
 		function moveCirclesUp() {
-			for (var i = 0; i < circles.length; i++) {
-				var c = circles[i];
-				c.y -= 1;
-				if (c.y < -c.height / 2) {
-					console.log('delete circle %d', i);
-					delete circles[i];
-					stage.removeChild(c);
-				}
-			}
-			circles = circles.filter(Boolean);
+			/*for (var i = 0; i < circles.length; i++) {
+			 var c = circles[i];
+			 c.y -= 1;
+			 if (c.y < -c.height / 2) {
+			 console.log('delete circle %d', i);
+			 delete circles[i];
+			 stage.removeChild(c.sprite);
+			 }
+			 }
+			 circles = circles.filter(Boolean);*/
 		}
 
-		socket.on('click', function (e) {
-			console.log('click');
-			console.log(e);
+		socket.on('click', function (c) {
+			console.log(c);
 			moveCirclesUp();
 			var gfx = new PIXI.Graphics();
-			gfx.beginFill(e.color);
-			gfx.drawCircle(0, 0, e.size);
-			var c = new PIXI.Sprite(gfx.generateTexture());
+			gfx.beginFill(c.color);
+			gfx.drawEllipse(0, 0, c.size * renderer.view.width, c.size * renderer.view.height);
+			var sprite = new PIXI.Sprite(gfx.generateTexture());
 			// center the sprite's anchor point
-			c.anchor.x = 0.5;
-			c.anchor.y = 0.5;
-			c.position.x = e.x * renderer.view.width;
-			c.position.y = e.y * renderer.view.height;
-			c.owner = e.color;
-			stage.addChild(c);
+			sprite.anchor.x = 0.5;
+			sprite.anchor.y = 0.5;
+			sprite.position.x = c.x * renderer.view.width;
+			sprite.position.y = c.y * renderer.view.height;
+			stage.addChild(sprite);
+			c.sprite = sprite;
 			circles.push(c);
 		});
 		stage.addChild(bg);
@@ -90,24 +94,23 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			//c.scale.x = c.scale.y += (Math.random()-0.5)*0.05;
 			// render the container
 			for (var i = 0; i < circles.length - 1; i++) {
 				for (var j = i + 1; j < circles.length; j++) {
 					var c1 = circles[i];
 					var c2 = circles[j];
-					if (!c1 || !c2 || c1.owner === c2.owner) {
+					if (!c1 || !c2 || c1.color === c2.color) {
 						continue;
 					}
 					var distance = Math.sqrt(
-							Math.pow(Math.abs(c1.position.x - c2.position.x), 2) +
-							Math.pow(Math.abs(c1.position.y - c2.position.y), 2)
+							Math.pow(Math.abs(c1.x - c2.x), 2) +
+							Math.pow(Math.abs(c1.y - c2.y), 2)
 					);
-					var minDistance = (c1.height + c2.height) / 2;
+					var minDistance = (c1.size + c2.size);
 					if (distance < minDistance) {
-						console.log(distance, minDistance, Math.pow(Math.abs(c1.position.x - c2.position.x), 2));
-						stage.removeChild(c1);
-						stage.removeChild(c2);
+						console.log(distance, minDistance, Math.pow(Math.abs(c1.x - c2.x), 2));
+						stage.removeChild(c1.sprite);
+						stage.removeChild(c2.sprite);
 						delete circles[i];
 						delete circles[j];
 					}
