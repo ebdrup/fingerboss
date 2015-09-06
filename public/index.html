@@ -36,28 +36,33 @@
 			antialias: true
 		});
 		document.body.appendChild(renderer.view);
-		/*$(window).resize(function () {
-			document.body.removeChild(renderer.view);
-			renderer.destroy();
-			renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
-				backgroundColor: 0x000000,
-				antialias: true
+		$(window).resize(function () {
+			renderer.resize(window.innerWidth, window.innerHeight);
+			circles.forEach(function (c) {
+				stage.removeChild(c.sprite);
+				c.sprite = generateSpriteForCircle(c);
+				stage.addChild(c.sprite);
 			});
-			document.body.appendChild(renderer.view);
-		});*/
+		});
 		var stage = new PIXI.Container();
-		var bg = new PIXI.Graphics();
-		bg.interactive = true;
-		bg.beginFill(0x000000);
-		bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
-		bg.interactive = true;
-		bg.on('click', onClick);
-		bg.on('tap', onClick);
-		function onClick(e) {
-			socket.emit('click', {
-				x: e.data.global.x / renderer.view.width,
-				y: e.data.global.y / renderer.view.height
-			});
+		stage.addChild(getInteraction());
+
+		function getInteraction() {
+			var bg = new PIXI.Graphics();
+			bg.interactive = true;
+			bg.beginFill(0x000000);
+			bg.drawRect(0, 0, 10000, 10000); //just make it big so we catch clicks no matter screen size
+			bg.interactive = true;
+			bg.on('click', onClick);
+			bg.on('tap', onClick);
+			return bg;
+
+			function onClick(e) {
+				socket.emit('click', {
+					x: e.data.global.x / renderer.view.width,
+					y: e.data.global.y / renderer.view.height
+				});
+			}
 		}
 
 		function moveCirclesUp() {
@@ -73,9 +78,7 @@
 			 circles = circles.filter(Boolean);*/
 		}
 
-		socket.on('click', function (c) {
-			console.log(c);
-			moveCirclesUp();
+		function generateSpriteForCircle(c) {
 			var gfx = new PIXI.Graphics();
 			gfx.beginFill(c.color);
 			gfx.drawEllipse(0, 0, c.size * renderer.view.width, c.size * renderer.view.height);
@@ -85,11 +88,15 @@
 			sprite.anchor.y = 0.5;
 			sprite.position.x = c.x * renderer.view.width;
 			sprite.position.y = c.y * renderer.view.height;
-			stage.addChild(sprite);
-			c.sprite = sprite;
+			return sprite;
+		}
+
+		socket.on('click', function (c) {
+			console.log(c);
+			c.sprite = generateSpriteForCircle(c);
+			stage.addChild(c.sprite);
 			circles.push(c);
 		});
-		stage.addChild(bg);
 		// start animating
 		animate();
 		function animate() {
