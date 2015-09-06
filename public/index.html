@@ -20,6 +20,7 @@
 <script src="/pixi.js"></script>
 <script src="/socket.io-1.2.0.js"></script>
 <script src="/jquery-1.11.1.js"></script>
+<script src="/hammer.js"></script>
 <script>
 
 	window.onerror = function () {
@@ -36,10 +37,10 @@
 		});
 		document.body.appendChild(renderer.view);
 		var stage = new PIXI.Container();
-		/*var mc = new Hammer(document.body);
-		 mc.on("rotate", function(ev) {
-		 alert(JSON.stringify(ev));
-		 });*/
+		var mc = new Hammer(document.body);
+		mc.on("rotate", function (ev) {
+			alert(JSON.stringify(ev));
+		});
 		var bg = new PIXI.Graphics();
 		bg.interactive = true;
 		bg.beginFill(0x000000);
