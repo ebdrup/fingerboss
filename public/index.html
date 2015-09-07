@@ -47,6 +47,16 @@
 		});
 		var stage = new PIXI.Container();
 		stage.addChild(getInteraction());
+		var touchSprite = new PIXI.Sprite(PIXI.Texture.fromImage('touch.png'));
+		touchSprite.anchor.x = 0.5;
+		touchSprite.anchor.y = 0.5;
+		touchSprite.position.x = renderer.view.width / 2;
+		touchSprite.position.y = renderer.view.height / 2;
+		touchSprite.alpha = 0.5;
+		touchSprite.tl = new TimelineMax({repeat: -1})
+				.to(touchSprite, 0.7, {alpha: 1, ease:Power1.easeOut}).
+				to(touchSprite, 0.7, {alpha: 0.5, ease:Power1.easeIn});
+		stage.addChild(touchSprite);
 
 		function getInteraction() {
 			var bg = new PIXI.Graphics();
@@ -58,7 +68,12 @@
 			bg.on('tap', onClick);
 			return bg;
 
+
 			function onClick(e) {
+				if (touchSprite) {
+					fadeSprite(stage, touchSprite);
+					touchSprite = null;
+				}
 				socket.emit('click', {
 					x: e.data.global.x / renderer.view.width,
 					y: e.data.global.y / renderer.view.height
@@ -128,10 +143,23 @@
 			renderer.render(stage);
 		}
 	}
-	function killCircleSprite(stage, sprite){
-		sprite.scale && new TimelineMax({ onComplete: function(){
-			stage.removeChild(sprite);
-		} }).to(sprite.scale, 0.5, { x: 0, y: 0 });
+	function killCircleSprite(stage, sprite) {
+		new TimelineMax({
+			onComplete: function () {
+				stage.removeChild(sprite);
+			}
+		}).to(sprite.scale, 0.5, {x: 0, y: 0});
+
+	}
+	function fadeSprite(stage, sprite) {
+		new TimelineMax({
+			onComplete: function () {
+				stage.removeChild(sprite);
+				if(sprite.tl){
+					sprite.tl.pause();
+				}
+			}
+		}).to(sprite, 0.3, {alpha: 0});
 
 	}
 </script>
