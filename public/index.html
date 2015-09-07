@@ -21,6 +21,7 @@
 <script src="/socket.io-1.2.0.js"></script>
 <script src="/jquery-1.11.1.js"></script>
 <script src="/hammer.js"></script>
+<script src="/Tweenmax.min.js"></script>
 <script>
 
 	window.onerror = function () {
@@ -116,8 +117,8 @@
 					var minDistance = (c1.size + c2.size);
 					if (distance < minDistance) {
 						console.log(distance, minDistance, Math.pow(Math.abs(c1.x - c2.x), 2));
-						stage.removeChild(c1.sprite);
-						stage.removeChild(c2.sprite);
+						killCircleSprite(stage, c1.sprite);
+						killCircleSprite(stage, c2.sprite);
 						delete circles[i];
 						delete circles[j];
 					}
@@ -126,6 +127,12 @@
 			circles = circles.filter(Boolean);
 			renderer.render(stage);
 		}
+	}
+	function killCircleSprite(stage, sprite){
+		sprite.scale && new TimelineMax({ onComplete: function(){
+			stage.removeChild(sprite);
+		} }).to(sprite.scale, 0.5, { x: 0, y: 0 });
+
 	}
 </script>
 </body>
