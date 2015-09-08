@@ -31,6 +31,11 @@
 	function game() {
 		var socket = io();
 		var circles = [];
+		var unconfirmedCircles = {};
+		var color;
+		socket.on('color', function (c) {
+			color = c;
+		});
 		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 			backgroundColor: 0x000000,
 			antialias: true
@@ -73,10 +78,21 @@
 					fadeSprite(stage, touchSprite);
 					touchSprite = null;
 				}
-				socket.emit('click', {
+				var c = {
+					id: Math.random() + '_' + Date.now(),
 					x: e.data.global.x / renderer.view.width,
-					y: e.data.global.y / renderer.view.height
-				});
+					y: e.data.global.y / renderer.view.height,
+					size: 10/800
+				};
+				if(color){
+					var uc = JSON.parse(JSON.stringify(c));
+					uc.color = color;
+					uc.sprite = generateSpriteForCircle(c);
+					uc.sprite.alpha = 0.5;
+					unconfirmedCircles[uc.id](uc);
+					stage.addChild(uc.sprite);
+				}
+				socket.emit('click', c);
 			}
 		}
 
@@ -111,6 +127,11 @@
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
 			circles.push(c);
+			var uc = unconfirmedCircles[c.id];
+			if(uc){
+				stage.removeChild(uc.sprite);
+				delete unconfirmedCircles[c.id]
+			}
 		});
 		// start animating
 		animate();

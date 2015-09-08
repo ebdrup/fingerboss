@@ -17,9 +17,9 @@ var colorIndex = Math.round(Math.random() * colors.length);
 io.on('connection', function(socket){
 	colorIndex = (colorIndex+1) % colors.length;
 	var color = colors[colorIndex];
+	socket.emit('color', color);
 	socket.on('click', function(msg){
 		msg.color = color;
-		msg.size = 10/800;
 		console.log(msg);
 		io.emit('click', msg);
 	});
