@@ -21,7 +21,7 @@
 <script src="/socket.io-1.2.0.js"></script>
 <script src="/jquery-1.11.1.js"></script>
 <script src="/TweenMax.min.js"></script>
-<script src="/howler.min.js"></script>
+<!--<script src="/howler.min.js"></script>-->
 <script>
 
 	window.onerror = function () {
@@ -37,14 +37,15 @@
 		var GROWING_ALPHA = 0.6;
 		var UNCONFIRMED_ALPHA = 0.8;
 		var CONFIRMED_SIZE_FACTOR = 1/5;
-		var failSound = new Howl({
+		var SOUND = false;
+		/*var failSound = new Howl({
 			urls: ['fail.mp3'],
 			volume: 0.3
 		});
 		var successSound = new Howl({
 			urls: ['success.mp3'],
 			volume: 0.3
-		});
+		});*/
 		var socket = io();
 		var circles = [];
 		var unconfirmedCircles = {};
@@ -150,7 +151,7 @@
 						unconfirmedCircles[newCircle.id] = newCircle;
 						stage.addChild(newCircle.sprite);
 					} else {
-						failSound.play();
+						SOUND && failSound.play();
 					}
 					newCircle = null;
 				}
@@ -173,8 +174,12 @@
 		}
 
 		socket.on('circle', function (c) {
-			dt = Date.now() - c.t;
-			successSound.play();
+			var proposed_dt = Date.now() - c.t;
+			var dtDifference = proposed_dt-dt;
+			if(Math.abs(dtDifference) > 200){
+				dt += 50 * (dtDifference/dtDifference); //adjust dt a little
+			}
+			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
 			circles.push(c);
