@@ -30,12 +30,13 @@
 	game();
 
 	function game() {
-		var MIN_SIZE = 90 / 800;
+		var MIN_SIZE = 100 / 800;
 		var START_SIZE = 50 / 800;
 		var END_SIZE = 400 / 800;
-		var GROW_TIME = 5;
-		var GROWING_ALPHA = 0.5;
-		var UNCONFIRMED_ALPHA = 0.75;
+		var GROW_TIME = 6;
+		var GROWING_ALPHA = 0.6;
+		var UNCONFIRMED_ALPHA = 0.8;
+		var CONFIRMED_SIZE_FACTOR = 1/5;
 		var failSound = new Howl({
 			urls: ['fail.mp3'],
 			volume: 0.3
@@ -61,6 +62,7 @@
 		document.body.appendChild(renderer.view);
 		$(window).resize(function () {
 			renderer.resize(window.innerWidth, window.innerHeight);
+			bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
 			circles.forEach(function (c) {
 				stage.removeChild(c.sprite);
 				c.sprite = generateSpriteForCircle(c);
@@ -68,7 +70,8 @@
 			});
 		});
 		var stage = new PIXI.Container();
-		stage.addChild(getInteraction());
+		var bg = getInteraction();
+		stage.addChild(bg);
 		var touchSprite = new PIXI.Sprite(PIXI.Texture.fromImage('touch.png'));
 		touchSprite.anchor.x = 0.5;
 		touchSprite.anchor.y = 0.5;
@@ -84,7 +87,7 @@
 			var bg = new PIXI.Graphics();
 			bg.interactive = true;
 			bg.beginFill(0x000000);
-			bg.drawRect(0, 0, 10000, 10000); //just make it big so we catch clicks no matter screen size
+			bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
 			bg.interactive = true;
 			bg.on('mousedown', onDown);
 			bg.on('touchstart', onDown);
@@ -99,7 +102,6 @@
 				if (!color) {
 					return;
 				}
-				console.log(e);
 				if (touchSprite) {
 					fadeSprite(stage, touchSprite);
 					touchSprite = null;
@@ -140,7 +142,7 @@
 					stage.removeChild(newCircle.sprite);
 					delete newCircle.sprite;
 					if (newCircle.size > MIN_SIZE) {
-						newCircle.size /= 3;
+						newCircle.size *= CONFIRMED_SIZE_FACTOR;
 						socket.emit('circle', newCircle);
 						newCircle.sprite = generateSpriteForCircle(newCircle);
 						newCircle.sprite.alpha = 0.75;
@@ -152,19 +154,6 @@
 					newCircle = null;
 				}
 			}
-		}
-
-		function moveCirclesUp() {
-			/*for (var i = 0; i < circles.length; i++) {
-			 var c = circles[i];
-			 c.y -= 1;
-			 if (c.y < -c.height / 2) {
-			 console.log('delete circle %d', i);
-			 delete circles[i];
-			 stage.removeChild(c.sprite);
-			 }
-			 }
-			 circles = circles.filter(Boolean);*/
 		}
 
 		function generateSpriteForCircle(c) {
@@ -181,7 +170,6 @@
 		}
 
 		socket.on('circle', function (c) {
-			console.log(c);
 			dt = Date.now() - c.t;
 			successSound.play();
 			c.sprite = generateSpriteForCircle(c);
@@ -220,7 +208,6 @@
 				if (y < -c1.size) {
 					delete circles[i];
 					stage.removeChild(c1.sprite);
-					console.log('Remove');
 					return;
 				}
 				c.sprite.position.y = y * renderer.view.height;
