@@ -54,7 +54,7 @@
 		socket.on('start', function (e) {
 			color = e.color;
 			dt = Date.now() - e.t;
-			velocity = e.velocity;
+			velocity = 0;//e.velocity;
 		});
 		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 			backgroundColor: 0x000000,
@@ -177,7 +177,7 @@
 			var proposed_dt = Date.now() - c.t;
 			var dtDifference = proposed_dt-dt;
 			if(Math.abs(dtDifference) > 200){
-				dt += 50 * (dtDifference/dtDifference); //adjust dt a little
+				dt += 50 * (dtDifference/Math.abs(dtDifference)); //adjust dt a little
 			}
 			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
