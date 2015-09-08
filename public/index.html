@@ -147,8 +147,9 @@
 						newCircle.size *= CONFIRMED_SIZE_FACTOR;
 						socket.emit('circle', newCircle);
 						newCircle.sprite = generateSpriteForCircle(newCircle);
-						newCircle.sprite.alpha = 0.75;
+						newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
 						unconfirmedCircles[newCircle.id] = newCircle;
+						stage.addChild(newCircle.sprite)
 					} else {
 						SOUND && failSound.play();
 					}
@@ -230,7 +231,7 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var t = Date.now() - dt;
+			var t = Date.now() - dt/2;
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, t);
 				c1.sprite.position.y = y * renderer.view.height;
