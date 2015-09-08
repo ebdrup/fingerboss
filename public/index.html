@@ -32,6 +32,7 @@
 		var socket = io();
 		var circles = [];
 		var unconfirmedCircles = {};
+		var newCircle;
 		var color;
 		socket.on('color', function (c) {
 			color = c;
@@ -58,8 +59,8 @@
 		touchSprite.position.y = renderer.view.height / 2;
 		touchSprite.alpha = 0.5;
 		touchSprite.tl = new TimelineMax({repeat: -1})
-				.to(touchSprite, 0.4, {alpha: 1, ease:Power1.easeOut}).
-				to(touchSprite, 0.4, {alpha: 0.5, ease:Power1.easeIn});
+				.to(touchSprite, 0.4, {alpha: 1, ease: Power1.easeOut}).
+				to(touchSprite, 0.4, {alpha: 0.5, ease: Power1.easeIn});
 		stage.addChild(touchSprite);
 
 		function getInteraction() {
@@ -68,31 +69,47 @@
 			bg.beginFill(0x000000);
 			bg.drawRect(0, 0, 10000, 10000); //just make it big so we catch clicks no matter screen size
 			bg.interactive = true;
-			bg.on('click', onClick);
-			bg.on('tap', onClick);
+			bg.on('mousedown', onDown);
+			bg.on('touchstart', onDown);
+			bg.on('mouseup', onUp);
+			bg.on('touchend', onUp);
 			return bg;
 
 
-			function onClick(e) {
+			function onDown(e) {
+				if(!color){
+					return;
+				}
 				if (touchSprite) {
 					fadeSprite(stage, touchSprite);
 					touchSprite = null;
 				}
-				var c = {
+				newCircle = {
 					id: Math.random() + '_' + Date.now(),
 					x: e.data.global.x / renderer.view.width,
 					y: e.data.global.y / renderer.view.height,
-					size: 10/800
+					size: 1 / 800,
+					color: color
 				};
-				if(color){
-					var uc = JSON.parse(JSON.stringify(c));
-					uc.color = color;
-					uc.sprite = generateSpriteForCircle(uc);
-					uc.sprite.alpha = 0.5;
-					unconfirmedCircles[uc.id] = uc;
-					stage.addChild(uc.sprite);
+				newCircle.tl = new TimelineMax()
+						.to(newCircle, 10, {size: 150/800, ease: Power1.easeOut})
+				newCircle.sprite = generateSpriteForCircle(newCircle);
+				newCircle.sprite.alpha = 0.5;
+			}
+
+			function onUp(e) {
+				if (newCircle) {
+					newCircle.tl.pause();
+					delete newCircle.tl;
+					stage.removeChild(newCircle.sprite);
+					delete newCircle.sprite;
+					socket.emit('circle', newCircle);
+					newCircle.sprite = generateSpriteForCircle(newCircle);
+					newCircle.sprite.alpha = 0.5;
+					unconfirmedCircles[newCircle.id] = newCircle;
+					stage.addChild(newCircle.sprite);
+					newCircle = null;
 				}
-				socket.emit('click', c);
 			}
 		}
 
@@ -122,13 +139,13 @@
 			return sprite;
 		}
 
-		socket.on('click', function (c) {
+		socket.on('circle', function (c) {
 			console.log(c);
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
 			circles.push(c);
 			var uc = unconfirmedCircles[c.id];
-			if(uc){
+			if (uc) {
 				stage.removeChild(uc.sprite);
 				delete unconfirmedCircles[c.id]
 			}
@@ -137,7 +154,14 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
+			if (newCircle) {
+				stage.removeChild(newCircle.sprite);
+				newCircle.sprite = generateSpriteForCircle(newCircle);
+				newCircle.sprite.alpha = 0.5;
+				stage.addChild(newCircle.sprite);
+			}
 			// render the container
+			var indexesToRemove = [];
 			for (var i = 0; i < circles.length - 1; i++) {
 				for (var j = i + 1; j < circles.length; j++) {
 					var c1 = circles[i];
@@ -151,14 +175,15 @@
 					);
 					var minDistance = (c1.size + c2.size);
 					if (distance < minDistance) {
-						console.log(distance, minDistance, Math.pow(Math.abs(c1.x - c2.x), 2));
 						killCircleSprite(stage, c1.sprite);
 						killCircleSprite(stage, c2.sprite);
-						delete circles[i];
-						delete circles[j];
+						indexesToRemove.push(i,j);
 					}
 				}
 			}
+			indexesToRemove.forEach(function(i){
+				delete circles[i];
+			});
 			circles = circles.filter(Boolean);
 			renderer.render(stage);
 		}
@@ -175,7 +200,7 @@
 		new TimelineMax({
 			onComplete: function () {
 				stage.removeChild(sprite);
-				if(sprite.tl){
+				if (sprite.tl) {
 					sprite.tl.pause();
 				}
 			}

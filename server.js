@@ -18,10 +18,10 @@ io.on('connection', function(socket){
 	colorIndex = (colorIndex+1) % colors.length;
 	var color = colors[colorIndex];
 	socket.emit('color', color);
-	socket.on('click', function(msg){
+	socket.on('circle', function(msg){
 		msg.color = color;
 		console.log(msg);
-		broadcast('click', msg);
+		broadcast('circle', msg);
 	});
 });
 
