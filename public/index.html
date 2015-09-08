@@ -71,6 +71,8 @@
 			bg.interactive = true;
 			bg.on('mousedown', onDown);
 			bg.on('touchstart', onDown);
+			bg.on('mousemove', onMove);
+			bg.on('touchmove', onMove);
 			bg.on('mouseup', onUp);
 			bg.on('touchend', onUp);
 			return bg;
@@ -97,10 +99,18 @@
 				newCircle.sprite.alpha = 0.5;
 			}
 
-			function onUp(e) {
+			function onMove(e) {
+				if(newCircle){
+					newCircle.x = e.data.global.x / renderer.view.width;
+					newCircle.y = e.data.global.y / renderer.view.height;
+				}
+			}
+
+			function onUp() {
 				if (newCircle) {
-					newCircle.tl.pause();
+					newCircle.tl.kill();
 					delete newCircle.tl;
+					delete newCircle._gsTweenID;
 					stage.removeChild(newCircle.sprite);
 					delete newCircle.sprite;
 					socket.emit('circle', newCircle);
