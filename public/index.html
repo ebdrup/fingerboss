@@ -87,9 +87,9 @@
 				if(color){
 					var uc = JSON.parse(JSON.stringify(c));
 					uc.color = color;
-					uc.sprite = generateSpriteForCircle(c);
+					uc.sprite = generateSpriteForCircle(uc);
 					uc.sprite.alpha = 0.5;
-					unconfirmedCircles[uc.id](uc);
+					unconfirmedCircles[uc.id] = uc;
 					stage.addChild(uc.sprite);
 				}
 				socket.emit('click', c);

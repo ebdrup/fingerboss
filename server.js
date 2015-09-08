@@ -21,9 +21,20 @@ io.on('connection', function(socket){
 	socket.on('click', function(msg){
 		msg.color = color;
 		console.log(msg);
-		io.emit('click', msg);
+		broadcast('click', msg);
 	});
 });
+
+function broadcast(type, msg){
+	if(!process.env.PORT){
+		return setTimeout(emit, 300);
+	}
+	return emit();
+
+	function emit() {
+		io.emit(type, msg);
+	}
+}
 
 http.listen(port, function(){
 	console.log('listening on http://localhost:%s', port);
