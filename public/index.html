@@ -30,6 +30,12 @@
 	game();
 
 	function game() {
+		var MIN_SIZE = 90 / 800;
+		var START_SIZE = 50 / 800;
+		var END_SIZE = 400 / 800;
+		var GROW_TIME = 5;
+		var GROWING_ALPHA = 0.5;
+		var UNCONFIRMED_ALPHA = 0.75;
 		var failSound = new Howl({
 			urls: ['fail.mp3'],
 			volume: 0.3
@@ -42,9 +48,11 @@
 		var circles = [];
 		var unconfirmedCircles = {};
 		var newCircle;
-		var color;
-		socket.on('color', function (c) {
-			color = c;
+		var color, dt, velocity;
+		socket.on('start', function (e) {
+			color = e.color;
+			dt = Date.now() - e.t;
+			velocity = e.velocity;
 		});
 		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 			backgroundColor: 0x000000,
@@ -100,23 +108,21 @@
 					id: Math.random() + '_' + Date.now(),
 					x: getX(e),
 					y: getY(e),
-					size: 1 / 800,
+					size: START_SIZE,
 					color: color
 				};
 				newCircle.tl = new TimelineMax()
-						.to(newCircle, 10, {size: 150 / 800, ease: Power1.easeOut})
+						.to(newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut})
 				newCircle.sprite = generateSpriteForCircle(newCircle);
-				newCircle.sprite.alpha = 0.5;
+				newCircle.sprite.alpha = GROWING_ALPHA;
 			}
 
 			function getX(e) {
-				return Math.min(Math.max(e.data.global.x / renderer.view.width, 0),1);
+				return Math.min(Math.max(e.data.global.x / renderer.view.width, 0), 1);
 			}
 
 			function getY(e) {
-				var isTouch = e.type.indexOf('touch') !== -1;
-				var h = renderer.view.height;
-				return Math.min(Math.max(e.data.global.y / h - (isTouch ? 100 / 800 : 0), 0),1);
+				return Math.min(Math.max(e.data.global.y / renderer.view.height, 0), 1);
 			}
 
 			function onMove(e) {
@@ -133,10 +139,11 @@
 					delete newCircle._gsTweenID;
 					stage.removeChild(newCircle.sprite);
 					delete newCircle.sprite;
-					if(newCircle.size > 20/800) {
+					if (newCircle.size > MIN_SIZE) {
+						newCircle.size /= 3;
 						socket.emit('circle', newCircle);
 						newCircle.sprite = generateSpriteForCircle(newCircle);
-						newCircle.sprite.alpha = 0.5;
+						newCircle.sprite.alpha = 0.75;
 						unconfirmedCircles[newCircle.id] = newCircle;
 						stage.addChild(newCircle.sprite);
 					} else {
@@ -175,6 +182,7 @@
 
 		socket.on('circle', function (c) {
 			console.log(c);
+			dt = Date.now() - c.t;
 			successSound.play();
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
@@ -184,42 +192,62 @@
 				stage.removeChild(uc.sprite);
 				delete unconfirmedCircles[c.id]
 			}
-		});
-		// start animating
-		animate();
-		function animate() {
-			requestAnimationFrame(animate);
-			if (newCircle) {
-				stage.removeChild(newCircle.sprite);
-				newCircle.sprite = generateSpriteForCircle(newCircle);
-				newCircle.sprite.alpha = 0.5;
-				stage.addChild(newCircle.sprite);
-			}
-			// render the container
+			//collision detection
 			var indexesToRemove = [];
 			for (var i = 0; i < circles.length - 1; i++) {
-				for (var j = i + 1; j < circles.length; j++) {
-					var c1 = circles[i];
-					var c2 = circles[j];
-					if (!c1 || !c2 || c1.color === c2.color) {
-						continue;
-					}
-					var distance = Math.sqrt(
-							Math.pow(Math.abs(c1.x - c2.x), 2) +
-							Math.pow(Math.abs(c1.y - c2.y), 2)
-					);
-					var minDistance = (c1.size + c2.size);
-					if (distance < minDistance) {
-						killCircleSprite(stage, c1.sprite);
-						killCircleSprite(stage, c2.sprite);
-						indexesToRemove.push(i, j);
-					}
+				var c1 = circles[i];
+				if (!c1 || !c || c1.color === c.color) {
+					continue;
+				}
+				var distance = Math.sqrt(
+						Math.pow(Math.abs(c1.x - c.x), 2) +
+						Math.pow(Math.abs(getMovedCircleY(c1, c.t) - getMovedCircleY(c, c.t)), 2)
+				);
+				var minDistance = (c1.size + c.size);
+				if (distance < minDistance) {
+					killCircleSprite(stage, c1.sprite);
+					killCircleSprite(stage, c.sprite);
+					indexesToRemove.push(i);
 				}
 			}
 			indexesToRemove.forEach(function (i) {
 				delete circles[i];
 			});
 			circles = circles.filter(Boolean);
+			//remove circles out of frame
+			circles.forEach(function (c1, i) {
+				var y = getMovedCircleY(c1, c.t);
+				if (y < -c1.size) {
+					delete circles[i];
+					stage.removeChild(c1.sprite);
+					console.log('Remove');
+					return;
+				}
+				c.sprite.position.y = y * renderer.view.height;
+			});
+			circles = circles.filter(Boolean);
+
+		});
+		function getMovedCircleY(c, t) {
+			return c.y + (c.t - t) * velocity;
+		}
+
+		// start animating
+		animate();
+		function animate() {
+			requestAnimationFrame(animate);
+			var t = Date.now() - dt;
+			circles.forEach(function (c1) {
+				var y = getMovedCircleY(c1, t);
+				c1.sprite.position.y = y * renderer.view.height;
+			});
+			if (newCircle) {
+				stage.removeChild(newCircle.sprite);
+				newCircle.sprite = generateSpriteForCircle(newCircle);
+				newCircle.sprite.alpha = newCircle.size > MIN_SIZE ? UNCONFIRMED_ALPHA : GROWING_ALPHA;
+				stage.addChild(newCircle.sprite);
+			}
+			// render the container
 			renderer.render(stage);
 		}
 	}
