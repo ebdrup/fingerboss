@@ -160,7 +160,7 @@
 		function generateSpriteForCircle(c) {
 			var gfx = new PIXI.Graphics();
 			gfx.beginFill(c.color);
-			gfx.drawEllipse(0, 0, 0.1 * renderer.view.width, 0.1 * renderer.view.height);
+			gfx.drawEllipse(0, 0, 0.05 * renderer.view.width, 0.05 * renderer.view.height);
 			var sprite = new PIXI.Sprite(gfx.generateTexture());
 			// center the sprite's anchor point
 			sprite.anchor.x = 0.5;
@@ -176,7 +176,7 @@
 			var proposed_dt = Date.now() - c.t;
 			var dtDifference = proposed_dt-dt;
 			if(Math.abs(dtDifference) > 200){
-				dt += 50 * (dtDifference/Math.abs(dtDifference)); //adjust dt a little
+				dt += 20 * (dtDifference/Math.abs(dtDifference)); //adjust dt a little
 			}
 			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
