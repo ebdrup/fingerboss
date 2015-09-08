@@ -21,7 +21,7 @@
 <script src="/socket.io-1.2.0.js"></script>
 <script src="/jquery-1.11.1.js"></script>
 <script src="/TweenMax.min.js"></script>
-<!--<script src="/howler.min.js"></script>-->
+<script src="/howler.min.js"></script>
 <script>
 
 	window.onerror = function () {
@@ -30,22 +30,22 @@
 	game();
 
 	function game() {
-		var MIN_SIZE = 100 / 800;
-		var START_SIZE = 50 / 800;
-		var END_SIZE = 400 / 800;
+		var MIN_SIZE = 200 / 800;
+		var START_SIZE = 150 / 800;
+		var END_SIZE = 500 / 800;
 		var GROW_TIME = 6;
 		var GROWING_ALPHA = 0.6;
 		var UNCONFIRMED_ALPHA = 0.8;
 		var CONFIRMED_SIZE_FACTOR = 1/5;
-		var SOUND = false;
-		/*var failSound = new Howl({
+		var SOUND = true;
+		var failSound = new Howl({
 			urls: ['fail.mp3'],
 			volume: 0.3
 		});
 		var successSound = new Howl({
 			urls: ['success.mp3'],
 			volume: 0.3
-		});*/
+		});
 		var socket = io();
 		var circles = [];
 		var unconfirmedCircles = {};
@@ -54,7 +54,7 @@
 		socket.on('start', function (e) {
 			color = e.color;
 			dt = Date.now() - e.t;
-			velocity = 0;//e.velocity;
+			velocity = e.velocity;
 		});
 		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 			backgroundColor: 0x000000,
@@ -149,7 +149,6 @@
 						newCircle.sprite = generateSpriteForCircle(newCircle);
 						newCircle.sprite.alpha = 0.75;
 						unconfirmedCircles[newCircle.id] = newCircle;
-						//stage.addChild(newCircle.sprite);
 					} else {
 						SOUND && failSound.play();
 					}
