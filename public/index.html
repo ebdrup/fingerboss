@@ -149,7 +149,7 @@
 						newCircle.sprite = generateSpriteForCircle(newCircle);
 						newCircle.sprite.alpha = 0.75;
 						unconfirmedCircles[newCircle.id] = newCircle;
-						stage.addChild(newCircle.sprite);
+						//stage.addChild(newCircle.sprite);
 					} else {
 						SOUND && failSound.play();
 					}
@@ -161,7 +161,7 @@
 		function generateSpriteForCircle(c) {
 			var gfx = new PIXI.Graphics();
 			gfx.beginFill(c.color);
-			gfx.drawEllipse(0, 0, 0.5 * renderer.view.width, 0.5 * renderer.view.height);
+			gfx.drawEllipse(0, 0, 0.2 * renderer.view.width, 0.2 * renderer.view.height);
 			var sprite = new PIXI.Sprite(gfx.generateTexture());
 			// center the sprite's anchor point
 			sprite.anchor.x = 0.5;
