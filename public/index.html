@@ -117,6 +117,7 @@
 						.to(newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut})
 				newCircle.sprite = generateSpriteForCircle(newCircle);
 				newCircle.sprite.alpha = GROWING_ALPHA;
+				stage.addChild(newCircle.sprite);
 			}
 
 			function getX(e) {
@@ -159,13 +160,15 @@
 		function generateSpriteForCircle(c) {
 			var gfx = new PIXI.Graphics();
 			gfx.beginFill(c.color);
-			gfx.drawEllipse(0, 0, c.size * renderer.view.width, c.size * renderer.view.height);
+			gfx.drawEllipse(0, 0, 0.5 * renderer.view.width, 0.5 * renderer.view.height);
 			var sprite = new PIXI.Sprite(gfx.generateTexture());
 			// center the sprite's anchor point
 			sprite.anchor.x = 0.5;
 			sprite.anchor.y = 0.5;
 			sprite.position.x = c.x * renderer.view.width;
 			sprite.position.y = c.y * renderer.view.height;
+			sprite.width = c.size * renderer.view.width;
+			sprite.height = c.size * renderer.view.height;
 			return sprite;
 		}
 
@@ -229,10 +232,11 @@
 				c1.sprite.position.y = y * renderer.view.height;
 			});
 			if (newCircle) {
-				stage.removeChild(newCircle.sprite);
-				newCircle.sprite = generateSpriteForCircle(newCircle);
+				newCircle.sprite.position.x = newCircle.x * renderer.view.width;
+				newCircle.sprite.position.y = newCircle.y * renderer.view.height;
+				newCircle.sprite.width = newCircle.size * renderer.view.width;
+				newCircle.sprite.height = newCircle.size * renderer.view.height;
 				newCircle.sprite.alpha = newCircle.size > MIN_SIZE ? UNCONFIRMED_ALPHA : GROWING_ALPHA;
-				stage.addChild(newCircle.sprite);
 			}
 			// render the container
 			renderer.render(stage);
@@ -251,7 +255,7 @@
 			onComplete: function () {
 				stage.removeChild(sprite);
 				if (sprite.tl) {
-					sprite.tl.pause();
+					sprite.tl.kill();
 				}
 			}
 		}).to(sprite, 0.3, {alpha: 0});
