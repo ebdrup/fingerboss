@@ -36,7 +36,7 @@
 		var GROW_TIME = 6;
 		var GROWING_ALPHA = 0.6;
 		var UNCONFIRMED_ALPHA = 0.8;
-		var CONFIRMED_SIZE_FACTOR = 1/5;
+		var CONFIRMED_SIZE_FACTOR = 1 / 5;
 		var SOUND = true;
 		var failSound = new Howl({
 			urls: ['fail.mp3'],
@@ -63,7 +63,8 @@
 		document.body.appendChild(renderer.view);
 		$(window).resize(function () {
 			renderer.resize(window.innerWidth, window.innerHeight);
-			bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
+			bg.width = renderer.view.width;
+			bg.height = renderer.view.height;
 			circles.forEach(function (c) {
 				stage.removeChild(c.sprite);
 				c.sprite = generateSpriteForCircle(c);
@@ -85,18 +86,21 @@
 		stage.addChild(touchSprite);
 
 		function getInteraction() {
-			var bg = new PIXI.Graphics();
-			bg.interactive = true;
-			bg.beginFill(0x000000);
-			bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
-			bg.on('mousedown', onDown);
-			bg.on('touchstart', onDown);
-			bg.on('mousemove', onMove);
-			bg.on('touchmove', onMove);
-			bg.on('mouseup', onUp);
-			bg.on('touchend', onUp);
-			return bg;
-
+			var gfx = new PIXI.Graphics();
+			gfx.beginFill(0x000000);
+			gfx.drawRect(0, 0, 1, 1);
+			var sprite = new PIXI.Sprite(gfx.generateTexture());
+			// center the sprite's anchor point
+			sprite.width = renderer.view.width;
+			sprite.height = renderer.view.height;
+			sprite.interactive = true;
+			sprite.on('mousedown', onDown);
+			sprite.on('touchstart', onDown);
+			sprite.on('mousemove', onMove);
+			sprite.on('touchmove', onMove);
+			sprite.on('mouseup', onUp);
+			sprite.on('touchend', onUp);
+			return sprite;
 
 			function onDown(e) {
 				if (!color) {
@@ -159,10 +163,10 @@
 		}
 
 		function generateSpriteForCircle(c) {
-			var w = renderer.view.width, h =renderer.view.height;
-			var key = w + '_' + h +'_' + c.color;
+			var w = renderer.view.width, h = renderer.view.height;
+			var key = w + '_' + h + '_' + c.color;
 			var texture = textures[key];
-			if(!texture) {
+			if (!texture) {
 				var gfx = new PIXI.Graphics();
 				gfx.beginFill(c.color);
 				gfx.drawEllipse(0, 0, 0.1 * w, 0.1 * h);
@@ -181,9 +185,9 @@
 
 		socket.on('circle', function (c) {
 			var proposed_dt = Date.now() - c.t;
-			var dtDifference = proposed_dt-dt;
-			if(Math.abs(dtDifference) > 200){
-				dt += 20 * (dtDifference/Math.abs(dtDifference)); //adjust dt a little
+			var dtDifference = proposed_dt - dt;
+			if (Math.abs(dtDifference) > 200) {
+				dt += 20 * (dtDifference / Math.abs(dtDifference)); //adjust dt a little
 			}
 			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
@@ -237,7 +241,7 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var t = Date.now() - dt/2;
+			var t = Date.now() - dt / 2;
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, t);
 				c1.sprite.position.y = y * renderer.view.height;
