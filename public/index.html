@@ -51,7 +51,7 @@
 		var circles = [];
 		var unconfirmedCircles = {};
 		var newCircle;
-		var color, dt, velocity, textures = {};
+		var color, dt, velocity, textures = {}, scores = {};
 		socket.on('start', function (e) {
 			color = e.color;
 			dt = Date.now() - e.t;
@@ -241,6 +241,8 @@
 			circles.forEach(function (c1, i) {
 				var y = getMovedCircleY(c1, c.t);
 				if (y < -c1.size || y > 1 + c1.size) {
+					scores[c1.color] = scores[c1.color] || {value: 0};
+					scores[c1.color].value += c1.size;
 					delete circles[i];
 					stage.removeChild(c1.sprite);
 					return;
@@ -281,6 +283,20 @@
 				newCircle.sprite.height = newCircle.size * renderer.view.height;
 				newCircle.sprite.alpha = newCircle.size > MIN_SIZE ? UNCONFIRMED_ALPHA : GROWING_ALPHA;
 			}
+			// scores
+			Object.keys(scores).forEach(function (key, i) {
+				var color = '#' + parseInt(key, 10).toString(16);
+				var s = scores[key];
+				var score = Math.ceil(s.value * 800);
+				if (s.text) {
+					s.text.setText(score + '');
+					return;
+				}
+				s.text = new PIXI.Text(score + '', {font: "20px Arial", fill: color});
+				s.text.position.y = 10 + i * 30;
+				s.text.position.x = 10;
+				stage.addChild(s.text);
+			});
 			// render the container
 			renderer.render(stage);
 		}
