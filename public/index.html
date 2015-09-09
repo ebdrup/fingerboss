@@ -100,10 +100,12 @@
 			sprite.on('touchmove', onMove);
 			sprite.on('mouseup', onUp);
 			sprite.on('touchend', onUp);
+			var downCount = 0;
 			return sprite;
 
 			function onDown(e) {
-				if (!color) {
+				downCount++;
+				if (!color || downCount > 1) {
 					return;
 				}
 				if (touchSprite) {
@@ -140,7 +142,8 @@
 			}
 
 			function onUp() {
-				if (newCircle) {
+				downCount--;
+				if (downCount === 0 && newCircle) {
 					newCircle.tl.kill();
 					delete newCircle.tl;
 					delete newCircle._gsTweenID;
