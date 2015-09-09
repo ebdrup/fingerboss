@@ -160,7 +160,7 @@
 
 		function generateSpriteForCircle(c) {
 			var w = renderer.view.width, h =renderer.view.height;
-			var key = w + '_' + h;
+			var key = w + '_' + h +'_' + color;
 			var texture = textures[key];
 			if(!texture) {
 				var gfx = new PIXI.Graphics();
