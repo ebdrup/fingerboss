@@ -240,7 +240,7 @@
 			//remove circles out of frame
 			circles.forEach(function (c1, i) {
 				var y = getMovedCircleY(c1, c.t);
-				if (y < -c1.size) {
+				if (y < -c1.size || y > 1 + c1.size) {
 					delete circles[i];
 					stage.removeChild(c1.sprite);
 					return;
@@ -250,8 +250,8 @@
 
 		});
 		function getMovedCircleY(c, t) {
-			var dt =c.t - t;
-			return c.y>0.5 ? c.y + dt * velocity : c.y - dt * velocity;
+			var dt = c.t - t;
+			return c.y > 0.5 ? c.y + dt * velocity : c.y - dt * velocity;
 		}
 
 		// start animating
