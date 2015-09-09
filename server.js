@@ -17,7 +17,7 @@ var colorIndex = Math.round(Math.random() * colors.length);
 io.on('connection', function(socket){
 	colorIndex = (colorIndex+1) % colors.length;
 	var color = colors[colorIndex];
-	socket.emit('start', { color:color, t:Date.now(), velocity:0.0004 });
+	socket.emit('start', { color:color, t:Date.now(), velocity:0.0002 });
 	socket.on('circle', function(c){
 		c.color = color;
 		c.t = Date.now();
