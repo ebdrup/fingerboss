@@ -227,8 +227,9 @@
 						killCircleSprite(stage, c1.sprite);
 					}
 					if (c.size <= KILL_SIZE) {
-						indexesToRemove.push(circles.length - 1);
+						circles.pop(); // remove c
 						killCircleSprite(stage, c.sprite);
+						break;
 					}
 				}
 			}
@@ -244,7 +245,6 @@
 					stage.removeChild(c1.sprite);
 					return;
 				}
-				c.sprite.position.y = y * renderer.view.height;
 			});
 			circles = circles.filter(Boolean);
 
@@ -267,6 +267,7 @@
 					//resize sprite
 					c1.sprite.tl = new TimelineMax({
 						onComplete: function () {
+							c1.sprite.tl.kill();
 							delete c1.sprite.tl;
 						}
 					}).to(c1.sprite, 0.3, {width: expectedWidth, height: expectedHeight});
@@ -284,9 +285,15 @@
 		}
 	}
 	function killCircleSprite(stage, sprite) {
-		new TimelineMax({
+		if (sprite.tl) {
+			sprite.tl.kill();
+			delete sprite.tl;
+		}
+		sprite.tl = new TimelineMax({
 			onComplete: function () {
 				stage.removeChild(sprite);
+				sprite.tl.kill();
+				delete sprite.tl;
 			}
 		}).to(sprite.scale, 0.5, {x: 0, y: 0});
 
@@ -297,10 +304,10 @@
 				stage.removeChild(sprite);
 				if (sprite.tl) {
 					sprite.tl.kill();
+					delete sprite.tl;
 				}
 			}
 		}).to(sprite, 0.3, {alpha: 0});
-
 	}
 </script>
 </body>
