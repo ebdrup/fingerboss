@@ -51,7 +51,7 @@
 		var circles = [];
 		var unconfirmedCircles = {};
 		var newCircle;
-		var color, dClock, dClocks = [], latency = 0, latencies = [], velocity, textures = {}, scores = {};
+		var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {}, scores = {};
 		var myId = Math.random() + '_' + Date.now();
 		socket.on('start', function (e) {
 			color = e.color;
