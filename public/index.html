@@ -52,6 +52,7 @@
 		var unconfirmedCircles = {};
 		var newCircle;
 		var color, dt = 0, dts = [], velocity, textures = {}, scores = {};
+		var myId = Math.random() + '_' + Date.now();
 		socket.on('start', function (e) {
 			color = e.color;
 			velocity = e.velocity;
@@ -150,10 +151,12 @@
 						newCircle.size -= START_SIZE;
 						newCircle.size *= CONFIRMED_SIZE_FACTOR;
 						socket.emit('circle', {
+							owner: myId,
 							id: newCircle.id,
 							x: newCircle.x,
 							y: newCircle.y,
-							size: newCircle.size
+							size: newCircle.size,
+							localTime: Date.now()
 						});
 						newCircle.sprite = generateSpriteForCircle(newCircle);
 						newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
@@ -190,12 +193,14 @@
 
 		socket.on('circle', function (c) {
 			// find median dt
-			dts.push(Date.now() - c.t);
-			dts.sort();
-			if (dts.length === 600) {
-				dts = dts.slice(200, 400);
+			if(c.owner === myId) {
+				dts.push(Date.now() - c.localTime);
+				dts.sort();
+				if (dts.length === 600) {
+					dts = dts.slice(200, 400);
+				}
+				dt = dts[Math.floor(dts.length / 2)];
 			}
-			dt = dts[Math.floor(dts.length / 2)];
 			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
@@ -261,7 +266,7 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var t = Date.now() + dt / 2;
+			var t = Date.now() + dt;
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, t);
 				c1.sprite.position.y = y * renderer.view.height;
