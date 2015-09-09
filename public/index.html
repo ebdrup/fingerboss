@@ -51,10 +51,9 @@
 		var circles = [];
 		var unconfirmedCircles = {};
 		var newCircle;
-		var color, dt, velocity, textures = {}, scores = {};
+		var color, dt = 0, dts = [], velocity, textures = {}, scores = {};
 		socket.on('start', function (e) {
 			color = e.color;
-			dt = Date.now() - e.t;
 			velocity = e.velocity;
 		});
 		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
@@ -185,11 +184,13 @@
 		}
 
 		socket.on('circle', function (c) {
-			var proposed_dt = Date.now() - c.t;
-			var dtDifference = proposed_dt - dt;
-			if (Math.abs(dtDifference) > 200) {
-				dt += 20 * (dtDifference / Math.abs(dtDifference)); //adjust dt a little
+			// find median dt
+			dts.push(Date.now() - c.t);
+			dts.sort();
+			if (dts.length === 600) {
+				dts = dts.slice(200, 400);
 			}
+			dt = dts[Math.floor(dts.length / 2)];
 			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
@@ -255,7 +256,7 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var t = Date.now() + dt / 2;
+			var t = Date.now() - dt / 2;
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, t);
 				c1.sprite.position.y = y * renderer.view.height;
@@ -265,7 +266,7 @@
 					//resize sprite
 					c1.sprite.tl = new TimelineMax({
 						onComplete: function () {
-							if(c1.sprite.tl){
+							if (c1.sprite.tl) {
 								c1.sprite.tl.kill();
 								delete c1.sprite.tl;
 							}
@@ -295,13 +296,10 @@
 				var s = scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
-				var hash = score + '_' + fontSize;
 				var style = {font: fontSize + "px Arial", fill: color};
 				if (s.text) {
-					if(s.hash != hash) {
-						s.text.setText(score + '');
-						s.text.style = style;
-					}
+					s.text.text = score + '';
+					s.text.style = style;
 				} else {
 					s.text = new PIXI.Text(score + '', style);
 					stage.addChild(s.text);
