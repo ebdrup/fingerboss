@@ -227,6 +227,9 @@
 				}
 			}
 			indexesToRemove.forEach(function (i) {
+				var c1 = circles[i];
+				scores[c1.color] = scores[c1.color] || {value: 0};
+				scores[c1.color].value -= (c1.unverifiedScore || 0); //remove scores added but not supposed to be
 				delete circles[i];
 			});
 			circles = circles.filter(Boolean);
@@ -235,10 +238,9 @@
 				var y = getMovedCircleY(c1, c.t);
 				if (y < -c1.size || y > 1 + c1.size) {
 					scores[c1.color] = scores[c1.color] || {value: 0};
-					scores[c1.color].value += c1.size;
+					scores[c1.color].value += c1.size - (c1.unverifiedScore || 0);
 					delete circles[i];
 					stage.removeChild(c1.sprite);
-					return;
 				}
 			});
 			circles = circles.filter(Boolean);
@@ -278,6 +280,15 @@
 				newCircle.sprite.height = newCircle.size * renderer.view.height;
 				newCircle.sprite.alpha = newCircle.size > MIN_SIZE ? UNCONFIRMED_ALPHA : GROWING_ALPHA;
 			}
+			//score circles out of frame (unverified by server, they might get killed
+			circles.forEach(function (c1, i) {
+				var y = getMovedCircleY(c1, t);
+				if (!c1.unverifiedScore && (y < -c1.size || y > 1 + c1.size)) {
+					scores[c1.color] = scores[c1.color] || {value: 0};
+					scores[c1.color].value += c1.size;
+					c1.unverifiedScore = c1.size;
+				}
+			});
 			// scores
 			Object.keys(scores).forEach(function (key, i) {
 				var color = '#' + parseInt(key, 10).toString(16);
@@ -289,7 +300,7 @@
 				if (s.text) {
 					if(s.hash != hash) {
 						s.text.setText(score + '');
-						s.text.setStyle(style);
+						s.text.style = style;
 					}
 				} else {
 					s.text = new PIXI.Text(score + '', style);
