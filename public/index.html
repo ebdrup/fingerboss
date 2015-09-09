@@ -37,6 +37,7 @@
 		var GROWING_ALPHA = 0.6;
 		var UNCONFIRMED_ALPHA = 0.8;
 		var CONFIRMED_SIZE_FACTOR = 1 / 5;
+		var KILL_SIZE = 10 / 800;
 		var SOUND = true;
 		var failSound = new Howl({
 			urls: ['fail.mp3'],
@@ -218,9 +219,17 @@
 				);
 				var minDistance = (c1.size + c.size);
 				if (distance < minDistance) {
-					killCircleSprite(stage, c1.sprite);
-					killCircleSprite(stage, c.sprite);
-					indexesToRemove.push(i);
+					var cSize = c.size;
+					c.size -= c1.size;
+					c1.size -= cSize;
+					if (c1.size <= KILL_SIZE) {
+						indexesToRemove.push(i);
+						killCircleSprite(stage, c1.sprite);
+					}
+					if (c.size <= KILL_SIZE) {
+						indexesToRemove.push(circles.length - 1);
+						killCircleSprite(stage, c.sprite);
+					}
 				}
 			}
 			indexesToRemove.forEach(function (i) {
@@ -252,6 +261,16 @@
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, t);
 				c1.sprite.position.y = y * renderer.view.height;
+				var expectedWidth = c1.size * renderer.view.width;
+				var expectedHeight = c1.size * renderer.view.height;
+				if (!c1.sprite.tl && (expectedWidth !== c1.sprite.width || expectedHeight !== c1.sprite.height)) {
+					//resize sprite
+					c1.sprite.tl = new TimelineMax({
+						onComplete: function () {
+							delete c1.sprite.tl;
+						}
+					}).to(c1.sprite, 0.3, {width: expectedWidth, height: expectedHeight});
+				}
 			});
 			if (newCircle) {
 				newCircle.sprite.position.x = newCircle.x * renderer.view.width;
