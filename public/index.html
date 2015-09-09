@@ -149,7 +149,12 @@
 					if (newCircle.size > MIN_SIZE) {
 						newCircle.size -= START_SIZE;
 						newCircle.size *= CONFIRMED_SIZE_FACTOR;
-						socket.emit('circle', newCircle);
+						socket.emit('circle', {
+							id: newCircle.id,
+							x: newCircle.x,
+							y: newCircle.y,
+							size: newCircle.size
+						});
 						newCircle.sprite = generateSpriteForCircle(newCircle);
 						newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
 						unconfirmedCircles[newCircle.id] = newCircle;
