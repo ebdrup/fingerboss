@@ -51,11 +51,13 @@
 		var circles = [];
 		var unconfirmedCircles = {};
 		var newCircle;
-		var color, dt = 0, dts = [], velocity, textures = {}, scores = {};
+		var color, dClock, dClocks = [], latency = 0, latencies = [], velocity, textures = {}, scores = {};
 		var myId = Math.random() + '_' + Date.now();
 		socket.on('start', function (e) {
 			color = e.color;
 			velocity = e.velocity;
+			dClock = Date.now() - e.t;
+			dClocks.push(dClock);
 		});
 		var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 			backgroundColor: 0x000000,
@@ -192,15 +194,23 @@
 		}
 
 		socket.on('circle', function (c) {
-			// find median dt
+			// find median latency
 			if(c.owner === myId) {
-				dts.push(Date.now() - c.localTime);
-				dts.sort();
-				if (dts.length === 600) {
-					dts = dts.slice(200, 400);
+				latencies.push(Date.now() - c.localTime);
+				latencies.sort();
+				if (latencies.length === 600) {
+					latencies = latencies.slice(200, 400);
 				}
-				dt = dts[Math.floor(dts.length / 2)];
-				alert(dt);
+				latency = latencies[Math.floor(dClocks.length / 2)];
+			}
+			// find median clockDifference
+			if(c.owner === myId) {
+				dClocks.push(Date.now() - c.t);
+				dClocks.sort();
+				if (dClocks.length === 600) {
+					dClocks = dClocks.slice(200, 400);
+				}
+				dClock = dClocks[Math.floor(dClocks.length / 2)];
 			}
 			SOUND && successSound.play();
 			c.sprite = generateSpriteForCircle(c);
@@ -267,9 +277,9 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var t = Date.now() + dt;
+			var estimatedServerT = Date.now() - dClock + latency/2;
 			circles.forEach(function (c1) {
-				var y = getMovedCircleY(c1, t);
+				var y = getMovedCircleY(c1, estimatedServerT);
 				c1.sprite.position.y = y * renderer.view.height;
 				var expectedWidth = c1.size * renderer.view.width;
 				var expectedHeight = c1.size * renderer.view.height;
@@ -294,7 +304,7 @@
 			}
 			//score circles out of frame (unverified by server, they might get killed
 			circles.forEach(function (c1, i) {
-				var y = getMovedCircleY(c1, t);
+				var y = getMovedCircleY(c1, estimatedServerT);
 				if (!c1.unverifiedScore && (y < -c1.size || y > 1 + c1.size)) {
 					scores[c1.color] = scores[c1.color] || {value: 0};
 					scores[c1.color].value += c1.size;

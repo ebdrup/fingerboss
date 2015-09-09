@@ -25,7 +25,7 @@ io.on('connection', function (socket) {
 	});
 });
 
-var LATENCY = 0;
+var LATENCY = 300;
 
 function emit(socket, type, msg){
 	if (!process.env.PORT) {
