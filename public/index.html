@@ -256,7 +256,7 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var t = Date.now() - dt / 2;
+			var t = Date.now();// - dt / 2;
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, t);
 				c1.sprite.position.y = y * renderer.view.height;
