@@ -101,16 +101,10 @@
 			sprite.on('touchmove', onMove);
 			sprite.on('mouseup', onUp);
 			sprite.on('touchend', onUp);
-			var downCount = 0;
 			return sprite;
 
-			function isTouch(e) {
-				return e.type.indexOf('touch') !== -1;
-			}
-
 			function onDown(e) {
-				downCount++;
-				if (newCircle || !color || (isTouch(e) && downCount > 1)) {
+				if (newCircle || !color) {
 					return;
 				}
 				if (touchSprite) {
@@ -147,8 +141,7 @@
 			}
 
 			function onUp(e) {
-				downCount--;
-				if ((downCount === 0 || !isTouch(e)) && newCircle) {
+				if (newCircle) {
 					newCircle.tl.kill();
 					delete newCircle.tl;
 					delete newCircle._gsTweenID;
@@ -270,8 +263,10 @@
 					//resize sprite
 					c1.sprite.tl = new TimelineMax({
 						onComplete: function () {
-							c1.sprite.tl.kill();
-							delete c1.sprite.tl;
+							if(c1.sprite.tl){
+								c1.sprite.tl.kill();
+								delete c1.sprite.tl;
+							}
 						}
 					}).to(c1.sprite, 0.3, {width: expectedWidth, height: expectedHeight});
 				}
@@ -292,8 +287,9 @@
 					s.text.setText(score + '');
 					return;
 				}
-				s.text = new PIXI.Text(score + '', {font: "20px Arial", fill: color});
-				s.text.position.y = 10 + i * 30;
+				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 10);
+				s.text = new PIXI.Text(score + '', {font: fontSize + "px Arial", fill: color});
+				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
 				s.text.position.x = 10;
 				stage.addChild(s.text);
 			});
@@ -309,8 +305,10 @@
 		sprite.tl = new TimelineMax({
 			onComplete: function () {
 				stage.removeChild(sprite);
-				sprite.tl.kill();
-				delete sprite.tl;
+				if (sprite.tl) {
+					sprite.tl.kill();
+					delete sprite.tl;
+				}
 			}
 		}).to(sprite.scale, 0.5, {x: 0, y: 0});
 
