@@ -283,11 +283,16 @@
 				var color = '#' + parseInt(key, 10).toString(16);
 				var s = scores[key];
 				var score = Math.ceil(s.value * 800);
-				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 10);
+				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
+				var hash = score + '_' + fontSize;
+				var style = {font: fontSize + "px Arial", fill: color};
 				if (s.text) {
-					s.text.setText(score + '');
+					if(s.hash != hash) {
+						s.text.setText(score + '');
+						s.text.setStyle(style);
+					}
 				} else {
-					s.text = new PIXI.Text(score + '', {font: fontSize + "px Arial", fill: color});
+					s.text = new PIXI.Text(score + '', style);
 					stage.addChild(s.text);
 				}
 				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
