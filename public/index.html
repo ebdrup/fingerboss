@@ -283,15 +283,15 @@
 				var color = '#' + parseInt(key, 10).toString(16);
 				var s = scores[key];
 				var score = Math.ceil(s.value * 800);
+				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 10);
 				if (s.text) {
 					s.text.setText(score + '');
-					return;
+				} else {
+					s.text = new PIXI.Text(score + '', {font: fontSize + "px Arial", fill: color});
+					stage.addChild(s.text);
 				}
-				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 10);
-				s.text = new PIXI.Text(score + '', {font: fontSize + "px Arial", fill: color});
 				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
 				s.text.position.x = 10;
-				stage.addChild(s.text);
 			});
 			// render the container
 			renderer.render(stage);
