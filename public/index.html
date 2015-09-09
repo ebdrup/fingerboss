@@ -103,9 +103,13 @@
 			var downCount = 0;
 			return sprite;
 
+			function isTouch(e) {
+				return e.type.indexOf('touch') !== -1;
+			}
+
 			function onDown(e) {
 				downCount++;
-				if (!color || downCount > 1) {
+				if (newCircle || !color || (isTouch(e) && downCount > 1)) {
 					return;
 				}
 				if (touchSprite) {
@@ -141,9 +145,9 @@
 				}
 			}
 
-			function onUp() {
+			function onUp(e) {
 				downCount--;
-				if (downCount === 0 && newCircle) {
+				if ((downCount === 0 || !isTouch(e)) && newCircle) {
 					newCircle.tl.kill();
 					delete newCircle.tl;
 					delete newCircle._gsTweenID;
