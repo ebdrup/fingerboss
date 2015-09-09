@@ -30,9 +30,9 @@
 	game();
 
 	function game() {
-		var MIN_SIZE = 200 / 800;
+		var MIN_SIZE = 250 / 800;
 		var START_SIZE = 150 / 800;
-		var END_SIZE = 500 / 800;
+		var END_SIZE = 700 / 800;
 		var GROW_TIME = 6;
 		var GROWING_ALPHA = 0.6;
 		var UNCONFIRMED_ALPHA = 0.8;
@@ -50,7 +50,7 @@
 		var circles = [];
 		var unconfirmedCircles = {};
 		var newCircle;
-		var color, dt, velocity;
+		var color, dt, velocity, textures = {};
 		socket.on('start', function (e) {
 			color = e.color;
 			dt = Date.now() - e.t;
@@ -89,7 +89,6 @@
 			bg.interactive = true;
 			bg.beginFill(0x000000);
 			bg.drawRect(0, 0, renderer.view.width, renderer.view.height);
-			bg.interactive = true;
 			bg.on('mousedown', onDown);
 			bg.on('touchstart', onDown);
 			bg.on('mousemove', onMove);
@@ -144,6 +143,7 @@
 					stage.removeChild(newCircle.sprite);
 					delete newCircle.sprite;
 					if (newCircle.size > MIN_SIZE) {
+						newCircle.size -= START_SIZE;
 						newCircle.size *= CONFIRMED_SIZE_FACTOR;
 						socket.emit('circle', newCircle);
 						newCircle.sprite = generateSpriteForCircle(newCircle);
@@ -159,10 +159,16 @@
 		}
 
 		function generateSpriteForCircle(c) {
-			var gfx = new PIXI.Graphics();
-			gfx.beginFill(c.color);
-			gfx.drawEllipse(0, 0, 0.05 * renderer.view.width, 0.05 * renderer.view.height);
-			var sprite = new PIXI.Sprite(gfx.generateTexture());
+			var w = renderer.view.width, h =renderer.view.height;
+			var key = w + '_' + h;
+			var texture = textures[key];
+			if(!texture) {
+				var gfx = new PIXI.Graphics();
+				gfx.beginFill(c.color);
+				gfx.drawEllipse(0, 0, 0.1 * w, 0.1 * h);
+				textures[key] = texture = gfx.generateTexture();
+			}
+			var sprite = new PIXI.Sprite(texture);
 			// center the sprite's anchor point
 			sprite.anchor.x = 0.5;
 			sprite.anchor.y = 0.5;
