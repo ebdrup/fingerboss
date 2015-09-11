@@ -35,22 +35,18 @@
 		var MIN_SIZE = START_SIZE + KILL_SIZE + 1 / 800;
 		var END_SIZE = 700 / 800;
 		var GROW_TIME = 6;
-		var GROWING_ALPHA = 0.6;
+		var GROWING_ALPHA = 0.5;
 		var UNCONFIRMED_ALPHA = 0.8;
 		var CONFIRMED_SIZE_FACTOR = 1 / 3;
 		var SOUND = true;
-		var failSound = new Howl({
-			urls: ['fail.mp3'],
-			volume: 0.3
-		});
-		var successSound = new Howl({
-			urls: ['success.mp3'],
+		var newConfirmedCircleSound = new Howl({
+			urls: ['newConfirmedCircle.mp3'],
 			volume: 0.3
 		});
 		var socket = io();
 		var circles = [];
 		var unconfirmedCircles = {};
-		var newCircle;
+		var newCircle, scoreCircles = [];
 		var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {}, scores = {};
 		var myId = Math.random() + '_' + Date.now();
 		socket.on('start', function (e) {
@@ -88,6 +84,10 @@
 				to(touchSprite, 0.4, {alpha: 0.5, ease: Power1.easeIn});
 		stage.addChild(touchSprite);
 
+		function getInnerCircleSize(newCircle) {
+			return (newCircle.size - START_SIZE) * CONFIRMED_SIZE_FACTOR;
+		}
+
 		function getInteraction() {
 			var gfx = new PIXI.Graphics();
 			gfx.beginFill(0x000000);
@@ -120,11 +120,16 @@
 					size: START_SIZE,
 					color: color
 				};
+				var innerCircle = JSON.parse(JSON.stringify(newCircle));
+				innerCircle.size = getInnerCircleSize(newCircle);
 				newCircle.tl = new TimelineMax()
 						.to(newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut})
 				newCircle.sprite = generateSpriteForCircle(newCircle);
 				newCircle.sprite.alpha = GROWING_ALPHA;
+				newCircle.innerSprite = generateSpriteForCircle(innerCircle);
+				newCircle.innerSprite.alpha = UNCONFIRMED_ALPHA;
 				stage.addChild(newCircle.sprite);
+				stage.addChild(newCircle.innerSprite);
 			}
 
 			function getX(e) {
@@ -146,12 +151,12 @@
 				if (newCircle) {
 					newCircle.tl.kill();
 					delete newCircle.tl;
-					delete newCircle._gsTweenID;
 					stage.removeChild(newCircle.sprite);
 					delete newCircle.sprite;
+					stage.removeChild(newCircle.innerSprite);
+					delete newCircle.innerSprite;
 					if (newCircle.size > MIN_SIZE) {
-						newCircle.size -= START_SIZE;
-						newCircle.size *= CONFIRMED_SIZE_FACTOR;
+						newCircle.size = getInnerCircleSize(newCircle);
 						socket.emit('circle', {
 							owner: myId,
 							id: newCircle.id,
@@ -164,8 +169,6 @@
 						newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
 						unconfirmedCircles[newCircle.id] = newCircle;
 						stage.addChild(newCircle.sprite)
-					} else {
-						SOUND && failSound.play();
 					}
 					newCircle = null;
 				}
@@ -195,7 +198,7 @@
 
 		socket.on('circle', function (c) {
 			// find median latency
-			if(c.owner === myId) {
+			if (c.owner === myId) {
 				latencies.push(Date.now() - c.localTime);
 				latencies.sort();
 				if (latencies.length === 600) {
@@ -204,7 +207,7 @@
 				latency = latencies[Math.floor(dClocks.length / 2)];
 			}
 			// find median clockDifference
-			if(c.owner === myId) {
+			if (c.owner === myId) {
 				dClocks.push(Date.now() - c.t);
 				dClocks.sort();
 				if (dClocks.length === 600) {
@@ -212,7 +215,7 @@
 				}
 				dClock = dClocks[Math.floor(dClocks.length / 2)];
 			}
-			SOUND && successSound.play();
+			SOUND && newConfirmedCircleSound.play();
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
 			circles.push(c);
@@ -260,7 +263,11 @@
 				var y = getMovedCircleY(c1, c.t);
 				if (y < -c1.size || y > 1 + c1.size) {
 					scores[c1.color] = scores[c1.color] || {value: 0};
-					scores[c1.color].value += c1.size - (c1.unverifiedScore || 0);
+					var scoreToAdd = c1.size - (c1.unverifiedScore || 0);
+					scores[c1.color].value += scoreToAdd;
+					if (scoreToAdd > 0.0000001) {
+						scoreCircles.push(c1);
+					}
 					delete circles[i];
 					stage.removeChild(c1.sprite);
 				}
@@ -277,7 +284,7 @@
 		animate();
 		function animate() {
 			requestAnimationFrame(animate);
-			var estimatedServerT = Date.now() - dClock + latency/2;
+			var estimatedServerT = Date.now() - dClock + latency / 2;
 			circles.forEach(function (c1) {
 				var y = getMovedCircleY(c1, estimatedServerT);
 				c1.sprite.position.y = y * renderer.view.height;
@@ -300,15 +307,20 @@
 				newCircle.sprite.position.y = newCircle.y * renderer.view.height;
 				newCircle.sprite.width = newCircle.size * renderer.view.width;
 				newCircle.sprite.height = newCircle.size * renderer.view.height;
-				newCircle.sprite.alpha = newCircle.size > MIN_SIZE ? UNCONFIRMED_ALPHA : GROWING_ALPHA;
+				var innerCircleSize = getInnerCircleSize(newCircle);
+				newCircle.innerSprite.width = innerCircleSize * renderer.view.width;
+				newCircle.innerSprite.height = innerCircleSize * renderer.view.height;
+				newCircle.innerSprite.position.x = newCircle.x * renderer.view.width;
+				newCircle.innerSprite.position.y = newCircle.y * renderer.view.height;
 			}
-			//score circles out of frame (unverified by server, they might get killed
+			//score circles out of frame (unverified by server, they might get killed)
 			circles.forEach(function (c1, i) {
 				var y = getMovedCircleY(c1, estimatedServerT);
 				if (!c1.unverifiedScore && (y < -c1.size || y > 1 + c1.size)) {
 					scores[c1.color] = scores[c1.color] || {value: 0};
 					scores[c1.color].value += c1.size;
 					c1.unverifiedScore = c1.size;
+					scoreCircles.push(c1);
 				}
 			});
 			// scores
@@ -317,7 +329,7 @@
 				var s = scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
-				var style = {font: fontSize + "px Arial", fill: color};
+				var style = {font: fontSize + "px Impact, Charcoal, sans-serif", fill: color};
 				if (s.text) {
 					s.text.text = score + '';
 					s.text.style = style;
@@ -328,10 +340,39 @@
 				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
 				s.text.position.x = 10;
 			});
+			//new points
+			scoreCircles.forEach(function (c, i) {
+				var color = '#' + parseInt(c.color, 10).toString(16);
+				var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
+				var score = Math.ceil(scoreSize * 500 * CONFIRMED_SIZE_FACTOR);
+				var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize)), 30);
+				var style = {font: fontSize + "px Impact, Charcoal, sans-serif", fill: color};
+				var text = new PIXI.Text('+' + score + ' ', style);
+				text.anchor.x = 0.5;
+				text.anchor.y = 0.5;
+				var h = Math.ceil(text.height / 2);
+				text.position.y = getMovedCircleY(c, estimatedServerT) > 1 ? renderer.view.height - h : h;
+				text.position.x = c.x * renderer.view.width;
+				stage.addChild(text);
+				text.tl = new TimelineMax({
+					onComplete: function () {
+						stage.removeChild(text);
+						if (text.tl) {
+							text.tl.kill();
+							delete text.tl;
+						}
+					}
+				}).to(text, 1.5, {alpha: 0, width: text.width * 1.2, height: text.height * 1.2});
+				var targetY = getMovedCircleY(c, estimatedServerT) > 1 ? text.position.y - h : text.position.y + h;
+				text.tl2 = new TimelineMax({}).to(text.position, 1.5, {y: targetY});
+
+			});
+			scoreCircles = [];
 			// render the container
 			renderer.render(stage);
 		}
 	}
+
 	function killCircleSprite(stage, sprite) {
 		if (sprite.tl) {
 			sprite.tl.kill();
@@ -348,7 +389,9 @@
 		}).to(sprite.scale, 0.5, {x: 0, y: 0});
 
 	}
-	function fadeSprite(stage, sprite) {
+
+	function fadeSprite(stage, sprite, t) {
+		t = t || 0.3;
 		new TimelineMax({
 			onComplete: function () {
 				stage.removeChild(sprite);
@@ -357,7 +400,7 @@
 					delete sprite.tl;
 				}
 			}
-		}).to(sprite, 0.3, {alpha: 0});
+		}).to(sprite, t, {alpha: 0});
 	}
 </script>
 </body>
