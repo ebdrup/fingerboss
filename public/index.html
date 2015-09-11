@@ -344,7 +344,7 @@
 			scoreCircles.forEach(function (c, i) {
 				var color = '#' + parseInt(c.color, 10).toString(16);
 				var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
-				var score = Math.ceil(scoreSize * 500 * CONFIRMED_SIZE_FACTOR);
+				var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize)), 30);
 				var style = {font: fontSize + "px Impact, Charcoal, sans-serif", fill: color};
 				var text = new PIXI.Text('+' + score + ' ', style);
