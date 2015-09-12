@@ -264,7 +264,7 @@ function game() {
 					scores[c.color].value += scoreCircle.size;
 					scoreCircles.push(scoreCircle);
 					kills++;
-					if(kills===1){
+					if (kills === 1) {
 						help('Your first kill!')
 					}
 				}
@@ -275,14 +275,14 @@ function game() {
 				}
 			}
 		}
-		if(anyCollision && !anyKill){
+		if (anyCollision && !anyKill) {
 			shrinkSound.play();
-			if(c.color===color){
+			if (c.color === color) {
 				shrinks++;
-				if(shrinks === 1 || shrinks === 10){
+				if (shrinks === 1 || shrinks === 10) {
 					help('Try holding down longer');
 				}
-				if(shrinks === 5 || shrinks === 20){
+				if (shrinks === 5 || shrinks === 20) {
 					help('Make your circle bigger than the one you hit');
 				}
 			}
@@ -391,13 +391,14 @@ function game() {
 			});
 		//new points
 		scoreCircles.forEach(function (c, i) {
-			var color = '#' + parseInt(c.color, 10).toString(16);
+			var styleColor = '#' + parseInt(c.color, 10).toString(16);
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
-			var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize)), 30);
+			var scoreSizeFactor = (c.color === color) ? 1 : 0.3;
+			var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-				fill: color
+				fill: styleColor
 			};
 			var text = new PIXI.Text('+' + score + ' ', style);
 			text.anchor.x = 0.5;
@@ -454,7 +455,7 @@ function game() {
 			var winningScores = scores;
 			initVars();
 			var isWinner = winner.color === color.toString();
-			if(isWinner){
+			if (isWinner) {
 				winSound.play();
 			} else {
 				looseSound.play();
@@ -501,8 +502,9 @@ function game() {
 			}
 		}).to(sprite.scale, 0.5, {x: 0, y: 0});
 	}
-	function help(str){
-		var fontSize = Math.max(Math.ceil(renderer.view.width * 2/str.length), 20);
+
+	function help(str) {
+		var fontSize = Math.max(Math.ceil(renderer.view.width * 2 / str.length), 20);
 		var style = {
 			font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 			fill: '#' + parseInt(color, 10).toString(16)
@@ -512,11 +514,12 @@ function game() {
 		text.anchor.y = 0.5;
 		var h = text.height;
 		text.x = Math.round(renderer.view.width / 2);
-		text.y = Math.round(h/2 + (renderer.view.height - h) * Math.random());
+		text.y = Math.round(h / 2 + (renderer.view.height - h) * Math.random());
 		stage.addChild(text);
 		fadeSprite(stage, text)
 
 	}
+
 	function fadeSprite(stage, sprite) {
 		if (sprite.tl) {
 			sprite.tl.kill();
