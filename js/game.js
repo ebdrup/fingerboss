@@ -7,6 +7,7 @@ function game() {
 	var GROWING_ALPHA = 0.5;
 	var UNCONFIRMED_ALPHA = 0.8;
 	var CONFIRMED_SIZE_FACTOR = 1 / 3;
+	var KILL_SCORE_FACTOR = 2;
 	var SOUND = true;
 	var newConfirmedCircleSound = new Howl({
 		urls: ['newConfirmedCircle.mp3'],
@@ -50,16 +51,6 @@ function game() {
 	var stage = new PIXI.Container();
 	var bg = getInteraction();
 	stage.addChild(bg);
-	var touchSprite = new PIXI.Sprite(PIXI.Texture.fromImage('touch.png'));
-	touchSprite.anchor.x = 0.5;
-	touchSprite.anchor.y = 0.5;
-	touchSprite.position.x = renderer.view.width / 2;
-	touchSprite.position.y = renderer.view.height / 2;
-	touchSprite.alpha = 0.5;
-	touchSprite.tl = new TimelineMax({repeat: -1})
-		.to(touchSprite, 0.4, {alpha: 1, ease: Power1.easeOut}).
-		to(touchSprite, 0.4, {alpha: 0.5, ease: Power1.easeIn});
-	stage.addChild(touchSprite);
 
 	function getInnerCircleSize(newCircle) {
 		return (newCircle.size - START_SIZE) * CONFIRMED_SIZE_FACTOR;
@@ -85,10 +76,6 @@ function game() {
 		function onDown(e) {
 			if (newCircle || !color) {
 				return;
-			}
-			if (touchSprite) {
-				fadeSprite(stage, touchSprite);
-				touchSprite = null;
 			}
 			newCircle = {
 				id: Math.random() + '_' + Date.now(),
@@ -228,7 +215,7 @@ function game() {
 						t: c.t,
 						x: c.x,
 						y: c.y,
-						size: (c1.size + cSize) / 4,
+						size: (c1.size + cSize) * KILL_SCORE_FACTOR,
 						color: c.color
 					};
 					scores[c.color].value += scoreCircle.size;
@@ -404,18 +391,5 @@ function game() {
 			}
 		}).to(sprite.scale, 0.5, {x: 0, y: 0});
 
-	}
-
-	function fadeSprite(stage, sprite, t) {
-		t = t || 0.3;
-		new TimelineMax({
-			onComplete: function () {
-				stage.removeChild(sprite);
-				if (sprite.tl) {
-					sprite.tl.kill();
-					delete sprite.tl;
-				}
-			}
-		}).to(sprite, t, {alpha: 0});
 	}
 }

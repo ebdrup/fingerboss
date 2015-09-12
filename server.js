@@ -56,8 +56,8 @@ http.listen(port, function () {
 });
 
 function fire() {
-	var s = Math.random() / 10;
-	var t = s * 10000 + 1000;
+	var s = Math.random() / 5;
+	var t = s * 8000 + 500;
 	broadcast('circle', {
 		id: Math.random() + '_' + Date.now(),
 		t: Date.now(),
