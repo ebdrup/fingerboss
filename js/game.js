@@ -8,8 +8,8 @@ function game() {
 	var UNCONFIRMED_ALPHA = 0.8;
 	var CONFIRMED_SIZE_FACTOR = 1 / 3;
 	var KILL_SCORE_FACTOR = 2;
+	var WINNING_SCORE = 1000;
 	var SOUND = true;
-	var playing = true;
 	var newConfirmedCircleSound = new Howl({
 		urls: ['newConfirmedCircle.mp3'],
 		volume: 0.3
@@ -23,11 +23,30 @@ function game() {
 		volume: 0.3
 	});
 	var socket = io();
-	var circles = [];
-	var unconfirmedCircles = {};
-	var newCircle, scoreCircles = [];
-	var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {}, scores = {};
+	var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
+	//game vars
+	var circles, unconfirmedCircles, scores, newCircle, scoreCircles, readyToPlay, playing;
+	initVars();
+
+	function initVars() {
+		circles = [];
+		unconfirmedCircles = {};
+		scores = {};
+		newCircle = null;
+		scoreCircles = [];
+		readyToPlay = true;
+		playing = true;
+		if (stage) {
+			for (var i = stage.children.length - 1; i >= 0; i--) {
+				stage.removeChild(stage.children[i]);
+			}
+			if (bg) {
+				stage.addChild(bg);
+			}
+		}
+	}
+
 	socket.on('start', function (e) {
 		color = e.color;
 		velocity = e.velocity;
@@ -75,8 +94,11 @@ function game() {
 		return sprite;
 
 		function onDown(e) {
-			if (newCircle || !color) {
+			if (newCircle || !color || !readyToPlay) {
 				return;
+			}
+			if (!playing && readyToPlay) {
+				initVars();
 			}
 			newCircle = {
 				id: Math.random() + '_' + Date.now(),
@@ -162,12 +184,6 @@ function game() {
 	}
 
 	socket.on('circle', function (c) {
-		//check for winner
-		Object.keys(scores).forEach(function (key, i) {
-			var color = '#' + parseInt(key, 10).toString(16);
-			var s = scores[key];
-			var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
-		});
 		// find median latency
 		if (c.owner === myId) {
 			latencies.push(Date.now() - c.localTime);
@@ -186,7 +202,7 @@ function game() {
 			}
 			dClock = dClocks[Math.floor(dClocks.length / 2)];
 		}
-		if(!playing){
+		if (!playing) {
 			return;
 		}
 		//play sound
@@ -271,7 +287,7 @@ function game() {
 	animate();
 	function animate() {
 		requestAnimationFrame(animate);
-		if(!playing){
+		if (!playing) {
 			renderer.render(stage);
 			return;
 		}
@@ -315,25 +331,31 @@ function game() {
 			}
 		});
 		// scores
-		Object.keys(scores).forEach(function (key, i) {
-			var color = '#' + parseInt(key, 10).toString(16);
-			var s = scores[key];
-			var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
-			var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
-			var style = {
-				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-				fill: color
-			};
-			if (s.text) {
-				s.text.text = score + '';
-				s.text.style = style;
-			} else {
-				s.text = new PIXI.Text(score + '', style);
-				stage.addChild(s.text);
-			}
-			s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
-			s.text.position.x = 10;
-		});
+		Object.keys(scores)
+			.sort(function (key1, key2) {
+				var score1 = scores[key1].value;
+				var score2 = scores[key2].value;
+				return score2 - score1;
+			})
+			.forEach(function (key, i) {
+				var color = '#' + parseInt(key, 10).toString(16);
+				var s = scores[key];
+				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
+				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
+				var style = {
+					font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
+					fill: color
+				};
+				if (s.text) {
+					s.text.text = score + '';
+					s.text.style = style;
+				} else {
+					s.text = new PIXI.Text(score + '', style);
+					stage.addChild(s.text);
+				}
+				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
+				s.text.position.x = 10;
+			});
 		//new points
 		scoreCircles.forEach(function (c, i) {
 			var color = '#' + parseInt(c.color, 10).toString(16);
@@ -385,6 +407,42 @@ function game() {
 
 		});
 		scoreCircles = [];
+		var winner = Object.keys(scores)
+			.map(function (key) {
+				var s = scores[key];
+				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
+				if (score < WINNING_SCORE) {
+					return null;
+				}
+				return {score: score, color: key};
+			})
+			.filter(Boolean)[0];
+		if (winner) {
+			var winningScores = scores;
+			initVars();
+			var str = winner.color === color.toString() ? 'You won!' : 'You lost';
+			var fontSize = Math.max(Math.ceil(renderer.view.width * 0.25), 30);
+			var style = {
+				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
+				fill: '#' + parseInt(winner.color, 10).toString(16)
+			};
+			var text = new PIXI.Text(str, style);
+			text.anchor.x = 0.5;
+			text.anchor.y = 0.5;
+			text.x = Math.round(renderer.view.width / 2);
+			text.y = Math.round(renderer.view.height / 2);
+			console.log(winningScores);
+			Object.keys(winningScores).forEach(function (key) {
+				var s = winningScores[key];
+				stage.addChild(s.text);
+			});
+			stage.addChild(text);
+			playing = false;
+			readyToPlay = false;
+			setTimeout(function () {
+				readyToPlay = true;
+			}, 2000);
+		}
 		// render the container
 		renderer.render(stage);
 	}
