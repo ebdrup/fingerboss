@@ -22,6 +22,14 @@ function game() {
 		urls: ['crash2.mp3'],
 		volume: 0.3
 	});
+	var winSound = new Howl({
+		urls: ['win.mp3'],
+		volume: 0.3
+	});
+	var looseSound = new Howl({
+		urls: ['loose.mp3'],
+		volume: 0.3
+	});
 	var socket = io();
 	var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
@@ -420,7 +428,13 @@ function game() {
 		if (winner) {
 			var winningScores = scores;
 			initVars();
-			var str = winner.color === color.toString() ? 'You won!' : 'You lost';
+			var isWinner = winner.color === color.toString();
+			if(isWinner){
+				winSound.play();
+			} else {
+				looseSound.play();
+			}
+			var str = isWinner ? 'You won!' : 'You lost';
 			var fontSize = Math.max(Math.ceil(renderer.view.width * 0.25), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
