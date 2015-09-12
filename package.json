@@ -4,7 +4,7 @@
   "description": "Webserver for the fingerboss game",
   "main": "server.js",
   "scripts": {
-    "build": "gulp compress",
+    "postinstall": "gulp compress",
     "test": "mocha"
   },
   "repository": {
