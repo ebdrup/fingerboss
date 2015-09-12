@@ -12,6 +12,14 @@ function game() {
 		urls: ['newConfirmedCircle.mp3'],
 		volume: 0.3
 	});
+	var crashSound1 = new Howl({
+		urls: ['crash1.mp3'],
+		volume: 0.3
+	});
+	var crashSound2 = new Howl({
+		urls: ['crash2.mp3'],
+		volume: 0.3
+	});
 	var socket = io();
 	var circles = [];
 	var unconfirmedCircles = {};
@@ -184,7 +192,9 @@ function game() {
 			}
 			dClock = dClocks[Math.floor(dClocks.length / 2)];
 		}
+		//play sound
 		SOUND && newConfirmedCircleSound.play();
+		//remove unconfirmed circle
 		c.sprite = generateSpriteForCircle(c);
 		stage.addChild(c.sprite);
 		circles.push(c);
@@ -212,6 +222,17 @@ function game() {
 				if (c1.size <= KILL_SIZE) {
 					indexesToRemove.push(i);
 					killCircleSprite(stage, c1.sprite);
+					//scoreCircle for kill
+					scores[c.color] = scores[c.color] || {value: 0};
+					var scoreCircle = {
+						t: c.t,
+						x: c.x,
+						y: c.y,
+						size: (c1.size + cSize) / 4,
+						color: c.color
+					};
+					scores[c.color].value += scoreCircle.size;
+					scoreCircles.push(scoreCircle);
 				}
 				if (c.size <= KILL_SIZE) {
 					circles.pop(); // remove c
@@ -326,7 +347,27 @@ function game() {
 			text.anchor.x = 0.5;
 			text.anchor.y = 0.5;
 			var h = Math.ceil(text.height / 2);
-			text.position.y = getMovedCircleY(c, estimatedServerT) > 1 ? renderer.view.height - h : h;
+			var y = getMovedCircleY(c, estimatedServerT);
+			if (y > 1) {
+				y = renderer.view.height - h;
+				if (SOUND) {
+					crashSound1._volume = scoreSize;
+					crashSound1.play();
+				}
+			} else if (y < 0) {
+				y = h;
+				if (SOUND) {
+					crashSound1._volume = scoreSize;
+					crashSound1.play();
+				}
+			} else {
+				y *= renderer.view.height;
+				if (SOUND) {
+					crashSound2._volume = Math.min(scoreSize * 4, 1);
+					crashSound2.play();
+				}
+			}
+			text.position.y = y;
 			text.position.x = c.x * renderer.view.width;
 			stage.addChild(text);
 			text.tl = new TimelineMax({
