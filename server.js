@@ -24,6 +24,22 @@ io.on('connection', function (socket) {
 		broadcast('circle', c);
 	});
 });
+if (!process.env.PORT) {
+	function fire() {
+		var s = Math.random() / 10;
+		var t = s * 10000 + 1000;
+		broadcast('circle', {
+			id: Math.random() + '_' + Date.now(),
+			t: Date.now(),
+			color:  0xf8824f,
+			x: Math.random(),
+			y: Math.random(),
+			size: s
+		});
+		setTimeout(fire, t);
+	}
+	fire();
+}
 
 var LATENCY = 300;
 
