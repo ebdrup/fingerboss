@@ -38,7 +38,7 @@ function game() {
 	var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
 	//game vars
-	var circles, unconfirmedCircles, scores, newCircle, scoreCircles, readyToPlay, playing;
+	var circles, unconfirmedCircles, scores, newCircle, scoreCircles, readyToPlay, playing, shrinks, kills;
 	initVars();
 
 	function initVars() {
@@ -49,6 +49,8 @@ function game() {
 		scoreCircles = [];
 		readyToPlay = true;
 		playing = true;
+		shrinks = 0;
+		kills = 0;
 		if (stage) {
 			for (var i = stage.children.length - 1; i >= 0; i--) {
 				stage.removeChild(stage.children[i]);
@@ -261,6 +263,10 @@ function game() {
 					};
 					scores[c.color].value += scoreCircle.size;
 					scoreCircles.push(scoreCircle);
+					kills++;
+					if(kills===1){
+						help('Your first kill!')
+					}
 				}
 				if (c.size <= KILL_SIZE) {
 					circles.pop(); // remove c
@@ -271,6 +277,15 @@ function game() {
 		}
 		if(anyCollision && !anyKill){
 			shrinkSound.play();
+			if(c.color===color){
+				shrinks++;
+				if(shrinks === 1 || shrinks === 10){
+					help('Try holding down longer');
+				}
+				if(shrinks === 5 || shrinks === 20){
+					help('Make your circle bigger than the one you hit');
+				}
+			}
 		}
 		indexesToRemove.forEach(function (i) {
 			var c1 = circles[i];
@@ -445,7 +460,7 @@ function game() {
 				looseSound.play();
 			}
 			var str = isWinner ? 'You won!' : 'You lost';
-			var fontSize = Math.max(Math.ceil(renderer.view.width * 0.25), 30);
+			var fontSize = Math.max(Math.ceil(renderer.view.width * 0.20), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 				fill: '#' + parseInt(winner.color, 10).toString(16)
@@ -455,7 +470,6 @@ function game() {
 			text.anchor.y = 0.5;
 			text.x = Math.round(renderer.view.width / 2);
 			text.y = Math.round(renderer.view.height / 2);
-			console.log(winningScores);
 			Object.keys(winningScores).forEach(function (key) {
 				var s = winningScores[key];
 				stage.addChild(s.text);
@@ -486,6 +500,36 @@ function game() {
 				}
 			}
 		}).to(sprite.scale, 0.5, {x: 0, y: 0});
+	}
+	function help(str){
+		var fontSize = Math.max(Math.ceil(renderer.view.width * 2/str.length), 20);
+		var style = {
+			font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
+			fill: '#' + parseInt(color, 10).toString(16)
+		};
+		var text = new PIXI.Text(str, style);
+		text.anchor.x = 0.5;
+		text.anchor.y = 0.5;
+		var h = text.height;
+		text.x = Math.round(renderer.view.width / 2);
+		text.y = Math.round(h/2 + (renderer.view.height - h) * Math.random());
+		stage.addChild(text);
+		fadeSprite(stage, text)
 
+	}
+	function fadeSprite(stage, sprite) {
+		if (sprite.tl) {
+			sprite.tl.kill();
+			delete sprite.tl;
+		}
+		sprite.tl = new TimelineMax({
+			onComplete: function () {
+				stage.removeChild(sprite);
+				if (sprite.tl) {
+					sprite.tl.kill();
+					delete sprite.tl;
+				}
+			}
+		}).to(sprite, 8, {alpha: 0});
 	}
 }
