@@ -329,7 +329,7 @@
 				var s = scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
-				var style = {font: fontSize + "px Impact, Futura-CondensedExtraBold, Charcoal, sans-serif", fill: color};
+				var style = {font: fontSize + "px Impact, Futura-CondensedExtraBold, DroidSans-Bold, Charcoal, sans-serif", fill: color};
 				if (s.text) {
 					s.text.text = score + '';
 					s.text.style = style;
@@ -346,7 +346,7 @@
 				var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 				var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize)), 30);
-				var style = {font: fontSize + "px Impact, Futura-CondensedExtraBold, Charcoal, sans-serif", fill: color};
+				var style = {font: fontSize + "px Impact, Futura-CondensedExtraBold, DroidSans-Bold, Charcoal, sans-serif", fill: color};
 				var text = new PIXI.Text('+' + score + ' ', style);
 				text.anchor.x = 0.5;
 				text.anchor.y = 0.5;
