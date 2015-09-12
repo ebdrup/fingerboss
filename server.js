@@ -4,7 +4,6 @@ var path = require('path');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-require('./gulpfile');
 
 app.disable('x-powered-by');
 app.use(compression());
