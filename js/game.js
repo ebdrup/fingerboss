@@ -22,6 +22,10 @@ function game() {
 		urls: ['crash2.mp3'],
 		volume: 0.3
 	});
+	var shrinkSound = new Howl({
+		urls: ['shrink.mp3'],
+		volume: 0.04
+	});
 	var winSound = new Howl({
 		urls: ['win.mp3'],
 		volume: 0.3
@@ -226,6 +230,7 @@ function game() {
 		}
 		//collision detection
 		var indexesToRemove = [];
+		var anyCollision, anyKill;
 		for (var i = 0; i < circles.length - 1; i++) {
 			var c1 = circles[i];
 			if (!c1 || !c || c1.color === c.color) {
@@ -237,10 +242,12 @@ function game() {
 			);
 			var minDistance = (c1.size + c.size);
 			if (distance < minDistance) {
+				var anyCollision = true;
 				var cSize = c.size;
 				c.size -= c1.size;
 				c1.size -= cSize;
 				if (c1.size <= KILL_SIZE) {
+					anyKill = true;
 					indexesToRemove.push(i);
 					killCircleSprite(stage, c1.sprite);
 					//scoreCircle for kill
@@ -261,6 +268,9 @@ function game() {
 					break;
 				}
 			}
+		}
+		if(anyCollision && !anyKill){
+			shrinkSound.play();
 		}
 		indexesToRemove.forEach(function (i) {
 			var c1 = circles[i];
