@@ -282,9 +282,6 @@ function game() {
 				if (shrinks === 1 || shrinks === 10) {
 					help('Try holding down longer');
 				}
-				if (shrinks === 5 || shrinks === 20) {
-					help('Make your circle bigger than the one you hit');
-				}
 			}
 		}
 		indexesToRemove.forEach(function (i) {
@@ -371,13 +368,13 @@ function game() {
 				return score2 - score1;
 			})
 			.forEach(function (key, i) {
-				var color = '#' + parseInt(key, 10).toString(16);
+				var styleColor = '#' + parseInt(key, 10).toString(16);
 				var s = scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
 				var style = {
 					font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-					fill: color
+					fill: styleColor
 				};
 				if (s.text) {
 					s.text.text = score + '';
