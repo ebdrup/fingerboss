@@ -1,0 +1,26 @@
+var gulp = require('gulp');
+var uglify = require('gulp-uglify');
+var concat = require('gulp-concat');
+var rename = require('gulp-rename');
+var addSrc = require('gulp-add-src');
+var livereload = require('gulp-livereload');
+
+gulp.task('compress', function () {
+	return gulp.src('js/game.js')
+		.pipe(uglify())
+		.pipe(addSrc('js-min/*.js'))
+		.pipe(concat('bundle.js'))
+		.pipe(gulp.dest('public'));
+});
+
+gulp.task('watch', function () {
+	gulp.watch('js/*.js', ['compress']);
+});
+
+gulp.task('webserver', function () {
+	require('./server');
+});
+
+gulp.task('default', function () {
+	gulp.run(['compress', 'watch', 'webserver']);
+});
