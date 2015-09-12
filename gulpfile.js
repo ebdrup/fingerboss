@@ -1,9 +1,7 @@
 var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var concat = require('gulp-concat');
-var rename = require('gulp-rename');
 var addSrc = require('gulp-add-src');
-var livereload = require('gulp-livereload');
 
 gulp.task('compress', function () {
 	return gulp.src('js/game.js')
