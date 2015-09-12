@@ -9,6 +9,7 @@ function game() {
 	var CONFIRMED_SIZE_FACTOR = 1 / 3;
 	var KILL_SCORE_FACTOR = 2;
 	var SOUND = true;
+	var playing = true;
 	var newConfirmedCircleSound = new Howl({
 		urls: ['newConfirmedCircle.mp3'],
 		volume: 0.3
@@ -161,6 +162,12 @@ function game() {
 	}
 
 	socket.on('circle', function (c) {
+		//check for winner
+		Object.keys(scores).forEach(function (key, i) {
+			var color = '#' + parseInt(key, 10).toString(16);
+			var s = scores[key];
+			var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
+		});
 		// find median latency
 		if (c.owner === myId) {
 			latencies.push(Date.now() - c.localTime);
@@ -178,6 +185,9 @@ function game() {
 				dClocks = dClocks.slice(200, 400);
 			}
 			dClock = dClocks[Math.floor(dClocks.length / 2)];
+		}
+		if(!playing){
+			return;
 		}
 		//play sound
 		SOUND && newConfirmedCircleSound.play();
@@ -261,6 +271,10 @@ function game() {
 	animate();
 	function animate() {
 		requestAnimationFrame(animate);
+		if(!playing){
+			renderer.render(stage);
+			return;
+		}
 		var estimatedServerT = Date.now() - dClock + latency / 2;
 		circles.forEach(function (c1) {
 			var y = getMovedCircleY(c1, estimatedServerT);

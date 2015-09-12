@@ -13,6 +13,7 @@ var port = process.env.PORT || 7890;
 
 var colors = [0xefefef, 0x244f6a, 0xfeaa37, 0xe03e27];
 var colorIndex = Math.round(Math.random() * colors.length);
+var lastCircle;
 
 io.on('connection', function (socket) {
 	colorIndex = (colorIndex + 1) % colors.length;
@@ -21,15 +22,16 @@ io.on('connection', function (socket) {
 	socket.on('circle', function (c) {
 		c.color = color;
 		c.t = Date.now();
+		lastCircle = c;
 		broadcast('circle', c);
 	});
 });
 
 var LATENCY = 300;
 
-function emit(socket, type, msg){
+function emit(socket, type, msg) {
 	if (!process.env.PORT) {
-		msg.t += LATENCY/2;
+		msg.t += LATENCY / 2;
 		return setTimeout(emit, LATENCY);
 	}
 	return emit();
@@ -41,7 +43,7 @@ function emit(socket, type, msg){
 
 function broadcast(type, msg) {
 	if (!process.env.PORT) {
-		msg.t += LATENCY/2;
+		msg.t += LATENCY / 2;
 		return setTimeout(emit, LATENCY);
 	}
 	return emit();
@@ -57,13 +59,22 @@ http.listen(port, function () {
 
 function fire() {
 	var s = Math.random() / 5;
-	var t = s * 8000 + 500;
+	var t = s * 7000 + 500;
+	var x, y;
+	if (lastCircle && Math.random() > 0.5) {
+		x = lastCircle.x;
+		y = lastCircle.y;
+		lastCircle = null;
+	} else {
+		x = Math.random();
+		y = Math.random();
+	}
 	broadcast('circle', {
 		id: Math.random() + '_' + Date.now(),
 		t: Date.now(),
-		color:  0xf8824f,
-		x: Math.random(),
-		y: Math.random(),
+		color: 0xf8824f,
+		x: x,
+		y: y,
 		size: s
 	});
 	setTimeout(fire, t);
