@@ -1,4 +1,4 @@
-function resetGame(state) {
+function resetGame(state, world) {
 	state.circles = [];
 	state.unconfirmedCircless = {};
 	state.scores = {};
@@ -8,12 +8,12 @@ function resetGame(state) {
 	state.playing = true;
 	state.shrinkCount = 0;
 	state.killCount = 0;
-	if (state.stage) {
-		for (var i = state.stage.children.length - 1; i >= 0; i--) {
-			state.stage.removeChild(state.stage.children[i]);
+	if (world.stage) {
+		for (var i = world.stage.children.length - 1; i >= 0; i--) {
+			world.stage.removeChild(world.stage.children[i]);
 		}
-		if (state.background) {
-			state.stage.addChild(state.background);
+		if (world.background) {
+			world.stage.addChild(world.background);
 		}
 	}
 }
