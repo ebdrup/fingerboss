@@ -3,15 +3,6 @@ function fingerboss() {
 	var world = {};
 	resetGame(state, world);
 	initWorld(state, world);
-	
-	world.socket.on('start', function (e) {
-		state.color = e.color;
-		world.velocity = e.velocity;
-		world.dClock = Date.now() - e.t;
-		world.dClocks.push(world.dClock);
-	});
-
-	world.socket.on('circle', onCircle.bind(null, state, world));
 
 	// start animating
 	animate();
@@ -168,7 +159,7 @@ function fingerboss() {
 			state.readyToPlay = false;
 			setTimeout(function () {
 				state.readyToPlay = true;
-			}, 2000);
+			}, 1500);
 		}
 		// render the container
 		world.renderer.render(world.stage);

@@ -1,26 +1,7 @@
 function onCircle(state, world, c) {
-	// find median latency
-	if (c.owner === world.id) {
-		world.latencies.push(Date.now() - c.localTime);
-		world.latencies.sort();
-		if (world.latencies.length === 600) {
-			world.latencies = world.latencies.slice(200, 400);
-		}
-		world.latency = world.latencies[Math.floor(world.latencies.length / 2)];
-	}
-	// find median clockDifference
-	if (c.owner === world.id) {
-		world.dClocks.push(Date.now() - c.t);
-		world.dClocks.sort();
-		if (world.dClocks.length === 600) {
-			world.dClocks = world.dClocks.slice(200, 400);
-		}
-		world.dClock = world.dClocks[Math.floor(world.dClocks.length / 2)];
-	}
 	if (!state.playing) {
 		return;
 	}
-	//play sound
 	world.sounds.newCircle();
 	//remove unconfirmed circle
 	c.sprite = generateSpriteForCircle(world, c);
@@ -92,7 +73,7 @@ function onCircle(state, world, c) {
 		delete state.circles[i];
 	});
 	state.circles = state.circles.filter(Boolean);
-	//remove state.circles out of frame
+	//remove & score circles out of frame
 	state.circles.forEach(function (c1, i) {
 		var y = getMovedCircleY(world, c1, c.t);
 		if (y < -c1.size || y > 1 + c1.size) {
