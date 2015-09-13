@@ -45,7 +45,7 @@ function onCircle(state, world, c) {
 				};
 				state.scores[c.color].value += scoreCircle.size;
 				state.scoreCircles.push(scoreCircle);
-				if(world.color === c.color) {
+				if(state.color === c.color) {
 					state.killCount++;
 					if (state.killCount === 1) {
 						help(state, world, 'Your first kill!')
