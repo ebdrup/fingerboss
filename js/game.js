@@ -8,7 +8,7 @@ function fingerboss() {
 	var UNCONFIRMED_ALPHA = 0.8;
 	var CONFIRMED_SIZE_FACTOR = 1 / 3;
 	var KILL_SCORE_FACTOR = 2;
-	var WINNING_SCORE = 1000;
+	var WINNING_SCORE = 50;
 	var SOUND = true;
 	var newCircleSound = new Howl({
 		urls: ['newConfirmedCircle.mp3'],
@@ -35,34 +35,13 @@ function fingerboss() {
 		volume: 0.3
 	});
 	var socket = io();
-	var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
+	var dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
-	var state;
-	initGame();
-
-	function initGame() {
-		state = {};
-		state.circles = [];
-		state.unconfirmedCircless = {};
-		state.scores = {};
-		state.newCircle = null;
-		state.scoreCircles = [];
-		state.readyToPlay = true;
-		state.playing = true;
-		state.shrinkCount = 0;
-		state.killCount = 0;
-		if (stage) {
-			for (var i = stage.children.length - 1; i >= 0; i--) {
-				stage.removeChild(stage.children[i]);
-			}
-			if (bg) {
-				stage.addChild(bg);
-			}
-		}
-	}
-
+	var state = {};
+	initGameState(state);
+	
 	socket.on('start', function (e) {
-		color = e.color;
+		state.color = e.color;
 		velocity = e.velocity;
 		dClock = Date.now() - e.t;
 		dClocks.push(dClock);
@@ -74,23 +53,23 @@ function fingerboss() {
 	document.body.appendChild(renderer.view);
 	window.onresize = function () {
 		renderer.resize(window.innerWidth, window.innerHeight);
-		bg.width = renderer.view.width;
-		bg.height = renderer.view.height;
+		state.background.width = renderer.view.width;
+		state.background.height = renderer.view.height;
 		state.circles.forEach(function (c) {
-			stage.removeChild(c.sprite);
+			state.stage.removeChild(c.sprite);
 			c.sprite = generateSpriteForCircle(c);
-			stage.addChild(c.sprite);
+			state.stage.addChild(c.sprite);
 		});
 	};
-	var stage = new PIXI.Container();
-	var bg = getInteraction();
-	stage.addChild(bg);
+	state.stage = new PIXI.Container();
+	state.background = getInteraction(state);
+	state.stage.addChild(state.background);
 
 	function getInnerCircleSize(newCircle) {
 		return (newCircle.size - START_SIZE) * CONFIRMED_SIZE_FACTOR;
 	}
 
-	function getInteraction() {
+	function getInteraction(state) {
 		var gfx = new PIXI.Graphics();
 		gfx.beginFill(0x000000);
 		gfx.drawRect(0, 0, 1, 1);
@@ -108,18 +87,18 @@ function fingerboss() {
 		return sprite;
 
 		function onDown(e) {
-			if (state.newCircle || !color || !state.readyToPlay) {
+			if (state.newCircle || !state.color || !state.readyToPlay) {
 				return;
 			}
 			if (!state.playing && state.readyToPlay) {
-				initGame();
+				initGameState(state);
 			}
 			state.newCircle = {
 				id: Math.random() + '_' + Date.now(),
 				x: getX(e),
 				y: getY(e),
 				size: START_SIZE,
-				color: color
+				color: state.color
 			};
 			var innerCircle = JSON.parse(JSON.stringify(state.newCircle));
 			innerCircle.size = getInnerCircleSize(state.newCircle);
@@ -129,8 +108,8 @@ function fingerboss() {
 			state.newCircle.sprite.alpha = GROWING_ALPHA;
 			state.newCircle.innerSprite = generateSpriteForCircle(innerCircle);
 			state.newCircle.innerSprite.alpha = UNCONFIRMED_ALPHA;
-			stage.addChild(state.newCircle.sprite);
-			stage.addChild(state.newCircle.innerSprite);
+			state.stage.addChild(state.newCircle.sprite);
+			state.stage.addChild(state.newCircle.innerSprite);
 		}
 
 		function getX(e) {
@@ -152,9 +131,9 @@ function fingerboss() {
 			if (state.newCircle) {
 				state.newCircle.tl.kill();
 				delete state.newCircle.tl;
-				stage.removeChild(state.newCircle.sprite);
+				state.stage.removeChild(state.newCircle.sprite);
 				delete state.newCircle.sprite;
-				stage.removeChild(state.newCircle.innerSprite);
+				state.stage.removeChild(state.newCircle.innerSprite);
 				delete state.newCircle.innerSprite;
 				if (state.newCircle.size > MIN_SIZE) {
 					state.newCircle.size = getInnerCircleSize(state.newCircle);
@@ -169,7 +148,7 @@ function fingerboss() {
 					state.newCircle.sprite = generateSpriteForCircle(state.newCircle);
 					state.newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
 					state.unconfirmedCircless[state.newCircle.id] = state.newCircle;
-					stage.addChild(state.newCircle.sprite)
+					state.stage.addChild(state.newCircle.sprite)
 				}
 				state.newCircle = null;
 			}
@@ -223,11 +202,11 @@ function fingerboss() {
 		SOUND && newCircleSound.play();
 		//remove unconfirmed circle
 		c.sprite = generateSpriteForCircle(c);
-		stage.addChild(c.sprite);
+		state.stage.addChild(c.sprite);
 		state.circles.push(c);
 		var uc = state.unconfirmedCircless[c.id];
 		if (uc) {
-			stage.removeChild(uc.sprite);
+			state.stage.removeChild(uc.sprite);
 			delete state.unconfirmedCircless[c.id]
 		}
 		//collision detection
@@ -251,7 +230,7 @@ function fingerboss() {
 				if (c1.size <= KILL_SIZE) {
 					anyKill = true;
 					indexesToRemove.push(i);
-					killCircleSprite(stage, c1.sprite);
+					killCircleSprite(state.stage, c1.sprite);
 					//scoreCircle for kill
 					state.scores[c.color] = state.scores[c.color] || {value: 0};
 					var scoreCircle = {
@@ -270,15 +249,15 @@ function fingerboss() {
 				}
 				if (c.size <= KILL_SIZE) {
 					state.circles.pop(); // remove c
-					killCircleSprite(stage, c.sprite);
+					killCircleSprite(state.stage, c.sprite);
 					break;
 				}
 			}
 		}
 		if (anyCollision && !anyKill) {
 			shrinkSound.play();
-			if (c.color === color) {
-				state.shirnkCount++;
+			if (c.color === state.color) {
+				state.shrinkCount++;
 				if (state.shrinkCount === 1 || state.shrinkCount === 10) {
 					help('Try holding down longer');
 				}
@@ -302,7 +281,7 @@ function fingerboss() {
 					state.scoreCircles.push(c1);
 				}
 				delete state.circles[i];
-				stage.removeChild(c1.sprite);
+				state.stage.removeChild(c1.sprite);
 			}
 		});
 		state.circles = state.circles.filter(Boolean);
@@ -318,7 +297,7 @@ function fingerboss() {
 	function animate() {
 		requestAnimationFrame(animate);
 		if (!state.playing) {
-			renderer.render(stage);
+			renderer.render(state.stage);
 			return;
 		}
 		var estimatedServerT = Date.now() - dClock + latency / 2;
@@ -381,7 +360,7 @@ function fingerboss() {
 					s.text.style = style;
 				} else {
 					s.text = new PIXI.Text(score + '', style);
-					stage.addChild(s.text);
+					state.stage.addChild(s.text);
 				}
 				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
 				s.text.position.x = 10;
@@ -391,7 +370,7 @@ function fingerboss() {
 			var styleColor = '#' + parseInt(c.color, 10).toString(16);
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
-			var scoreSizeFactor = (c.color === color) ? 1 : 0.3;
+			var scoreSizeFactor = (c.color === state.color) ? 1 : 0.3;
 			var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
@@ -423,10 +402,10 @@ function fingerboss() {
 			}
 			text.position.y = y;
 			text.position.x = c.x * renderer.view.width;
-			stage.addChild(text);
+			state.stage.addChild(text);
 			text.tl = new TimelineMax({
 				onComplete: function () {
-					stage.removeChild(text);
+					state.stage.removeChild(text);
 					if (text.tl) {
 						text.tl.kill();
 						delete text.tl;
@@ -450,8 +429,8 @@ function fingerboss() {
 			.filter(Boolean)[0];
 		if (winner) {
 			var winningScores = state.scores;
-			initGame();
-			var isWinner = winner.color === color.toString();
+			initGameState(state);
+			var isWinner = winner.color === state.color.toString();
 			if (isWinner) {
 				winSound.play();
 			} else {
@@ -470,9 +449,9 @@ function fingerboss() {
 			text.y = Math.round(renderer.view.height / 2);
 			Object.keys(winningScores).forEach(function (key) {
 				var s = winningScores[key];
-				stage.addChild(s.text);
+				state.stage.addChild(s.text);
 			});
-			stage.addChild(text);
+			state.stage.addChild(text);
 			state.playing = false;
 			state.readyToPlay = false;
 			setTimeout(function () {
@@ -480,7 +459,7 @@ function fingerboss() {
 			}, 2000);
 		}
 		// render the container
-		renderer.render(stage);
+		renderer.render(state.stage);
 	}
 
 
@@ -504,7 +483,7 @@ function fingerboss() {
 		var fontSize = Math.max(Math.ceil(renderer.view.width * 2 / str.length), 20);
 		var style = {
 			font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-			fill: '#' + parseInt(color, 10).toString(16)
+			fill: '#' + parseInt(state.color, 10).toString(16)
 		};
 		var text = new PIXI.Text(str, style);
 		text.anchor.x = 0.5;
@@ -512,8 +491,8 @@ function fingerboss() {
 		var h = text.height;
 		text.x = Math.round(renderer.view.width / 2);
 		text.y = Math.round(h / 2 + (renderer.view.height - h) * Math.random());
-		stage.addChild(text);
-		fadeSprite(stage, text)
+		state.stage.addChild(text);
+		fadeSprite(state.stage, text)
 
 	}
 

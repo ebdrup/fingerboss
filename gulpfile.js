@@ -4,7 +4,7 @@ var concat = require('gulp-concat');
 var addSrc = require('gulp-add-src');
 
 gulp.task('compress', function () {
-	return gulp.src('js/game.js')
+	return gulp.src('js/*.js')
 		.pipe(uglify())
 		.pipe(addSrc('js-min/*.js'))
 		.pipe(concat('bundle.js'))
