@@ -1,4 +1,4 @@
-function initGameState(state) {
+function resetGame(state) {
 	state.circles = [];
 	state.unconfirmedCircless = {};
 	state.scores = {};

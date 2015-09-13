@@ -10,17 +10,16 @@ function fingerboss() {
 	var KILL_SCORE_FACTOR = 2;
 	var WINNING_SCORE = 50;
 	var socket = io();
-	var latency = 120, latencies = [], velocity, textures = {};
-	var myId = Math.random() + '_' + Date.now();
+	var textures = {};
 	var state = {};
 	var world = {};
 	var sounds = sfx();
 	initWorld(world);
-	initGameState(state);
+	resetGame(state);
 	
 	socket.on('start', function (e) {
 		state.color = e.color;
-		velocity = e.velocity;
+		world.velocity = e.velocity;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
 	});
@@ -69,7 +68,7 @@ function fingerboss() {
 				return;
 			}
 			if (!state.playing && state.readyToPlay) {
-				initGameState(state);
+				resetGame(state);
 			}
 			state.newCircle = {
 				id: Math.random() + '_' + Date.now(),
@@ -116,7 +115,7 @@ function fingerboss() {
 				if (state.newCircle.size > MIN_SIZE) {
 					state.newCircle.size = getInnerCircleSize(state.newCircle);
 					socket.emit('circle', {
-						owner: myId,
+						owner: world.id,
 						id: state.newCircle.id,
 						x: state.newCircle.x,
 						y: state.newCircle.y,
@@ -156,16 +155,16 @@ function fingerboss() {
 
 	socket.on('circle', function (c) {
 		// find median latency
-		if (c.owner === myId) {
-			latencies.push(Date.now() - c.localTime);
-			latencies.sort();
-			if (latencies.length === 600) {
-				latencies = latencies.slice(200, 400);
+		if (c.owner === world.id) {
+			world.latencies.push(Date.now() - c.localTime);
+			world.latencies.sort();
+			if (world.latencies.length === 600) {
+				world.latencies = world.latencies.slice(200, 400);
 			}
-			latency = latencies[Math.floor(latencies.length / 2)];
+			world.latency = world.latencies[Math.floor(world.latencies.length / 2)];
 		}
 		// find median clockDifference
-		if (c.owner === myId) {
+		if (c.owner === world.id) {
 			world.dClocks.push(Date.now() - c.t);
 			world.dClocks.sort();
 			if (world.dClocks.length === 600) {
@@ -267,7 +266,7 @@ function fingerboss() {
 	});
 	function getMovedCircleY(c, t) {
 		var dt = c.t - t;
-		return c.y > 0.5 ? c.y + dt * velocity : c.y - dt * velocity;
+		return c.y > 0.5 ? c.y + dt * world.velocity : c.y - dt * world.velocity;
 	}
 
 	// start animating
@@ -278,7 +277,7 @@ function fingerboss() {
 			renderer.render(state.stage);
 			return;
 		}
-		var estimatedServerT = Date.now() - world.dClock + latency / 2;
+		var estimatedServerT = Date.now() - world.dClock + world.latency / 2;
 		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(c1, estimatedServerT);
 			c1.sprite.position.y = y * renderer.view.height;
@@ -398,7 +397,7 @@ function fingerboss() {
 			.filter(Boolean)[0];
 		if (winner) {
 			var winningScores = state.scores;
-			initGameState(state);
+			resetGame(state);
 			var isWinner = winner.color === state.color.toString();
 			if (isWinner) {
 				sounds.win();
