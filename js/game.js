@@ -10,17 +10,19 @@ function fingerboss() {
 	var KILL_SCORE_FACTOR = 2;
 	var WINNING_SCORE = 50;
 	var socket = io();
-	var dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
+	var latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
 	var state = {};
+	var world = {};
 	var sounds = sfx();
+	initWorld(world);
 	initGameState(state);
 	
 	socket.on('start', function (e) {
 		state.color = e.color;
 		velocity = e.velocity;
-		dClock = Date.now() - e.t;
-		dClocks.push(dClock);
+		world.dClock = Date.now() - e.t;
+		world.dClocks.push(world.dClock);
 	});
 	var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: 0x000000,
@@ -164,12 +166,12 @@ function fingerboss() {
 		}
 		// find median clockDifference
 		if (c.owner === myId) {
-			dClocks.push(Date.now() - c.t);
-			dClocks.sort();
-			if (dClocks.length === 600) {
-				dClocks = dClocks.slice(200, 400);
+			world.dClocks.push(Date.now() - c.t);
+			world.dClocks.sort();
+			if (world.dClocks.length === 600) {
+				world.dClocks = world.dClocks.slice(200, 400);
 			}
-			dClock = dClocks[Math.floor(dClocks.length / 2)];
+			world.dClock = world.dClocks[Math.floor(world.dClocks.length / 2)];
 		}
 		if (!state.playing) {
 			return;
@@ -276,7 +278,7 @@ function fingerboss() {
 			renderer.render(state.stage);
 			return;
 		}
-		var estimatedServerT = Date.now() - dClock + latency / 2;
+		var estimatedServerT = Date.now() - world.dClock + latency / 2;
 		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(c1, estimatedServerT);
 			c1.sprite.position.y = y * renderer.view.height;
