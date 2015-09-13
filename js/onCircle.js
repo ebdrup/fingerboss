@@ -4,46 +4,28 @@ function onCircle(state, world, c) {
 	}
 	world.sounds.newCircle();
 	//remove unconfirmed circle
-	var t = c.t;
 	c.sprite = generateSpriteForCircle(world, c);
 	world.stage.addChild(c.sprite);
+	state.circles.push(c);
 	var uc = state.unconfirmedCircless[c.id];
 	if (uc) {
 		world.stage.removeChild(uc.sprite);
 		delete state.unconfirmedCircless[c.id]
 	}
-	state.circles.push(c);
-	var cIndex = state.circles.length - 1;
-	//collision:merge same color
-	var indexesToRemove;
-	var anyMerge = true;
-	while (anyMerge) {
-		indexesToRemove = [];
-		anyMerge = false;
-		for (var i = 0; i < state.circles.length && !anyMerge; i++) {
-			var c1 = state.circles[i];
-			if (!c1 || !c || c1.color !== c.color || c1 === c) {
-				continue;
-			}
-			if (isColliding(c, c1, t)) {
-				state.circles.splice(cIndex, 1);
-				c1.size = c.size + c1.size;
-				killCircleSprite(world.stage, c.sprite);
-				c = c1;
-				cIndex = i;
-				anyMerge = true;
-			}
-		}
-	}
-	//collision:kill different colors
-	indexesToRemove = [];
+	//collision detection
+	var indexesToRemove = [];
 	var anyCollision, anyKill;
-	for (var i = 0; i < state.circles.length; i++) {
+	for (var i = 0; i < state.circles.length - 1; i++) {
 		var c1 = state.circles[i];
 		if (!c1 || !c || c1.color === c.color) {
 			continue;
 		}
-		if (isColliding(c, c1, t)) {
+		var distance = Math.sqrt(
+			Math.pow(Math.abs(c1.x - c.x), 2) +
+			Math.pow(Math.abs(getMovedCircleY(world, c1, c.t) - getMovedCircleY(world, c, c.t)), 2)
+		);
+		var minDistance = (c1.size + c.size);
+		if (distance < minDistance) {
 			anyCollision = true;
 			var cSize = c.size;
 			c.size -= c1.size;
@@ -63,15 +45,13 @@ function onCircle(state, world, c) {
 				};
 				state.scores[c.color].value += scoreCircle.size;
 				state.scoreCircles.push(scoreCircle);
-				if(c.color === state.color){
-					state.killCount++;
-					if (state.killCount === 1) {
-						help(state, world, 'Your first kill!')
-					}
+				state.killCount++;
+				if (state.killCount === 1) {
+					help(state, world, 'Your first kill!')
 				}
 			}
 			if (c.size <= KILL_SIZE) {
-				indexesToRemove.push(cIndex);
+				state.circles.pop(); // remove c
 				killCircleSprite(world.stage, c.sprite);
 				break;
 			}
@@ -108,15 +88,4 @@ function onCircle(state, world, c) {
 		}
 	});
 	state.circles = state.circles.filter(Boolean);
-	return;
-
-	function isColliding(c, c1, t) {
-		var distance = Math.sqrt(
-			Math.pow(Math.abs(c1.x - c.x), 2) +
-			Math.pow(Math.abs(getMovedCircleY(world, c1, t) - getMovedCircleY(world, c, t)), 2)
-		);
-		var minDistance = (c1.size + c.size);
-		return distance < minDistance;
-
-	}
 }
