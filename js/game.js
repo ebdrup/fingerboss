@@ -9,35 +9,11 @@ function fingerboss() {
 	var CONFIRMED_SIZE_FACTOR = 1 / 3;
 	var KILL_SCORE_FACTOR = 2;
 	var WINNING_SCORE = 50;
-	var SOUND = true;
-	var newCircleSound = new Howl({
-		urls: ['newConfirmedCircle.mp3'],
-		volume: 0.3
-	});
-	var crashSound1 = new Howl({
-		urls: ['crash1.mp3'],
-		volume: 0.3
-	});
-	var crashSound2 = new Howl({
-		urls: ['crash2.mp3'],
-		volume: 0.3
-	});
-	var shrinkSound = new Howl({
-		urls: ['shrink.mp3'],
-		volume: 0.04
-	});
-	var winSound = new Howl({
-		urls: ['win.mp3'],
-		volume: 0.3
-	});
-	var looseSound = new Howl({
-		urls: ['loose.mp3'],
-		volume: 0.3
-	});
 	var socket = io();
 	var dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
 	var state = {};
+	var sounds = sfx();
 	initGameState(state);
 	
 	socket.on('start', function (e) {
@@ -199,7 +175,7 @@ function fingerboss() {
 			return;
 		}
 		//play sound
-		SOUND && newCircleSound.play();
+		sounds.newCircle();
 		//remove unconfirmed circle
 		c.sprite = generateSpriteForCircle(c);
 		state.stage.addChild(c.sprite);
@@ -255,7 +231,7 @@ function fingerboss() {
 			}
 		}
 		if (anyCollision && !anyKill) {
-			shrinkSound.play();
+			sounds.shrink();
 			if (c.color === state.color) {
 				state.shrinkCount++;
 				if (state.shrinkCount === 1 || state.shrinkCount === 10) {
@@ -383,22 +359,13 @@ function fingerboss() {
 			var y = getMovedCircleY(c, estimatedServerT);
 			if (y > 1) {
 				y = renderer.view.height - h;
-				if (SOUND) {
-					crashSound1._volume = scoreSize;
-					crashSound1.play();
-				}
+					sounds.crash1(scoreSize);
 			} else if (y < 0) {
 				y = h;
-				if (SOUND) {
-					crashSound1._volume = scoreSize;
-					crashSound1.play();
-				}
+				sounds.crash1(scoreSize);
 			} else {
 				y *= renderer.view.height;
-				if (SOUND) {
-					crashSound2._volume = Math.min(scoreSize * 4, 1);
-					crashSound2.play();
-				}
+				sounds.crash2(Math.min(scoreSize * 4, 1));
 			}
 			text.position.y = y;
 			text.position.x = c.x * renderer.view.width;
@@ -432,9 +399,9 @@ function fingerboss() {
 			initGameState(state);
 			var isWinner = winner.color === state.color.toString();
 			if (isWinner) {
-				winSound.play();
+				sounds.win();
 			} else {
-				looseSound.play();
+				sounds.loose();
 			}
 			var str = isWinner ? 'You won!' : 'You lost';
 			var fontSize = Math.max(Math.ceil(renderer.view.width * 0.20), 30);
