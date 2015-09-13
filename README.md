@@ -17,7 +17,7 @@ Webserver for the [fingerboss game](http://fingerboss.com)
 # About
 This is my first game ever. I made it because I teach kids programming as a volunteer at 
 [coding pirates](http://codingpirates.dk/).
-The kids really want to make games, it's a great way to lear to program. So I made this game to try it myself, so
+The kids really want to make games, it's a great way to learn programming. So I made this game to try it myself, so
 I can be better at teaching them.
 
 # Principals of the game
