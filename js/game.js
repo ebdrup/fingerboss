@@ -1,4 +1,4 @@
-function game() {
+function fingerboss() {
 	var START_SIZE = 170 / 800;
 	var KILL_SIZE = 5 / 800;
 	var MIN_SIZE = START_SIZE + KILL_SIZE + 1 / 800;
@@ -10,7 +10,7 @@ function game() {
 	var KILL_SCORE_FACTOR = 2;
 	var WINNING_SCORE = 1000;
 	var SOUND = true;
-	var newConfirmedCircleSound = new Howl({
+	var newCircleSound = new Howl({
 		urls: ['newConfirmedCircle.mp3'],
 		volume: 0.3
 	});
@@ -37,20 +37,20 @@ function game() {
 	var socket = io();
 	var color, dClock, dClocks = [], latency = 120, latencies = [], velocity, textures = {};
 	var myId = Math.random() + '_' + Date.now();
-	//game vars
-	var circles, unconfirmedCircles, scores, newCircle, scoreCircles, readyToPlay, playing, shrinks, kills;
-	initVars();
+	var state;
+	initGame();
 
-	function initVars() {
-		circles = [];
-		unconfirmedCircles = {};
-		scores = {};
-		newCircle = null;
-		scoreCircles = [];
-		readyToPlay = true;
-		playing = true;
-		shrinks = 0;
-		kills = 0;
+	function initGame() {
+		state = {};
+		state.circles = [];
+		state.unconfirmedCircless = {};
+		state.scores = {};
+		state.newCircle = null;
+		state.scoreCircles = [];
+		state.readyToPlay = true;
+		state.playing = true;
+		state.shrinkCount = 0;
+		state.killCount = 0;
 		if (stage) {
 			for (var i = stage.children.length - 1; i >= 0; i--) {
 				stage.removeChild(stage.children[i]);
@@ -76,7 +76,7 @@ function game() {
 		renderer.resize(window.innerWidth, window.innerHeight);
 		bg.width = renderer.view.width;
 		bg.height = renderer.view.height;
-		circles.forEach(function (c) {
+		state.circles.forEach(function (c) {
 			stage.removeChild(c.sprite);
 			c.sprite = generateSpriteForCircle(c);
 			stage.addChild(c.sprite);
@@ -108,29 +108,29 @@ function game() {
 		return sprite;
 
 		function onDown(e) {
-			if (newCircle || !color || !readyToPlay) {
+			if (state.newCircle || !color || !state.readyToPlay) {
 				return;
 			}
-			if (!playing && readyToPlay) {
-				initVars();
+			if (!state.playing && state.readyToPlay) {
+				initGame();
 			}
-			newCircle = {
+			state.newCircle = {
 				id: Math.random() + '_' + Date.now(),
 				x: getX(e),
 				y: getY(e),
 				size: START_SIZE,
 				color: color
 			};
-			var innerCircle = JSON.parse(JSON.stringify(newCircle));
-			innerCircle.size = getInnerCircleSize(newCircle);
-			newCircle.tl = new TimelineMax()
-				.to(newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut})
-			newCircle.sprite = generateSpriteForCircle(newCircle);
-			newCircle.sprite.alpha = GROWING_ALPHA;
-			newCircle.innerSprite = generateSpriteForCircle(innerCircle);
-			newCircle.innerSprite.alpha = UNCONFIRMED_ALPHA;
-			stage.addChild(newCircle.sprite);
-			stage.addChild(newCircle.innerSprite);
+			var innerCircle = JSON.parse(JSON.stringify(state.newCircle));
+			innerCircle.size = getInnerCircleSize(state.newCircle);
+			state.newCircle.tl = new TimelineMax()
+				.to(state.newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut})
+			state.newCircle.sprite = generateSpriteForCircle(state.newCircle);
+			state.newCircle.sprite.alpha = GROWING_ALPHA;
+			state.newCircle.innerSprite = generateSpriteForCircle(innerCircle);
+			state.newCircle.innerSprite.alpha = UNCONFIRMED_ALPHA;
+			stage.addChild(state.newCircle.sprite);
+			stage.addChild(state.newCircle.innerSprite);
 		}
 
 		function getX(e) {
@@ -142,36 +142,36 @@ function game() {
 		}
 
 		function onMove(e) {
-			if (newCircle) {
-				newCircle.x = getX(e);
-				newCircle.y = getY(e);
+			if (state.newCircle) {
+				state.newCircle.x = getX(e);
+				state.newCircle.y = getY(e);
 			}
 		}
 
 		function onUp(e) {
-			if (newCircle) {
-				newCircle.tl.kill();
-				delete newCircle.tl;
-				stage.removeChild(newCircle.sprite);
-				delete newCircle.sprite;
-				stage.removeChild(newCircle.innerSprite);
-				delete newCircle.innerSprite;
-				if (newCircle.size > MIN_SIZE) {
-					newCircle.size = getInnerCircleSize(newCircle);
+			if (state.newCircle) {
+				state.newCircle.tl.kill();
+				delete state.newCircle.tl;
+				stage.removeChild(state.newCircle.sprite);
+				delete state.newCircle.sprite;
+				stage.removeChild(state.newCircle.innerSprite);
+				delete state.newCircle.innerSprite;
+				if (state.newCircle.size > MIN_SIZE) {
+					state.newCircle.size = getInnerCircleSize(state.newCircle);
 					socket.emit('circle', {
 						owner: myId,
-						id: newCircle.id,
-						x: newCircle.x,
-						y: newCircle.y,
-						size: newCircle.size,
+						id: state.newCircle.id,
+						x: state.newCircle.x,
+						y: state.newCircle.y,
+						size: state.newCircle.size,
 						localTime: Date.now()
 					});
-					newCircle.sprite = generateSpriteForCircle(newCircle);
-					newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
-					unconfirmedCircles[newCircle.id] = newCircle;
-					stage.addChild(newCircle.sprite)
+					state.newCircle.sprite = generateSpriteForCircle(state.newCircle);
+					state.newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
+					state.unconfirmedCircless[state.newCircle.id] = state.newCircle;
+					stage.addChild(state.newCircle.sprite)
 				}
-				newCircle = null;
+				state.newCircle = null;
 			}
 		}
 	}
@@ -216,25 +216,25 @@ function game() {
 			}
 			dClock = dClocks[Math.floor(dClocks.length / 2)];
 		}
-		if (!playing) {
+		if (!state.playing) {
 			return;
 		}
 		//play sound
-		SOUND && newConfirmedCircleSound.play();
+		SOUND && newCircleSound.play();
 		//remove unconfirmed circle
 		c.sprite = generateSpriteForCircle(c);
 		stage.addChild(c.sprite);
-		circles.push(c);
-		var uc = unconfirmedCircles[c.id];
+		state.circles.push(c);
+		var uc = state.unconfirmedCircless[c.id];
 		if (uc) {
 			stage.removeChild(uc.sprite);
-			delete unconfirmedCircles[c.id]
+			delete state.unconfirmedCircless[c.id]
 		}
 		//collision detection
 		var indexesToRemove = [];
 		var anyCollision, anyKill;
-		for (var i = 0; i < circles.length - 1; i++) {
-			var c1 = circles[i];
+		for (var i = 0; i < state.circles.length - 1; i++) {
+			var c1 = state.circles[i];
 			if (!c1 || !c || c1.color === c.color) {
 				continue;
 			}
@@ -253,7 +253,7 @@ function game() {
 					indexesToRemove.push(i);
 					killCircleSprite(stage, c1.sprite);
 					//scoreCircle for kill
-					scores[c.color] = scores[c.color] || {value: 0};
+					state.scores[c.color] = state.scores[c.color] || {value: 0};
 					var scoreCircle = {
 						t: c.t,
 						x: c.x,
@@ -261,15 +261,15 @@ function game() {
 						size: (c1.size + cSize) * KILL_SCORE_FACTOR,
 						color: c.color
 					};
-					scores[c.color].value += scoreCircle.size;
-					scoreCircles.push(scoreCircle);
-					kills++;
-					if (kills === 1) {
+					state.scores[c.color].value += scoreCircle.size;
+					state.scoreCircles.push(scoreCircle);
+					state.killCount++;
+					if (state.killCount === 1) {
 						help('Your first kill!')
 					}
 				}
 				if (c.size <= KILL_SIZE) {
-					circles.pop(); // remove c
+					state.circles.pop(); // remove c
 					killCircleSprite(stage, c.sprite);
 					break;
 				}
@@ -278,34 +278,34 @@ function game() {
 		if (anyCollision && !anyKill) {
 			shrinkSound.play();
 			if (c.color === color) {
-				shrinks++;
-				if (shrinks === 1 || shrinks === 10) {
+				state.shirnkCount++;
+				if (state.shrinkCount === 1 || state.shrinkCount === 10) {
 					help('Try holding down longer');
 				}
 			}
 		}
 		indexesToRemove.forEach(function (i) {
-			var c1 = circles[i];
-			scores[c1.color] = scores[c1.color] || {value: 0};
-			scores[c1.color].value -= (c1.unverifiedScore || 0); //remove scores added but not supposed to be
-			delete circles[i];
+			var c1 = state.circles[i];
+			state.scores[c1.color] = state.scores[c1.color] || {value: 0};
+			state.scores[c1.color].value -= (c1.unverifiedScore || 0); //remove state.scores added but not supposed to be
+			delete state.circles[i];
 		});
-		circles = circles.filter(Boolean);
-		//remove circles out of frame
-		circles.forEach(function (c1, i) {
+		state.circles = state.circles.filter(Boolean);
+		//remove state.circles out of frame
+		state.circles.forEach(function (c1, i) {
 			var y = getMovedCircleY(c1, c.t);
 			if (y < -c1.size || y > 1 + c1.size) {
-				scores[c1.color] = scores[c1.color] || {value: 0};
+				state.scores[c1.color] = state.scores[c1.color] || {value: 0};
 				var scoreToAdd = c1.size - (c1.unverifiedScore || 0);
-				scores[c1.color].value += scoreToAdd;
+				state.scores[c1.color].value += scoreToAdd;
 				if (scoreToAdd > 0.0000001) {
-					scoreCircles.push(c1);
+					state.scoreCircles.push(c1);
 				}
-				delete circles[i];
+				delete state.circles[i];
 				stage.removeChild(c1.sprite);
 			}
 		});
-		circles = circles.filter(Boolean);
+		state.circles = state.circles.filter(Boolean);
 
 	});
 	function getMovedCircleY(c, t) {
@@ -317,12 +317,12 @@ function game() {
 	animate();
 	function animate() {
 		requestAnimationFrame(animate);
-		if (!playing) {
+		if (!state.playing) {
 			renderer.render(stage);
 			return;
 		}
 		var estimatedServerT = Date.now() - dClock + latency / 2;
-		circles.forEach(function (c1) {
+		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(c1, estimatedServerT);
 			c1.sprite.position.y = y * renderer.view.height;
 			var expectedWidth = c1.size * renderer.view.width;
@@ -339,37 +339,37 @@ function game() {
 				}).to(c1.sprite, 0.3, {width: expectedWidth, height: expectedHeight});
 			}
 		});
-		if (newCircle) {
-			newCircle.sprite.position.x = newCircle.x * renderer.view.width;
-			newCircle.sprite.position.y = newCircle.y * renderer.view.height;
-			newCircle.sprite.width = newCircle.size * renderer.view.width;
-			newCircle.sprite.height = newCircle.size * renderer.view.height;
-			var innerCircleSize = getInnerCircleSize(newCircle);
-			newCircle.innerSprite.width = innerCircleSize * renderer.view.width;
-			newCircle.innerSprite.height = innerCircleSize * renderer.view.height;
-			newCircle.innerSprite.position.x = newCircle.x * renderer.view.width;
-			newCircle.innerSprite.position.y = newCircle.y * renderer.view.height;
+		if (state.newCircle) {
+			state.newCircle.sprite.position.x = state.newCircle.x * renderer.view.width;
+			state.newCircle.sprite.position.y = state.newCircle.y * renderer.view.height;
+			state.newCircle.sprite.width = state.newCircle.size * renderer.view.width;
+			state.newCircle.sprite.height = state.newCircle.size * renderer.view.height;
+			var innerCircleSize = getInnerCircleSize(state.newCircle);
+			state.newCircle.innerSprite.width = innerCircleSize * renderer.view.width;
+			state.newCircle.innerSprite.height = innerCircleSize * renderer.view.height;
+			state.newCircle.innerSprite.position.x = state.newCircle.x * renderer.view.width;
+			state.newCircle.innerSprite.position.y = state.newCircle.y * renderer.view.height;
 		}
-		//score circles out of frame (unverified by server, they might get killed)
-		circles.forEach(function (c1, i) {
+		//score state.circles out of frame (unverified by server, they might get killed)
+		state.circles.forEach(function (c1, i) {
 			var y = getMovedCircleY(c1, estimatedServerT);
 			if (!c1.unverifiedScore && (y < -c1.size || y > 1 + c1.size)) {
-				scores[c1.color] = scores[c1.color] || {value: 0};
-				scores[c1.color].value += c1.size;
+				state.scores[c1.color] = state.scores[c1.color] || {value: 0};
+				state.scores[c1.color].value += c1.size;
 				c1.unverifiedScore = c1.size;
-				scoreCircles.push(c1);
+				state.scoreCircles.push(c1);
 			}
 		});
-		// scores
-		Object.keys(scores)
+		// state.scores
+		Object.keys(state.scores)
 			.sort(function (key1, key2) {
-				var score1 = scores[key1].value;
-				var score2 = scores[key2].value;
+				var score1 = state.scores[key1].value;
+				var score2 = state.scores[key2].value;
 				return score2 - score1;
 			})
 			.forEach(function (key, i) {
 				var styleColor = '#' + parseInt(key, 10).toString(16);
-				var s = scores[key];
+				var s = state.scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
 				var style = {
@@ -387,7 +387,7 @@ function game() {
 				s.text.position.x = 10;
 			});
 		//new points
-		scoreCircles.forEach(function (c, i) {
+		state.scoreCircles.forEach(function (c, i) {
 			var styleColor = '#' + parseInt(c.color, 10).toString(16);
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
@@ -437,10 +437,10 @@ function game() {
 			text.tl2 = new TimelineMax({}).to(text.position, 1.5, {y: targetY});
 
 		});
-		scoreCircles = [];
-		var winner = Object.keys(scores)
+		state.scoreCircles = [];
+		var winner = Object.keys(state.scores)
 			.map(function (key) {
-				var s = scores[key];
+				var s = state.scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				if (score < WINNING_SCORE) {
 					return null;
@@ -449,8 +449,8 @@ function game() {
 			})
 			.filter(Boolean)[0];
 		if (winner) {
-			var winningScores = scores;
-			initVars();
+			var winningScores = state.scores;
+			initGame();
 			var isWinner = winner.color === color.toString();
 			if (isWinner) {
 				winSound.play();
@@ -473,10 +473,10 @@ function game() {
 				stage.addChild(s.text);
 			});
 			stage.addChild(text);
-			playing = false;
-			readyToPlay = false;
+			state.playing = false;
+			state.readyToPlay = false;
 			setTimeout(function () {
-				readyToPlay = true;
+				state.readyToPlay = true;
 			}, 2000);
 		}
 		// render the container
