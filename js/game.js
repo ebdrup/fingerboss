@@ -205,7 +205,7 @@ function game() {
 			if (latencies.length === 600) {
 				latencies = latencies.slice(200, 400);
 			}
-			latency = latencies[Math.floor(dClocks.length / 2)];
+			latency = latencies[Math.floor(latencies.length / 2)];
 		}
 		// find median clockDifference
 		if (c.owner === myId) {
