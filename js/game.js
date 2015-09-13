@@ -9,29 +9,27 @@ function fingerboss() {
 	var CONFIRMED_SIZE_FACTOR = 1 / 3;
 	var KILL_SCORE_FACTOR = 2;
 	var WINNING_SCORE = 50;
-	var socket = io();
-	var textures = {};
 	var state = {};
 	var world = {};
 	var sounds = sfx();
 	initWorld(world);
 	resetGame(state);
 	
-	socket.on('start', function (e) {
+	world.socket.on('start', function (e) {
 		state.color = e.color;
 		world.velocity = e.velocity;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
 	});
-	var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
+	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: 0x000000,
 		antialias: true
 	});
-	document.body.appendChild(renderer.view);
+	document.body.appendChild(world.renderer.view);
 	window.onresize = function () {
-		renderer.resize(window.innerWidth, window.innerHeight);
-		state.background.width = renderer.view.width;
-		state.background.height = renderer.view.height;
+		world.renderer.resize(window.innerWidth, window.innerHeight);
+		state.background.width = world.renderer.view.width;
+		state.background.height = world.renderer.view.height;
 		state.circles.forEach(function (c) {
 			state.stage.removeChild(c.sprite);
 			c.sprite = generateSpriteForCircle(c);
@@ -52,8 +50,8 @@ function fingerboss() {
 		gfx.drawRect(0, 0, 1, 1);
 		var sprite = new PIXI.Sprite(gfx.generateTexture());
 		// center the sprite's anchor point
-		sprite.width = renderer.view.width;
-		sprite.height = renderer.view.height;
+		sprite.width = world.renderer.view.width;
+		sprite.height = world.renderer.view.height;
 		sprite.interactive = true;
 		sprite.on('mousedown', onDown);
 		sprite.on('touchstart', onDown);
@@ -90,11 +88,11 @@ function fingerboss() {
 		}
 
 		function getX(e) {
-			return Math.min(Math.max(e.data.global.x / renderer.view.width, 0), 1);
+			return Math.min(Math.max(e.data.global.x / world.renderer.view.width, 0), 1);
 		}
 
 		function getY(e) {
-			return Math.min(Math.max(e.data.global.y / renderer.view.height, 0), 1);
+			return Math.min(Math.max(e.data.global.y / world.renderer.view.height, 0), 1);
 		}
 
 		function onMove(e) {
@@ -114,7 +112,7 @@ function fingerboss() {
 				delete state.newCircle.innerSprite;
 				if (state.newCircle.size > MIN_SIZE) {
 					state.newCircle.size = getInnerCircleSize(state.newCircle);
-					socket.emit('circle', {
+					world.socket.emit('circle', {
 						owner: world.id,
 						id: state.newCircle.id,
 						x: state.newCircle.x,
@@ -133,27 +131,27 @@ function fingerboss() {
 	}
 
 	function generateSpriteForCircle(c) {
-		var w = renderer.view.width, h = renderer.view.height;
+		var w = world.renderer.view.width, h = world.renderer.view.height;
 		var key = w + '_' + h + '_' + c.color;
-		var texture = textures[key];
+		var texture = world.textures[key];
 		if (!texture) {
 			var gfx = new PIXI.Graphics();
 			gfx.beginFill(c.color);
 			gfx.drawEllipse(0, 0, 0.1 * w, 0.1 * h);
-			textures[key] = texture = gfx.generateTexture();
+			world.textures[key] = texture = gfx.generateTexture();
 		}
 		var sprite = new PIXI.Sprite(texture);
 		// center the sprite's anchor point
 		sprite.anchor.x = 0.5;
 		sprite.anchor.y = 0.5;
-		sprite.position.x = c.x * renderer.view.width;
-		sprite.position.y = c.y * renderer.view.height;
-		sprite.width = c.size * renderer.view.width;
-		sprite.height = c.size * renderer.view.height;
+		sprite.position.x = c.x * world.renderer.view.width;
+		sprite.position.y = c.y * world.renderer.view.height;
+		sprite.width = c.size * world.renderer.view.width;
+		sprite.height = c.size * world.renderer.view.height;
 		return sprite;
 	}
 
-	socket.on('circle', function (c) {
+	world.socket.on('circle', function (c) {
 		// find median latency
 		if (c.owner === world.id) {
 			world.latencies.push(Date.now() - c.localTime);
@@ -274,15 +272,15 @@ function fingerboss() {
 	function animate() {
 		requestAnimationFrame(animate);
 		if (!state.playing) {
-			renderer.render(state.stage);
+			world.renderer.render(state.stage);
 			return;
 		}
 		var estimatedServerT = Date.now() - world.dClock + world.latency / 2;
 		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(c1, estimatedServerT);
-			c1.sprite.position.y = y * renderer.view.height;
-			var expectedWidth = c1.size * renderer.view.width;
-			var expectedHeight = c1.size * renderer.view.height;
+			c1.sprite.position.y = y * world.renderer.view.height;
+			var expectedWidth = c1.size * world.renderer.view.width;
+			var expectedHeight = c1.size * world.renderer.view.height;
 			if (!c1.sprite.tl && (expectedWidth !== c1.sprite.width || expectedHeight !== c1.sprite.height)) {
 				//resize sprite
 				c1.sprite.tl = new TimelineMax({
@@ -296,15 +294,15 @@ function fingerboss() {
 			}
 		});
 		if (state.newCircle) {
-			state.newCircle.sprite.position.x = state.newCircle.x * renderer.view.width;
-			state.newCircle.sprite.position.y = state.newCircle.y * renderer.view.height;
-			state.newCircle.sprite.width = state.newCircle.size * renderer.view.width;
-			state.newCircle.sprite.height = state.newCircle.size * renderer.view.height;
+			state.newCircle.sprite.position.x = state.newCircle.x * world.renderer.view.width;
+			state.newCircle.sprite.position.y = state.newCircle.y * world.renderer.view.height;
+			state.newCircle.sprite.width = state.newCircle.size * world.renderer.view.width;
+			state.newCircle.sprite.height = state.newCircle.size * world.renderer.view.height;
 			var innerCircleSize = getInnerCircleSize(state.newCircle);
-			state.newCircle.innerSprite.width = innerCircleSize * renderer.view.width;
-			state.newCircle.innerSprite.height = innerCircleSize * renderer.view.height;
-			state.newCircle.innerSprite.position.x = state.newCircle.x * renderer.view.width;
-			state.newCircle.innerSprite.position.y = state.newCircle.y * renderer.view.height;
+			state.newCircle.innerSprite.width = innerCircleSize * world.renderer.view.width;
+			state.newCircle.innerSprite.height = innerCircleSize * world.renderer.view.height;
+			state.newCircle.innerSprite.position.x = state.newCircle.x * world.renderer.view.width;
+			state.newCircle.innerSprite.position.y = state.newCircle.y * world.renderer.view.height;
 		}
 		//score state.circles out of frame (unverified by server, they might get killed)
 		state.circles.forEach(function (c1, i) {
@@ -327,7 +325,7 @@ function fingerboss() {
 				var styleColor = '#' + parseInt(key, 10).toString(16);
 				var s = state.scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
-				var fontSize = Math.max(Math.ceil(renderer.view.height * 0.075), 30);
+				var fontSize = Math.max(Math.ceil(world.renderer.view.height * 0.075), 30);
 				var style = {
 					font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 					fill: styleColor
@@ -348,7 +346,7 @@ function fingerboss() {
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
 			var scoreSizeFactor = (c.color === state.color) ? 1 : 0.3;
-			var fontSize = Math.max(Math.ceil(renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
+			var fontSize = Math.max(Math.ceil(world.renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 				fill: styleColor
@@ -359,17 +357,17 @@ function fingerboss() {
 			var h = Math.ceil(text.height / 2);
 			var y = getMovedCircleY(c, estimatedServerT);
 			if (y > 1) {
-				y = renderer.view.height - h;
+				y = world.renderer.view.height - h;
 					sounds.crash1(scoreSize);
 			} else if (y < 0) {
 				y = h;
 				sounds.crash1(scoreSize);
 			} else {
-				y *= renderer.view.height;
+				y *= world.renderer.view.height;
 				sounds.crash2(Math.min(scoreSize * 4, 1));
 			}
 			text.position.y = y;
-			text.position.x = c.x * renderer.view.width;
+			text.position.x = c.x * world.renderer.view.width;
 			state.stage.addChild(text);
 			text.tl = new TimelineMax({
 				onComplete: function () {
@@ -405,7 +403,7 @@ function fingerboss() {
 				sounds.loose();
 			}
 			var str = isWinner ? 'You won!' : 'You lost';
-			var fontSize = Math.max(Math.ceil(renderer.view.width * 0.20), 30);
+			var fontSize = Math.max(Math.ceil(world.renderer.view.width * 0.20), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 				fill: '#' + parseInt(winner.color, 10).toString(16)
@@ -413,8 +411,8 @@ function fingerboss() {
 			var text = new PIXI.Text(str, style);
 			text.anchor.x = 0.5;
 			text.anchor.y = 0.5;
-			text.x = Math.round(renderer.view.width / 2);
-			text.y = Math.round(renderer.view.height / 2);
+			text.x = Math.round(world.renderer.view.width / 2);
+			text.y = Math.round(world.renderer.view.height / 2);
 			Object.keys(winningScores).forEach(function (key) {
 				var s = winningScores[key];
 				state.stage.addChild(s.text);
@@ -427,7 +425,7 @@ function fingerboss() {
 			}, 2000);
 		}
 		// render the container
-		renderer.render(state.stage);
+		world.renderer.render(state.stage);
 	}
 
 
@@ -448,7 +446,7 @@ function fingerboss() {
 	}
 
 	function help(str) {
-		var fontSize = Math.max(Math.ceil(renderer.view.width * 2 / str.length), 20);
+		var fontSize = Math.max(Math.ceil(world.renderer.view.width * 2 / str.length), 20);
 		var style = {
 			font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 			fill: '#' + parseInt(state.color, 10).toString(16)
@@ -457,8 +455,8 @@ function fingerboss() {
 		text.anchor.x = 0.5;
 		text.anchor.y = 0.5;
 		var h = text.height;
-		text.x = Math.round(renderer.view.width / 2);
-		text.y = Math.round(h / 2 + (renderer.view.height - h) * Math.random());
+		text.x = Math.round(world.renderer.view.width / 2);
+		text.y = Math.round(h / 2 + (world.renderer.view.height - h) * Math.random());
 		state.stage.addChild(text);
 		fadeSprite(state.stage, text)
 
