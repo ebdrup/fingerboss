@@ -19,9 +19,9 @@ function initWorld(state, world) {
 		world.background.width = world.renderer.view.width;
 		world.background.height = world.renderer.view.height;
 		state.circles.forEach(function (c) {
-			state.stage.removeChild(c.sprite);
+			world.stage.removeChild(c.sprite);
 			c.sprite = generateSpriteForCircle(world, c);
-			state.stage.addChild(c.sprite);
+			world.stage.addChild(c.sprite);
 		});
 	};
 

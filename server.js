@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, 'favicon')));
 app.use(express.static(path.join(__dirname, 'public')));
 var port = process.env.PORT || 7890;
 
-var colors = [0xefefef, 0x244f6a, 0xfeaa37, 0xe03e27];
+var colors = [0x5856d6, 0xff2d55, 0x4cd964, 0x007aff, 0xff3b30, 0x5ac8fa, 0xffcc00, 0x34aadc];//0x8e8e93
 var colorIndex = Math.round(Math.random() * colors.length);
 var lastCircle;
 
@@ -90,7 +90,7 @@ function fire() {
 	broadcast('circle', {
 		id: Math.random() + '_' + Date.now(),
 		t: Date.now(),
-		color: 0xf8824f,
+		color: 0xff9500,
 		x: x,
 		y: y,
 		size: s
