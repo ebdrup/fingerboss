@@ -15,15 +15,22 @@ var colors = [0xefefef, 0x244f6a, 0xfeaa37, 0xe03e27];
 var colorIndex = Math.round(Math.random() * colors.length);
 var lastCircle;
 
+var socketLastSeen = {};
+
 io.on('connection', function (socket) {
+	socketLastSeen[socket.id] = Date.now();
 	colorIndex = (colorIndex + 1) % colors.length;
 	var color = colors[colorIndex];
 	emit(socket, 'start', {color: color, t: Date.now(), velocity: 0.0002});
 	socket.on('circle', function (c) {
+		socketLastSeen[socket.id] = Date.now();
 		c.color = color;
 		c.t = Date.now();
 		lastCircle = c;
 		broadcast('circle', c);
+	});
+	socket.on('disconnect', function(){
+		delete socketLastSeen[socket.id];
 	});
 });
 
@@ -57,7 +64,18 @@ http.listen(port, function () {
 	console.log('listening on http://localhost:%s', port);
 });
 
+var TIMEOUT = 1000 * 20;
+
 function fire() {
+	Object.keys(socketLastSeen).forEach(function(socketId){
+		if((Date.now()-socketLastSeen[socketId])>TIMEOUT){
+			delete socketLastSeen[socketId];
+		}
+	});
+	var activeSockets = Object.keys(socketLastSeen).length;
+	if(activeSockets>1){
+		return setTimeout(fire, TIMEOUT);
+	}
 	var s = Math.random() / 5;
 	var t = s * 7000 + 500;
 	var x, y;
