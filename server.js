@@ -9,6 +9,7 @@ var io = require('socket.io')(http);
 app.disable('x-powered-by');
 app.use(compression());
 app.use(express.static(path.join(__dirname, 'favicon')));
+app.use(express.static(path.join(__dirname, 'js')));
 app.use(express.static(path.join(__dirname, 'public')));
 var port = process.env.PORT || 7890;
 
