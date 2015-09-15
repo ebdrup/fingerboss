@@ -1,3 +1,4 @@
+require("nodeversioncheck");
 var express = require('express');
 var compression = require('compression');
 var path = require('path');

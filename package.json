@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Webserver for the fingerboss game",
   "main": "server.js",
+  "engines": {
+    "node": ">= 4.0.0"
+  },
   "scripts": {
     "postinstall": "gulp compress",
     "test": "mocha",
@@ -29,6 +32,7 @@
     "gulp-add-src": "^0.2.0",
     "gulp-concat": "^2.6.0",
     "gulp-uglify": "^1.4.1",
+    "nodeversioncheck": "^1.0.0",
     "socket.io": "^1.3.6"
   },
   "directories": {
