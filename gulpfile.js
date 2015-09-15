@@ -4,7 +4,7 @@ var concat = require('gulp-concat');
 var addSrc = require('gulp-add-src');
 
 gulp.task('compress', function () {
-	return gulp.src(['js/*.js','js/gfx/*.js'])
+	return gulp.src(['js/**/*.js'])
 		.pipe(uglify())
 		.pipe(addSrc('js-min/*.js'))
 		.pipe(concat('bundle.js'))
@@ -12,7 +12,7 @@ gulp.task('compress', function () {
 });
 
 gulp.task('watch', function () {
-	gulp.watch('js/*.js', ['compress']);
+	gulp.watch('js/**/*.js', ['compress']);
 });
 
 gulp.task('webserver', function () {

@@ -4,6 +4,7 @@ function fadeSprite(stage, sprite) {
 		delete sprite.tl;
 	}
 	sprite.tl = new TimelineMax({
+		autoRemoveChildren: true,
 		onComplete: function () {
 			stage.removeChild(sprite);
 			if (sprite.tl) {

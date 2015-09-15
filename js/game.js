@@ -21,6 +21,7 @@ function fingerboss() {
 			if (!c1.sprite.tl && (expectedWidth !== c1.sprite.width || expectedHeight !== c1.sprite.height)) {
 				//resize sprite
 				c1.sprite.tl = new TimelineMax({
+					autoRemoveChildren: true,
 					onComplete: function () {
 						if (c1.sprite.tl) {
 							c1.sprite.tl.kill();
@@ -107,6 +108,7 @@ function fingerboss() {
 			text.position.x = c.x * world.renderer.view.width;
 			world.stage.addChild(text);
 			text.tl = new TimelineMax({
+				autoRemoveChildren: true,
 				onComplete: function () {
 					world.stage.removeChild(text);
 					if (text.tl) {
@@ -116,7 +118,9 @@ function fingerboss() {
 				}
 			}).to(text, 1.5, {alpha: 0, width: text.width * 1.2, height: text.height * 1.2});
 			var targetY = getMovedCircleY(world, c, estimatedServerT) > 1 ? text.position.y - h : text.position.y + h;
-			text.tl2 = new TimelineMax({}).to(text.position, 1.5, {y: targetY});
+			text.tl2 = new TimelineMax({
+				autoRemoveChildren: true
+			}).to(text.position, 1.5, {y: targetY});
 		});
 		state.scoreCircles = [];
 		//check for winner

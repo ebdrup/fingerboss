@@ -31,8 +31,14 @@ function getInteraction(state, world) {
 		};
 		var innerCircle = JSON.parse(JSON.stringify(state.newCircle));
 		innerCircle.size = getInnerCircleSize(state.newCircle);
-		state.newCircle.tl = new TimelineMax()
-			.to(state.newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut})
+		state.newCircle.tl = new TimelineMax({
+			autoRemoveChildren: true,
+			onComplete: function () {
+				onUp();
+				help(state, world, 'Auto release');
+			},
+			onCompleteParams: [innerCircle, 'size']
+		}).to(state.newCircle,  GROW_TIME, {size: END_SIZE, ease: Power1.easeOut});
 		state.newCircle.sprite = generateSpriteForCircle(world, state.newCircle);
 		state.newCircle.sprite.alpha = GROWING_ALPHA;
 		state.newCircle.innerSprite = generateSpriteForCircle(world, innerCircle);
