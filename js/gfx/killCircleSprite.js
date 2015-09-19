@@ -12,5 +12,5 @@ function killCircleSprite(stage, sprite) {
 				delete sprite.tl;
 			}
 		}
-	}).to(sprite.scale, 0.5, {x: 0, y: 0});
+	}).to(sprite.scale, 0.5, {ease: Power2.easeOut, x: 0, y: 0});
 }
