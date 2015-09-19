@@ -60,7 +60,7 @@ function fingerboss() {
 				return score2 - score1;
 			})
 			.forEach(function (key, i) {
-				var styleColor = '#' + parseInt(key, 10).toString(16);
+				var styleColor = '#' +('000000' + parseInt(key, 10).toString(16)).slice(-6);
 				var s = state.scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(world.renderer.view.height * 0.075), 30);
@@ -80,7 +80,7 @@ function fingerboss() {
 			});
 		//new points
 		state.scoreCircles.forEach(function (c, i) {
-			var styleColor = '#' + parseInt(c.color, 10).toString(16);
+			var styleColor = '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
 			var scoreSizeFactor = (c.color === state.color) ? 1 : 0.3;
@@ -147,7 +147,7 @@ function fingerboss() {
 			var fontSize = Math.max(Math.ceil(world.renderer.view.width * 0.20), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-				fill: '#' + parseInt(winner.color, 10).toString(16)
+				fill: '#' + ('000000' + parseInt(winner.color, 10).toString(16)).slice(-6)
 			};
 			var text = new PIXI.Text(str, style);
 			text.anchor.x = 0.5;
