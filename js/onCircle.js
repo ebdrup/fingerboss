@@ -119,7 +119,7 @@ function onCircle(state, world, c) {
 			Math.pow(Math.abs(c2.x - c1.x), 2) +
 			Math.pow(Math.abs(getMovedCircleY(world, c2, t) - getMovedCircleY(world, c1, t)), 2)
 		);
-		var minDistance = (c2.size + c1.size);
+		var minDistance = (c2.size + c1.size)/Math.sqrt(2);
 		return distance < minDistance;
 	}
 }
