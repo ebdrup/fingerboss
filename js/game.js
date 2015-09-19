@@ -28,7 +28,7 @@ function fingerboss() {
 							delete c1.sprite.tl;
 						}
 					}
-				}).to(c1.sprite, 0.3, {width: expectedWidth, height: expectedHeight});
+				}).to(c1.sprite, 0.3, {ease: Power2.easeOut, width: expectedWidth, height: expectedHeight});
 			}
 		});
 		if (state.newCircle) {
