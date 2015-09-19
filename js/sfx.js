@@ -17,9 +17,9 @@ function sfx() {
 			urls: ['shrink.mp3'],
 			volume: 0.04
 		}),
-		win: new Howl({
-			urls: ['win.mp3'],
-			volume: 0.3
+		fingerboss: new Howl({
+			urls: ['fingerboss.mp3'],
+			volume: 0.8
 		}),
 		loose: new Howl({
 			urls: ['loose.mp3'],
