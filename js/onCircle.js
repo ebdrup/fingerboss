@@ -1,3 +1,4 @@
+
 function onCircle(state, world, c) {
 	if (!state.playing) {
 		return;
@@ -12,6 +13,9 @@ function onCircle(state, world, c) {
 		world.stage.removeChild(uc.sprite);
 		delete state.unconfirmedCircless[c.id]
 	}
+	var t = c.t;
+	//same color collision detection
+	merge(state, c, t);
 	//collision detection
 	var indexesToRemove = [];
 	var anyCollision, anyKill;
@@ -20,12 +24,7 @@ function onCircle(state, world, c) {
 		if (!c1 || !c || c1.color === c.color) {
 			continue;
 		}
-		var distance = Math.sqrt(
-			Math.pow(Math.abs(c1.x - c.x), 2) +
-			Math.pow(Math.abs(getMovedCircleY(world, c1, c.t) - getMovedCircleY(world, c, c.t)), 2)
-		);
-		var minDistance = (c1.size + c.size);
-		if (distance < minDistance) {
+		if (isColliding(c, c1, t)) {
 			anyCollision = true;
 			var cSize = c.size;
 			c.size -= c1.size;
@@ -45,7 +44,7 @@ function onCircle(state, world, c) {
 				};
 				state.scores[c.color].value += scoreCircle.size;
 				state.scoreCircles.push(scoreCircle);
-				if(state.color === c.color) {
+				if (state.color === c.color) {
 					state.killCount++;
 					if (state.killCount === 1) {
 						help(state, world, 'Your first kill!')
@@ -90,4 +89,37 @@ function onCircle(state, world, c) {
 		}
 	});
 	state.circles = state.circles.filter(Boolean);
+	return;
+
+	function merge(state, c1, t) {
+		for (var i = 0; i < state.circles.length; i++) {
+			var c2 = state.circles[i];
+			if (!c2 || !c1 || c2.color !== c1.color || c2 === c1) {
+				continue;
+			}
+			if (isColliding(c1, c2, t)) {
+				if (c2.size > c1.size) {
+					c2.size += c1.size;
+					c1.size = 0;
+					merge(state, c2, t);
+				} else {
+					c1.size += c2.size;
+					c2.size = 0;
+					merge(state, c1, t);
+				}
+			}
+		}
+	}
+
+	function isColliding(c1, c2, t) {
+		if(!c1.size || !c2.size){
+			return false;
+		}
+		var distance = Math.sqrt(
+			Math.pow(Math.abs(c2.x - c1.x), 2) +
+			Math.pow(Math.abs(getMovedCircleY(world, c2, t) - getMovedCircleY(world, c1, t)), 2)
+		);
+		var minDistance = (c2.size + c1.size);
+		return distance < minDistance;
+	}
 }

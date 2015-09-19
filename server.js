@@ -79,7 +79,7 @@ function fire() {
 		return setTimeout(fire, TIMEOUT);
 	}
 	var s = Math.random() / 5;
-	var t = s * 5000 + 500;
+	var t = s * 6000 + 500;
 	var x, y;
 	if (lastCircle && Math.random() > 0.5) {
 		x = lastCircle.x;

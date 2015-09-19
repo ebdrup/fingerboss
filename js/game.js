@@ -43,9 +43,9 @@ function fingerboss() {
 			state.newCircle.innerSprite.position.y = state.newCircle.y * world.renderer.view.height;
 		}
 		//score state.circles out of frame (unverified by server, they might get killed)
-		state.circles.forEach(function (c1, i) {
+		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(world, c1, estimatedServerT);
-			if (!c1.unverifiedScore && (y < -c1.size || y > 1 + c1.size)) {
+			if (!c1.unverifiedScore && (y < -c1.size/2 || y > 1 + c1.size/2)) {
 				state.scores[c1.color] = state.scores[c1.color] || {value: 0};
 				state.scores[c1.color].value += c1.size;
 				c1.unverifiedScore = c1.size;
@@ -79,9 +79,12 @@ function fingerboss() {
 				s.text.position.x = 10;
 			});
 		//new points
-		state.scoreCircles.forEach(function (c, i) {
-			var styleColor = '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
+		state.scoreCircles.forEach(function (c) {
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
+			if(!scoreSize){
+				return;
+			}
+			var styleColor = '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
 			var scoreSizeFactor = (c.color === state.color) ? 1 : 0.3;
 			var fontSize = Math.max(Math.ceil(world.renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
