@@ -59,7 +59,7 @@ function onCircle(state, world, c) {
 		}
 	}
 	if (anyCollision && !anyKill) {
-		world.sounds.shrink();
+		world.sounds.shrink(0.04);
 		if (c.color === state.color) {
 			state.shrinkCount++;
 			if (state.shrinkCount === 1 || state.shrinkCount === 10) {

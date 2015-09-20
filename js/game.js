@@ -142,7 +142,7 @@ function fingerboss() {
 			resetGame(state, world);
 			var isWinner = winner.color === state.color.toString();
 			if (isWinner) {
-				setTimeout(world.sounds.fingerboss, 250);
+				setTimeout(world.sounds.fingerboss.bind(null, 1), 250);
 			} else {
 				world.sounds.loose();
 			}
