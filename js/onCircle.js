@@ -1,8 +1,10 @@
 
 function onCircle(state, world, c) {
+	console.log('onCircle1');
 	if (!state.playing) {
 		return;
 	}
+	console.log('onCircle2');
 	world.sounds.newCircle();
 	//remove unconfirmed circle
 	c.sprite = generateSpriteForCircle(world, c);
@@ -44,7 +46,7 @@ function onCircle(state, world, c) {
 				};
 				state.scores[c.color].value += scoreCircle.size;
 				state.scoreCircles.push(scoreCircle);
-				if (state.color === c.color) {
+				if (world.color === c.color) {
 					state.killCount++;
 					if (state.killCount === 1) {
 						help(state, world, 'Your first kill!')
@@ -60,7 +62,7 @@ function onCircle(state, world, c) {
 	}
 	if (anyCollision && !anyKill) {
 		world.sounds.shrink(0.04);
-		if (c.color === state.color) {
+		if (c.color === world.color) {
 			state.shrinkCount++;
 			if (state.shrinkCount === 1 || state.shrinkCount === 10) {
 				help(state, world, 'Try holding down longer');

@@ -8,3 +8,7 @@ var UNCONFIRMED_ALPHA = 0.8;
 var CONFIRMED_SIZE_FACTOR = 1 / 3;
 var KILL_SCORE_FACTOR = 2;
 var WINNING_SCORE = 1000;
+var COLORS = [0x5856d6, 0xff2d55, 0x4cd964, 0x007aff, 0xff3b30, 0x5ac8fa, 0xffcc00, 0x34aadc];//0x8e8e93
+var VELOCITY = 0.0002;
+var PLAYER_TIMEOUT = 20 * 1000;
+

@@ -1,4 +1,5 @@
 function initWorld(state, world) {
+	world.dClock = 0;
 	world.dClocks = [];
 	world.latency = 120;
 	world.latencies = [];
@@ -24,9 +25,12 @@ function initWorld(state, world) {
 			world.stage.addChild(c.sprite);
 		});
 	};
+	world.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+	world.velocity = VELOCITY;
+	world.players = 1;
 
 	world.socket.on('start', function (e) {
-		state.color = e.color;
+		world.color = e.color;
 		world.velocity = e.velocity;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
@@ -34,6 +38,8 @@ function initWorld(state, world) {
 
 	world.socket.on('circle', onCircle.bind(null, state, world));
 	world.socket.on('circle', onCircleTime);
+	world.socket.on('players', onPlayers);
+	world.socket.on('ping', onPing);
 
 	function onCircleTime(c) {
 		// find median latency
@@ -54,5 +60,13 @@ function initWorld(state, world) {
 			}
 			world.dClock = world.dClocks[Math.floor(world.dClocks.length / 2)];
 		}
+	}
+
+	function onPlayers(e) {
+		world.players = parseInt(e, 10);
+	}
+
+	function onPing() {
+		world.socket.emit('pong', 1);
 	}
 }

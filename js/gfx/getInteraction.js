@@ -16,7 +16,7 @@ function getInteraction(state, world) {
 	return sprite;
 
 	function onDown(e) {
-		if (state.newCircle || !state.color || !state.readyToPlay) {
+		if (state.newCircle || !state.readyToPlay) {
 			return;
 		}
 		if (!state.playing && state.readyToPlay) {
@@ -27,7 +27,7 @@ function getInteraction(state, world) {
 			x: getX(e),
 			y: getY(e),
 			size: START_SIZE,
-			color: state.color
+			color: world.color
 		};
 		var innerCircle = JSON.parse(JSON.stringify(state.newCircle));
 		innerCircle.size = getInnerCircleSize(state.newCircle);
@@ -38,7 +38,7 @@ function getInteraction(state, world) {
 				help(state, world, 'Auto release');
 			},
 			onCompleteParams: [innerCircle, 'size']
-		}).to(state.newCircle,  GROW_TIME, {size: END_SIZE, ease: Power1.easeOut});
+		}).to(state.newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut});
 		state.newCircle.sprite = generateSpriteForCircle(world, state.newCircle);
 		state.newCircle.sprite.alpha = GROWING_ALPHA;
 		state.newCircle.innerSprite = generateSpriteForCircle(world, innerCircle);
@@ -63,6 +63,7 @@ function getInteraction(state, world) {
 	}
 
 	function onUp() {
+		var circle;
 		if (state.newCircle) {
 			state.newCircle.tl.kill();
 			delete state.newCircle.tl;
@@ -72,20 +73,30 @@ function getInteraction(state, world) {
 			delete state.newCircle.innerSprite;
 			if (state.newCircle.size > MIN_SIZE) {
 				state.newCircle.size = getInnerCircleSize(state.newCircle);
-				world.socket.emit('circle', {
+				circle = {
 					owner: world.id,
 					id: state.newCircle.id,
 					x: state.newCircle.x,
 					y: state.newCircle.y,
 					size: state.newCircle.size,
 					localTime: Date.now()
-				});
+				};
+				if (world.players > 1) {
+					world.socket.emit('circle', circle);
+				}
 				state.newCircle.sprite = generateSpriteForCircle(world, state.newCircle);
 				state.newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
 				state.unconfirmedCircless[state.newCircle.id] = state.newCircle;
 				world.stage.addChild(state.newCircle.sprite)
 			}
 			state.newCircle = null;
+			console.log(circle, world.players);
+			if (circle && world.players === 1) {
+				circle.color = world.color;
+				circle.t = getEstimatedServerT(world);
+				onCircle(state, world, circle);
+				state.lastCircle = circle;
+			}
 		}
 	}
 }

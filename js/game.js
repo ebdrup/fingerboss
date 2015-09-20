@@ -12,7 +12,8 @@ function fingerboss() {
 			world.renderer.render(world.stage);
 			return;
 		}
-		var estimatedServerT = Date.now() - world.dClock + world.latency / 2;
+		computerPlayer(state, world);
+		var estimatedServerT = getEstimatedServerT(world);
 		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(world, c1, estimatedServerT);
 			c1.sprite.position.y = y * world.renderer.view.height;
@@ -45,7 +46,7 @@ function fingerboss() {
 		//score state.circles out of frame (unverified by server, they might get killed)
 		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(world, c1, estimatedServerT);
-			if (!c1.unverifiedScore && (y < -c1.size/2 || y > 1 + c1.size/2)) {
+			if (!c1.unverifiedScore && (y < -c1.size / 2 || y > 1 + c1.size / 2)) {
 				state.scores[c1.color] = state.scores[c1.color] || {value: 0};
 				state.scores[c1.color].value += c1.size;
 				c1.unverifiedScore = c1.size;
@@ -60,7 +61,7 @@ function fingerboss() {
 				return score2 - score1;
 			})
 			.forEach(function (key, i) {
-				var styleColor = '#' +('000000' + parseInt(key, 10).toString(16)).slice(-6);
+				var styleColor = '#' + ('000000' + parseInt(key, 10).toString(16)).slice(-6);
 				var s = state.scores[key];
 				var score = Math.ceil(s.value * 500 * CONFIRMED_SIZE_FACTOR);
 				var fontSize = Math.max(Math.ceil(world.renderer.view.height * 0.075), 30);
@@ -81,12 +82,12 @@ function fingerboss() {
 		//new points
 		state.scoreCircles.forEach(function (c) {
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
-			if(!scoreSize){
+			if (!scoreSize) {
 				return;
 			}
 			var styleColor = '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
 			var score = Math.max(Math.round(scoreSize * 500 * CONFIRMED_SIZE_FACTOR), 1);
-			var scoreSizeFactor = (c.color === state.color) ? 1 : 0.3;
+			var scoreSizeFactor = (c.color === world.color) ? 1 : 0.3;
 			var fontSize = Math.max(Math.ceil(world.renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
@@ -99,7 +100,7 @@ function fingerboss() {
 			var y = getMovedCircleY(world, c, estimatedServerT);
 			if (y > 1) {
 				y = world.renderer.view.height - h;
-					world.sounds.crash1(scoreSize);
+				world.sounds.crash1(scoreSize);
 			} else if (y < 0) {
 				y = h;
 				world.sounds.crash1(scoreSize);
@@ -140,7 +141,7 @@ function fingerboss() {
 		if (winner) {
 			var winningScores = state.scores;
 			resetGame(state, world);
-			var isWinner = winner.color === state.color.toString();
+			var isWinner = winner.color === world.color.toString();
 			if (isWinner) {
 				setTimeout(world.sounds.fingerboss.bind(null, 1), 250);
 			} else {
