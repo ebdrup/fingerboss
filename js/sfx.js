@@ -9,10 +9,11 @@ function sfx() {
 			volume: 0.3
 		});
 		acc[key] = function (volume) {
-			if (volume) {
-				sound._volume = volume;
-			}
-			sound.play();
+			sound.play(function(soundId){
+				if (volume) {
+					sound.volume(volume, soundId);
+				}
+			});
 		};
 		return acc;
 	}, {});
