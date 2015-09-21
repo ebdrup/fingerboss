@@ -11,7 +11,7 @@ function sfx() {
 		acc[key] = function (volume) {
 			sound.play(function(soundId){
 				if (volume) {
-					//sound.volume(volume, soundId);
+					sound.volume(volume, soundId);
 				}
 			});
 		};
