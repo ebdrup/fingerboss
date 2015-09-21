@@ -67,6 +67,9 @@ function initWorld(state, world) {
 	}
 
 	function onPing() {
-		world.socket.emit('pong', 1);
+		var timedOut = !world.lastInteraction || (world.lastInteraction + PLAYER_TIMEOUT < Date.now());
+		if(!timedOut) {
+			world.socket.emit('pong', 1);
+		}
 	}
 }

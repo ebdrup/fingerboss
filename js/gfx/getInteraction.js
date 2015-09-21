@@ -16,6 +16,7 @@ function getInteraction(state, world) {
 	return sprite;
 
 	function onDown(e) {
+		world.lastInteraction = Date.now();
 		if (state.newCircle || !state.readyToPlay) {
 			return;
 		}
@@ -63,6 +64,7 @@ function getInteraction(state, world) {
 	}
 
 	function onUp() {
+		world.lastInteraction = Date.now();
 		var circle;
 		if (state.newCircle) {
 			state.newCircle.tl.kill();
