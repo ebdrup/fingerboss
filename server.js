@@ -15,7 +15,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 var port = process.env.PORT || 7890;
 var colors = [0x5856d6, 0xff2d55, 0x4cd964, 0x007aff, 0xff3b30, 0x5ac8fa, 0xffcc00, 0x34aadc];//0x8e8e93
 var colorIndex = Math.round(Math.random() * colors.length);
-var lastPlayerCount = 0;
 var socketLastSeen = {};
 
 var TIMEOUT = 20 * 1000;
@@ -44,11 +43,8 @@ io.on('connection', function (socket) {
 		delete socketLastSeen[socket.id];
 		checkPlayerCount();
 	});
-	if (lastPlayerCount === 1) {
-		broadcast('ping', 1);
-	} else {
-		checkPlayerCount();
-	}
+	broadcast('ping', 1);
+	checkPlayerCount();
 });
 
 
