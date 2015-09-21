@@ -1,6 +1,6 @@
 function sfx() {
 	return ['newCircle', 'crash1', 'crash2', 'shrink', 'fingerboss', 'loose'].reduce(function(acc, key){
-		var exts = window.intel ? ['wav', 'mp3'] : ['mp3', 'wav'];
+		var exts = window.intel ? ['wav'] : ['mp3'];
 		var urls = exts.map(function(ext){
 			return 'sound/' + key + '.' + ext;
 		});
