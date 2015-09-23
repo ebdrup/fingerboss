@@ -8,7 +8,7 @@ gulp.task('compress', function () {
 	return gulp.src(['js/**/*.js'])
 		.pipe(sourcemaps.init())
 		.pipe(uglify())
-		.pipe(addSrc('js-min/*.js'))
+		.pipe(addSrc(['js-min/*.min.js','js-min/*.min.last.js']))
 		.pipe(concat('bundle.js'))
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest('public'));

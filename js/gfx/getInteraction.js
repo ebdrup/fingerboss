@@ -92,7 +92,6 @@ function getInteraction(state, world) {
 				world.stage.addChild(state.newCircle.sprite)
 			}
 			state.newCircle = null;
-			console.log(circle, world.players);
 			if (circle && world.players === 1) {
 				circle.color = world.color;
 				circle.t = getEstimatedServerT(world);

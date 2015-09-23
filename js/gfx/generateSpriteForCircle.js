@@ -16,6 +16,7 @@ function generateSpriteForCircle(world, c) {
 	sprite.position.y = c.y * world.renderer.view.height;
 	sprite.width = c.size * world.renderer.view.width;
 	sprite.height = c.size * world.renderer.view.height;
+	sprite.color = c.color;
 	return sprite;
 }
 

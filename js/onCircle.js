@@ -1,10 +1,8 @@
 
 function onCircle(state, world, c) {
-	console.log('onCircle1');
 	if (!state.playing) {
 		return;
 	}
-	console.log('onCircle2');
 	world.sounds.newCircle();
 	//remove unconfirmed circle
 	c.sprite = generateSpriteForCircle(world, c);
@@ -34,7 +32,6 @@ function onCircle(state, world, c) {
 			if (c1.size <= KILL_SIZE) {
 				anyKill = true;
 				indexesToRemove.push(i);
-				killCircleSprite(world.stage, c1.sprite);
 				//scoreCircle for kill
 				state.scores[c.color] = state.scores[c.color] || {value: 0};
 				var scoreCircle = {
@@ -42,7 +39,8 @@ function onCircle(state, world, c) {
 					x: c.x,
 					y: c.y,
 					size: (c1.size + cSize) * KILL_SCORE_FACTOR,
-					color: c.color
+					color: c.color,
+					sprite: c1.sprite
 				};
 				state.scores[c.color].value += scoreCircle.size;
 				state.scoreCircles.push(scoreCircle);
@@ -55,7 +53,8 @@ function onCircle(state, world, c) {
 			}
 			if (c.size <= KILL_SIZE) {
 				state.circles.pop(); // remove c
-				killCircleSprite(world.stage, c.sprite);
+				c.size = 0;
+				state.scoreCircles.push(c);
 				break;
 			}
 		}

@@ -9,8 +9,9 @@ var io = require('socket.io')(http);
 app.disable('x-powered-by');
 app.use(compression());
 app.use(express.static(path.join(__dirname, 'favicon')));
-app.use(express.static(path.join(__dirname, 'js')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'js')));
+app.use(express.static(path.join(__dirname, 'js-min')));
 
 var port = process.env.PORT || 7890;
 var colors = [0x5856d6, 0xff2d55, 0x4cd964, 0x007aff, 0xff3b30, 0x5ac8fa, 0xffcc00, 0x34aadc];//0x8e8e93

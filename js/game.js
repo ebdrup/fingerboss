@@ -83,6 +83,7 @@ function fingerboss() {
 		state.scoreCircles.forEach(function (c) {
 			var scoreSize = c.size === c.unverifiedScore ? c.size : c.size - (c.unverifiedScore || 0);
 			if (!scoreSize) {
+				killCircleSprite(world.stage, c.sprite);
 				return;
 			}
 			var styleColor = '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
@@ -97,19 +98,25 @@ function fingerboss() {
 			text.anchor.x = 0.5;
 			text.anchor.y = 0.5;
 			var h = Math.ceil(text.height / 2);
+			var w = Math.ceil(text.width / 2);
+			var x = c.x * world.renderer.view.width;
 			var y = getMovedCircleY(world, c, estimatedServerT);
 			if (y > 1) {
 				y = world.renderer.view.height - h;
 				world.sounds.crash1(scoreSize);
+				world.stage.removeChild(c.sprite);
 			} else if (y < 0) {
 				y = h;
 				world.sounds.crash1(scoreSize);
+				world.stage.removeChild(c.sprite);
 			} else {
 				y *= world.renderer.view.height;
 				world.sounds.crash2(Math.min(scoreSize * 4, 1));
+				setFire(world.stage, c);
+				killCircleSprite(world.stage, c.sprite);
 			}
-			text.position.y = y;
-			text.position.x = c.x * world.renderer.view.width;
+			text.position.y = Math.min(Math.max(y, h), world.renderer.view.height - h);
+			text.position.x = Math.min(Math.max(x, w), world.renderer.view.width - w);
 			world.stage.addChild(text);
 			text.tl = new TimelineMax({
 				autoRemoveChildren: true,
@@ -120,11 +127,11 @@ function fingerboss() {
 						delete text.tl;
 					}
 				}
-			}).to(text, 1.5, {alpha: 0, width: text.width * 1.2, height: text.height * 1.2});
+			}).to(text, 2.5, {alpha: 0, width: text.width * 1.2, height: text.height * 1.2});
 			var targetY = getMovedCircleY(world, c, estimatedServerT) > 1 ? text.position.y - h : text.position.y + h;
 			text.tl2 = new TimelineMax({
 				autoRemoveChildren: true
-			}).to(text.position, 1.5, {y: targetY});
+			}).to(text.position, 2.5, {y: targetY});
 		});
 		state.scoreCircles = [];
 		//check for winner
