@@ -8,7 +8,7 @@ function initWorld(state, world) {
 	world.textures = {};
 	world.sounds = sfx();
 	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
-		backgroundColor: 0x000000,
+		backgroundColor: BACKGROUND_COLOR,
 		antialias: true
 	});
 	document.body.appendChild(world.renderer.view);

@@ -1,6 +1,6 @@
 function getInteraction(state, world) {
 	var gfx = new PIXI.Graphics();
-	gfx.beginFill(0x000000);
+	gfx.beginFill(BACKGROUND_COLOR);
 	gfx.drawRect(0, 0, 1, 1);
 	var sprite = new PIXI.Sprite(gfx.generateTexture());
 	// center the sprite's anchor point
