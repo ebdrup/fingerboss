@@ -1,5 +1,3 @@
-
-
 function killCircleSprite(stage, sprite) {
 	if (sprite.tl) {
 		sprite.tl.kill();
