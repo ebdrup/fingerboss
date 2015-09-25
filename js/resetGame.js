@@ -13,8 +13,5 @@ function resetGame(state, world) {
 		for (var i = world.stage.children.length - 1; i >= 0; i--) {
 			world.stage.removeChild(world.stage.children[i]);
 		}
-		if (world.background) {
-			world.stage.addChild(world.background);
-		}
 	}
 }

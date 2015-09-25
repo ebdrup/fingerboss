@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+	<title>displacement</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+		}
+	</style>
+</head>
+<body>
+<script src="/pixi.min.js"></script>
+<script>
+	var h = 500;
+	var w = 500;
+	var renderer = PIXI.autoDetectRenderer(h, w, {
+		backgroundColor: 0xffffff,
+		antialias: true
+	});
+	var gfx = new PIXI.Graphics();
+	for (var x = 0; x < w; x++) {
+		for (var y = 0; y < h; y++) {
+
+			var color = 0xffffff - 0x010101 * Math.round((y / h) * Math.sin((x / w) * Math.PI) * 256);
+			gfx.beginFill(color);
+			gfx.drawRect(x, y, 1, 1);
+		}
+	}
+	document.body.appendChild(renderer.view);
+	animate();
+	function animate() {
+		requestAnimationFrame(animate);
+		renderer.render(gfx);
+	}
+	var canvas = renderer.view;
+	var img = canvas.toDataURL("image/png");
+	document.write('<a href="' + img + '" download="displacement.png"/>download</a>');
+</script>
+</body>
+</html>

@@ -12,9 +12,12 @@ function initWorld(state, world) {
 		antialias: true
 	});
 	document.body.appendChild(world.renderer.view);
-	world.stage = new PIXI.Container();
+	world.mainStage = new PIXI.Container();
 	world.background = getInteraction(state, world);
-	world.stage.addChild(world.background);
+	world.mainStage.addChild(world.background);
+	world.stage = new PIXI.Container();
+	world.mainStage.addChild(world.stage);
+
 	window.onresize = function () {
 		world.renderer.resize(window.innerWidth, window.innerHeight);
 		world.background.width = world.renderer.view.width;
@@ -40,6 +43,7 @@ function initWorld(state, world) {
 	world.socket.on('circle', onCircleTime);
 	world.socket.on('players', onPlayers);
 	world.socket.on('ping', onPing);
+	return;
 
 	function onCircleTime(c) {
 		// find median latency

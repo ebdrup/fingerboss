@@ -36,7 +36,7 @@ var fire = {
 	"frequency": 0.00001,
 	"emitterLifetime": 0.05,
 	"maxParticles": 500,
-	"addAtBack": false,
+	"addAtBack": true,
 	"spawnType": "circle",
 	"spawnCircle": {
 		"x": 0,
@@ -47,11 +47,12 @@ var fire = {
 function setFire(container, c) {
 	var sprite = c.sprite;
 	var conf = JSON.parse(JSON.stringify(fire));
-	var factor = 0.2 + c.size *2;
+	var factor = 0.3 + c.size *2;
 	conf.scale.start *= factor;
 	conf.scale.end *= factor;
 	conf.speed.start *= factor;
 	conf.speed.end *= factor;
+	conf.color.start =  '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
 	conf.color.end =  '#' + ('000000' + parseInt(c.sprite.color, 10).toString(16)).slice(-6);
 	conf.pos = sprite.position;
 	var emitter = new cloudkid.Emitter(

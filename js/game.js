@@ -9,7 +9,7 @@ function fingerboss() {
 	function animate() {
 		requestAnimationFrame(animate);
 		if (!state.playing) {
-			world.renderer.render(world.stage);
+			world.renderer.render(world.mainStage);
 			return;
 		}
 		computerPlayer(state, world);
@@ -177,6 +177,6 @@ function fingerboss() {
 			}, 1500);
 		}
 		// render the container
-		world.renderer.render(world.stage);
+		world.renderer.render(world.mainStage);
 	}
 }
