@@ -44,6 +44,7 @@ var fire = {
 		"r": 10
 	}
 };
+var fireTexture = PIXI.Texture.fromImage('fire.png');
 function setFire(container, c) {
 	var sprite = c.sprite;
 	var conf = JSON.parse(JSON.stringify(fire));
@@ -57,7 +58,7 @@ function setFire(container, c) {
 	conf.pos = sprite.position;
 	var emitter = new cloudkid.Emitter(
 		container,
-		[PIXI.Texture.fromImage('fire.png')],
+		[fireTexture],
 		conf);
 	var elapsed = Date.now();
 	var lastDt = 0;
