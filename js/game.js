@@ -179,27 +179,30 @@ function fingerboss() {
 			}
 			var str = isWinner ? 'You won!' : 'You lost';
 			if (isWinner && levelUp) {
-				str += '\nYou are now\nlevel ' + world.level;
+				str += '\nYou are now\nlevel: ' + world.level;
 			} else if (isWinner) {
 				str += '\nWins: ' + world.wins;
 			}
-			var fontSize = getFontSize(world, str);
-			var style = {
-				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-				fill: '#' + ('000000' + parseInt(winner.color, 10).toString(16)).slice(-6),
-				align: 'center'
-			};
-			var text = new PIXI.Text(str, style);
+			var text = getText(world, str, winner.color);
 			text.anchor.x = 0.5;
 			text.anchor.y = 0.5;
 			text.x = Math.round(world.renderer.view.width / 2);
 			text.y = Math.round(world.renderer.view.height / 2);
+			world.stage.addChild(text);
+			if (isWinner && !levelUp) {
+				var nextLevelText = getText(world, 'Next level is at ' + Math.ceil(world.wins / 10) * 10 + ' wins', winner.color);
+				nextLevelText.anchor.x = 0.5;
+				nextLevelText.anchor.y = 0.5;
+				text.y -= Math.round(nextLevelText.height / 2);
+				nextLevelText.x = text.x;
+				nextLevelText.y = text.y + Math.round(nextLevelText.height + (text.height / 2.3));
+				world.stage.addChild(nextLevelText);
+			}
 			Object.keys(winningScores).forEach(function (key) {
 				var s = winningScores[key];
 				world.stage.addChild(s.text);
 				world.stage.addChild(s.levelText);
 			});
-			world.stage.addChild(text);
 			state.playing = false;
 			state.readyToPlay = false;
 			setTimeout(function () {
