@@ -83,7 +83,8 @@ function getInteraction(state, world) {
 					x: state.newCircle.x,
 					y: state.newCircle.y,
 					size: state.newCircle.size,
-					localTime: Date.now()
+					localTime: Date.now(),
+					level: world.level
 				};
 				if (world.players > 1) {
 					world.socket.emit('circle', circle);

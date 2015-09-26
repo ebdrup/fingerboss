@@ -32,7 +32,7 @@ function onCircle(state, world, c) {
 				anyKill = true;
 				indexesToRemove.push(i);
 				//scoreCircle for kill
-				state.scores[c.color] = state.scores[c.color] || {value: 0};
+				state.scores[c.color] = state.scores[c.color] || {value: 0, level: c.level};
 				var scoreCircle = {
 					t: c.t,
 					x: c.x,

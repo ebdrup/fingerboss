@@ -47,7 +47,7 @@ function fingerboss() {
 		state.circles.forEach(function (c1) {
 			var y = getMovedCircleY(world, c1, estimatedServerT);
 			if (!c1.unverifiedScore && (y < -c1.size / 2 || y > 1 + c1.size / 2)) {
-				state.scores[c1.color] = state.scores[c1.color] || {value: 0};
+				state.scores[c1.color] = state.scores[c1.color] || {value: 0, level: c1.level};
 				state.scores[c1.color].value += c1.size;
 				c1.unverifiedScore = c1.size;
 				state.scoreCircles.push(c1);
@@ -69,15 +69,27 @@ function fingerboss() {
 					font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
 					fill: styleColor
 				};
+				var levelStyle = {
+					font: 'bold ' + Math.round(fontSize / 2.5) + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
+					fill: styleColor,
+					align: 'center'
+				};
+				var levelStr = (typeof s.level === 'number') ? 'level\n' + s.level : 'robot';
 				if (s.text) {
 					s.text.text = score + '';
 					s.text.style = style;
+					s.levelText.text = levelStr;
+					s.levelText.style = levelStyle;
 				} else {
 					s.text = new PIXI.Text(score + '', style);
 					world.stage.addChild(s.text);
+					s.levelText = new PIXI.Text(levelStr, levelStyle);
+					world.stage.addChild(s.levelText);
+					s.text.anchor.y = s.levelText.anchor.y = 0.5;
 				}
-				s.text.position.y = 10 + Math.round((i * fontSize * 1.1));
-				s.text.position.x = 10;
+				s.levelText.position.y = s.text.position.y = 10 + Math.round((i * fontSize * 1.1) + s.text.height / 2);
+				s.levelText.position.x = 10;
+				s.text.position.x = 20 + s.levelText.width;
 			});
 		//new points
 		state.scoreCircles.forEach(function (c) {
@@ -182,6 +194,7 @@ function fingerboss() {
 			Object.keys(winningScores).forEach(function (key) {
 				var s = winningScores[key];
 				world.stage.addChild(s.text);
+				world.stage.addChild(s.levelText);
 			});
 			world.stage.addChild(text);
 			state.playing = false;
