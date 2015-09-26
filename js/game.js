@@ -156,10 +156,10 @@ function fingerboss() {
 				}
 				return {score: score, color: key};
 			})
+			.filter(Boolean)
 			.sort(function (s1, s2) {
 				return s2.score - s1.score;
-			})
-			.filter(Boolean)[0];
+			})[0];
 		if (winner) {
 			var winningScores = state.scores;
 			var levelUp = false;
