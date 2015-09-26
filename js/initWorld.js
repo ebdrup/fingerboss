@@ -6,6 +6,8 @@ function initWorld(state, world) {
 	world.id = Math.random() + '_' + Date.now();
 	world.socket = io();
 	world.textures = {};
+	world.wins = parseInt(readCookie('wins') || '0', 10);
+	world.level = levelFromWins(world.wins);
 	world.sounds = sfx();
 	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: BACKGROUND_COLOR,
@@ -72,7 +74,7 @@ function initWorld(state, world) {
 
 	function onPing() {
 		var timedOut = !world.lastInteraction || (world.lastInteraction + PLAYER_TIMEOUT < Date.now());
-		if(!timedOut) {
+		if (!timedOut) {
 			world.socket.emit('pong', 1);
 		}
 	}

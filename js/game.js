@@ -147,18 +147,32 @@ function fingerboss() {
 			.filter(Boolean)[0];
 		if (winner) {
 			var winningScores = state.scores;
+			var levelUp = false;
 			resetGame(state, world);
 			var isWinner = winner.color === world.color.toString();
 			if (isWinner) {
 				setTimeout(world.sounds.fingerboss.bind(null, 1), 250);
+				world.wins++;
+				writeCookie('wins', world.wins);
+				var newLevel = levelFromWins(world.wins);
+				levelUp = world.level !== newLevel;
+				if (levelUp) {
+					world.level = newLevel;
+				}
 			} else {
 				world.sounds.loose();
 			}
 			var str = isWinner ? 'You won!' : 'You lost';
-			var fontSize = Math.max(Math.ceil(world.renderer.view.width * 0.20), 30);
+			if (isWinner && levelUp) {
+				str += '\nYou are now\nlevel ' + world.level;
+			} else if (isWinner) {
+				str += '\nWins: ' + world.wins;
+			}
+			var fontSize = getFontSize(world, str);
 			var style = {
 				font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-				fill: '#' + ('000000' + parseInt(winner.color, 10).toString(16)).slice(-6)
+				fill: '#' + ('000000' + parseInt(winner.color, 10).toString(16)).slice(-6),
+				align: 'center'
 			};
 			var text = new PIXI.Text(str, style);
 			text.anchor.x = 0.5;

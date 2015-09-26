@@ -67,8 +67,10 @@ function getInteraction(state, world) {
 		world.lastInteraction = Date.now();
 		var circle;
 		if (state.newCircle) {
-			state.newCircle.tl.kill();
-			delete state.newCircle.tl;
+			if(state.newCircle.tl) {
+				state.newCircle.tl.kill();
+				delete state.newCircle.tl;
+			}
 			world.stage.removeChild(state.newCircle.sprite);
 			delete state.newCircle.sprite;
 			world.stage.removeChild(state.newCircle.innerSprite);

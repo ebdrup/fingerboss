@@ -1,4 +1,3 @@
-
 function onCircle(state, world, c) {
 	if (!state.playing) {
 		return;
@@ -46,7 +45,7 @@ function onCircle(state, world, c) {
 				state.scoreCircles.push(scoreCircle);
 				if (world.color === c.color) {
 					state.killCount++;
-					if (state.killCount === 1) {
+					if (state.killCount === 1 && world.level === 0) {
 						help(state, world, 'Your first kill!')
 					}
 				}
@@ -63,8 +62,11 @@ function onCircle(state, world, c) {
 		world.sounds.shrink(0.04);
 		if (c.color === world.color) {
 			state.shrinkCount++;
-			if (state.shrinkCount === 1 || state.shrinkCount === 10) {
+			if (world.level === 0 && (state.shrinkCount === 1 || state.shrinkCount === 10)) {
 				help(state, world, 'Try holding down longer');
+			}
+			if (world.level === 0 && (state.shrinkCount === 5 || state.shrinkCount === 15)) {
+				help(state, world, 'Make your circle bigger\nthan the one you hit');
 			}
 		}
 	}
@@ -113,14 +115,14 @@ function onCircle(state, world, c) {
 	}
 
 	function isColliding(c1, c2, t) {
-		if(!c1.size || !c2.size){
+		if (!c1.size || !c2.size) {
 			return false;
 		}
 		var distance = Math.sqrt(
 			Math.pow(Math.abs(c2.x - c1.x), 2) +
 			Math.pow(Math.abs(getMovedCircleY(world, c2, t) - getMovedCircleY(world, c1, t)), 2)
 		);
-		var minDistance = (c2.size + c1.size)/2;
+		var minDistance = (c2.size + c1.size) / 2;
 		return distance < minDistance;
 	}
 }
