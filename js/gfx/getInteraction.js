@@ -42,10 +42,12 @@ function getInteraction(state, world) {
 		}).to(state.newCircle, GROW_TIME, {size: END_SIZE, ease: Power1.easeOut});
 		state.newCircle.sprite = generateSpriteForCircle(world, state.newCircle);
 		state.newCircle.sprite.alpha = GROWING_ALPHA;
+		state.newCircle.sprite.visible = false;
 		state.newCircle.innerSprite = generateSpriteForCircle(world, innerCircle);
 		state.newCircle.innerSprite.alpha = UNCONFIRMED_ALPHA;
 		world.stage.addChild(state.newCircle.sprite);
 		world.stage.addChild(state.newCircle.innerSprite);
+		newCircleEmitter(world, state);
 	}
 
 	function getX(e) {
@@ -67,7 +69,7 @@ function getInteraction(state, world) {
 		world.lastInteraction = Date.now();
 		var circle;
 		if (state.newCircle) {
-			if(state.newCircle.tl) {
+			if (state.newCircle.tl) {
 				state.newCircle.tl.kill();
 				delete state.newCircle.tl;
 			}
@@ -90,6 +92,7 @@ function getInteraction(state, world) {
 					world.socket.emit('circle', circle);
 				}
 				state.newCircle.sprite = generateSpriteForCircle(world, state.newCircle);
+				state.newCircle.sprite.visible = false;
 				state.newCircle.sprite.alpha = UNCONFIRMED_ALPHA;
 				state.unconfirmedCircless[state.newCircle.id] = state.newCircle;
 				world.stage.addChild(state.newCircle.sprite)
