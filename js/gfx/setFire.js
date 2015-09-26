@@ -4,8 +4,8 @@ var fire = {
 		"end": 0
 	},
 	"scale": {
-		"start": 1,
-		"end": 3,
+		"start": 0.25,
+		"end": 0.75,
 		"minimumScaleMultiplier": 1
 	},
 	"color": {
@@ -33,7 +33,7 @@ var fire = {
 		"max": 0.75
 	},
 	"blendMode": "add",
-	"frequency": 0.002,
+	"frequency": 0.0001,
 	"emitterLifetime": 0.15,
 	"maxParticles": 500,
 	"addAtBack": true,
@@ -57,7 +57,7 @@ function setFire(container, c) {
 	conf.pos = sprite.position;
 	var emitter = new cloudkid.Emitter(
 		container,
-		[PIXI.Texture.fromImage('particle.png')],
+		[PIXI.Texture.fromImage('fire.png')],
 		conf);
 	var elapsed = Date.now();
 	var lastDt = 0;
