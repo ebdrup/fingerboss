@@ -48,7 +48,7 @@ function fingerboss() {
 			state.newCircleText.text = score;
 			state.newCircleText.position.x = state.newCircle.x * world.renderer.view.width;
 			state.newCircleText.position.y = state.newCircle.y * world.renderer.view.height -
-				Math.max(state.newCircle.size / 2, 0.05) * world.renderer.view.height;
+				Math.max(state.newCircle.size / 2, 0.07) * world.renderer.view.height;
 		} else if (state.newCircleText) {
 			state.newCircleText.visible = false;
 		}
@@ -83,7 +83,7 @@ function fingerboss() {
 					fill: styleColor,
 					align: 'center'
 				};
-				var levelStr = (typeof s.level === 'number') ? 'level\n' + s.level : 'robot';
+				var levelStr = (typeof s.level === 'number') ? 'level\n' + s.level : 'robot\n ';
 				if (s.text) {
 					s.text.text = score + '';
 					s.text.style = style;
