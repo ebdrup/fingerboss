@@ -6,7 +6,7 @@ function computerPlayer(state, world) {
 		return;
 	}
 	var s = Math.random() / 5;
-	state.nextComputerFire = s * 5900 + 500 + Date.now();
+	state.nextComputerFire = (s * 5900 + 500)/1.5 + Date.now();
 	var x, y;
 	if (state.lastCircle && Math.random() > 0.5) {
 		x = state.lastCircle.x;
@@ -22,6 +22,6 @@ function computerPlayer(state, world) {
 		color: 0xff9500,
 		x: x,
 		y: y,
-		size: s
+		size: s/2
 	});
 }

@@ -69,8 +69,8 @@ function newCircleEmitter(world, state) {
 			var rot = 360 * ((totalDt % rotTime) - rotTime / 2) / rotTime;
 			emitter.maxStartRotation = (rot+10)%360;
 			emitter.minStartRotation = (rot-10)%360;
-			emitter.spawnPos.x = state.newCircle.sprite.position.x + (Math.sin(rot * Math.PI / 180) * state.newCircle.innerSprite.width / 2);
-			emitter.spawnPos.y = state.newCircle.sprite.position.y + (Math.cos((rot + 180) * Math.PI / 180) * state.newCircle.innerSprite.height / 2);
+			emitter.spawnPos.x = state.newCircle.sprite.position.x + (Math.sin(rot * Math.PI / 180) * state.newCircle.sprite.width / 2);
+			emitter.spawnPos.y = state.newCircle.sprite.position.y + (Math.cos((rot + 180) * Math.PI / 180) * state.newCircle.sprite.height / 2);
 		}
 		var now = Date.now();
 		var dt = now - elapsed;

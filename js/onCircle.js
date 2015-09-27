@@ -23,7 +23,7 @@ function onCircle(state, world, c) {
 		if (!c1 || !c || c1.color === c.color) {
 			continue;
 		}
-		if (isColliding(c, c1, t)) {
+		if (isColliding(world, c, c1, t)) {
 			anyCollision = true;
 			var cSize = c.size;
 			c.size -= c1.size;
@@ -100,7 +100,7 @@ function onCircle(state, world, c) {
 			if (!c2 || !c1 || c2.color !== c1.color || c2 === c1) {
 				continue;
 			}
-			if (isColliding(c1, c2, t)) {
+			if (isColliding(world, c1, c2, t)) {
 				if (c2.size > c1.size) {
 					c2.size += c1.size;
 					c1.size = 0;
@@ -112,17 +112,5 @@ function onCircle(state, world, c) {
 				}
 			}
 		}
-	}
-
-	function isColliding(c1, c2, t) {
-		if (!c1.size || !c2.size) {
-			return false;
-		}
-		var distance = Math.sqrt(
-			Math.pow(Math.abs(c2.x - c1.x), 2) +
-			Math.pow(Math.abs(getMovedCircleY(world, c2, t) - getMovedCircleY(world, c1, t)), 2)
-		);
-		var minDistance = (c2.size + c1.size) / 2;
-		return distance < minDistance;
 	}
 }
