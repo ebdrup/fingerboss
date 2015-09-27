@@ -44,7 +44,7 @@ function fingerboss() {
 				world.stage.addChild(state.newCircleText);
 			}
 			state.newCircleText.visible = true;
-			var score = Math.ceil(state.newCircle.size * 500);
+			var score = Math.ceil(state.newCircle.size * SCORE_FACTOR);
 			state.newCircleText.text = score;
 			state.newCircleText.position.x = state.newCircle.x * world.renderer.view.width;
 			state.newCircleText.position.y = state.newCircle.y * world.renderer.view.height -
@@ -72,7 +72,7 @@ function fingerboss() {
 			.forEach(function (key, i) {
 				var styleColor = '#' + ('000000' + parseInt(key, 10).toString(16)).slice(-6);
 				var s = state.scores[key];
-				var score = Math.ceil(s.value * 500);
+				var score = Math.ceil(s.value * SCORE_FACTOR);
 				var fontSize = Math.max(Math.ceil(world.renderer.view.height * 0.075), 30);
 				var style = {
 					font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
@@ -108,7 +108,7 @@ function fingerboss() {
 				return;
 			}
 			var styleColor = '#' + ('000000' + parseInt(c.color, 10).toString(16)).slice(-6);
-			var score = Math.max(Math.round(scoreSize * 500), 1);
+			var score = Math.max(Math.round(scoreSize * SCORE_FACTOR), 1);
 			var scoreSizeFactor = (c.color === world.color) ? 1 : 0.3;
 			var fontSize = Math.max(Math.ceil(world.renderer.view.height * (0.015 + scoreSize) * scoreSizeFactor), 30);
 			var style = {
@@ -159,7 +159,7 @@ function fingerboss() {
 		var winner = Object.keys(state.scores)
 			.map(function (key) {
 				var s = state.scores[key];
-				var score = Math.ceil(s.value * 500);
+				var score = Math.ceil(s.value * SCORE_FACTOR);
 				if (score < WINNING_SCORE) {
 					return null;
 				}
