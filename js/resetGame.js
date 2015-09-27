@@ -3,6 +3,7 @@ function resetGame(state, world) {
 	state.unconfirmedCircless = {};
 	state.scores = {};
 	state.newCircle = null;
+	state.newCircleText = null;
 	state.scoreCircles = [];
 	state.readyToPlay = true;
 	state.playing = true;

@@ -37,6 +37,20 @@ function fingerboss() {
 			state.newCircle.sprite.position.y = state.newCircle.y * world.renderer.view.height;
 			state.newCircle.sprite.width = state.newCircle.size * world.renderer.view.width;
 			state.newCircle.sprite.height = state.newCircle.size * world.renderer.view.height;
+			if (!state.newCircleText) {
+				state.newCircleText = getText(world, '1', world.color, getFontSize(world, 30));
+				state.newCircleText.anchor.x = 0.5;
+				state.newCircleText.anchor.y = 1;
+				world.stage.addChild(state.newCircleText);
+			}
+			state.newCircleText.visible = true;
+			var score = Math.ceil(state.newCircle.size * 500);
+			state.newCircleText.text = score;
+			state.newCircleText.position.x = state.newCircle.x * world.renderer.view.width;
+			state.newCircleText.position.y = state.newCircle.y * world.renderer.view.height -
+				Math.max(state.newCircle.size / 2, 0.05) * world.renderer.view.height;
+		} else if (state.newCircleText) {
+			state.newCircleText.visible = false;
 		}
 		//score state.circles out of frame (unverified by server, they might get killed)
 		state.circles.forEach(function (c1) {
