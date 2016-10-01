@@ -56,7 +56,8 @@ function checkPlayerCount() {
 		}
 	});
 	var players = Object.keys(socketLastSeen).length;
-	io.sockets.sockets.forEach(function (socket) {
+	Object.keys(io.sockets.sockets).forEach(id => {
+		var socket = io.sockets.sockets[id];
 		var shouldEmit = (players === 1 && socketLastSeen[socket.id]) || players > 1;
 		var isNonEmittedCount = !socket.lastPlayerCount || socket.lastPlayerCount !== players;
 		if (shouldEmit && isNonEmittedCount) {
