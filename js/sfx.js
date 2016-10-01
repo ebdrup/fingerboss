@@ -5,15 +5,16 @@ function sfx() {
 			return 'sound/' + key + '.' + ext;
 		});
 		var sound = new Howl({
-			urls: urls,
+			src: urls,
 			volume: 0.3
 		});
 		acc[key] = function (volume) {
-			sound.play(function(soundId){
-				if (volume) {
-					sound.volume(volume, soundId);
-				}
-			});
+			var id = sound.play();
+			if (volume) {
+				sound.volume(volume, id);
+			} else {
+				sound.volume(0.3, id);
+			}
 		};
 		return acc;
 	}, {});
