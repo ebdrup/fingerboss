@@ -10,7 +10,7 @@ var newCircleEmitterConf = {
 	},
 	"color": {
 		"start": "#ffffff",
-		"end": "#ff622c"
+		"end": "#000000"
 	},
 	"speed": {
 		"start": 70,
@@ -29,8 +29,8 @@ var newCircleEmitterConf = {
 		"max": 50
 	},
 	"lifetime": {
-		"min": 0.05,
-		"max": 0.3
+		"min": 0.005,
+		"max": 0.01
 	},
 	"blendMode": "add",
 	"frequency": 0.001,
@@ -48,38 +48,31 @@ var newCircleEmitterConf = {
 		"r": 0
 	}
 };
-function newCircleEmitter(world, state) {
+function getEmitter(part) {
 	var conf = JSON.parse(JSON.stringify(newCircleEmitterConf));
+	conf.color.start = '#' + part.color.toString(16);
+	//conf.color.end = 0;
 	var emitter = new cloudkid.Emitter(
 		world.stage,
 		[particleTexture],
 		conf);
 	var elapsed = Date.now();
-	var start = Date.now();
-	var lastDt = 0;
 	var update = function () {
 		requestAnimationFrame(update);
-		if (!state.newCircle) {
+		if (false) {
 			emitter.emit = false;
 		} else {
 			emitter.emit = true;
-			//emitter.color.end = '#' + ('000000' + parseInt(state.newCircle.color, 10).toString(16)).slice(-6);
-			var totalDt = Date.now() - start;
-			var rotTime = 500;
-			var rot = 360 * ((totalDt % rotTime) - rotTime / 2) / rotTime;
-			emitter.maxStartRotation = (rot+10)%360;
-			emitter.minStartRotation = (rot-10)%360;
-			emitter.spawnPos.x = state.newCircle.sprite.position.x + (Math.sin(rot * Math.PI / 180) * state.newCircle.sprite.width / 2);
-			emitter.spawnPos.y = state.newCircle.sprite.position.y + (Math.cos((rot + 180) * Math.PI / 180) * state.newCircle.sprite.height / 2);
+			emitter.maxStartRotation = 0;
+			emitter.minStartRotation = 0;
+			emitter.spawnPos.x = (part.x - state.pos.x) * world.renderer.view.width;
+			emitter.spawnPos.y = (part.y - state.pos.y) * world.renderer.view.height;
 		}
 		var now = Date.now();
 		var dt = now - elapsed;
 		emitter.update(dt * 0.001);
 		elapsed = now;
-		lastDt = dt;
 	};
 	update();
-	newCircleEmitter = function () {
-	};
 	return emitter;
 }

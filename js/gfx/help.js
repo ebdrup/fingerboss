@@ -1,4 +1,4 @@
-function help(state, world, str) {
+function help(str) {
 	var fontSize = getFontSize(world, str);
 	var style = {
 		font: 'bold ' + fontSize + 'px Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',

@@ -1,17 +1,18 @@
 require("nodeversioncheck");
-var express = require('express');
-var compression = require('compression');
-var path = require('path');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+const express = require('express');
+const compression = require('compression');
+const path = require('path');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const staticFiles = require('./staticFiles');
 
 app.disable('x-powered-by');
 app.use(compression());
 app.use(express.static(path.join(__dirname, 'favicon')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'js')));
-app.use(express.static(path.join(__dirname, 'js-min')));
+staticFiles.forEach(p => app.get(path.basename(p), (req, res) => res.sendFile(p)));
 
 var port = process.env.PORT || 7890;
 var colors = [0x5856d6, 0xff2d55, 0x4cd964, 0x007aff, 0xff3b30, 0x5ac8fa, 0xffcc00, 0x34aadc];//0x8e8e93
@@ -29,11 +30,11 @@ io.on('connection', function (socket) {
 		t: Date.now(),
 		velocity: 0.0002
 	});
-	socket.on('circle', function (c) {
+	socket.on('move', function (snake) {
 		socketLastSeen[socket.id] = Date.now();
-		c.color = color;
-		c.t = Date.now();
-		broadcast('circle', c);
+		snake.color = color;
+		snake.t = Date.now();
+		broadcast('move', snake);
 		checkPlayerCount();
 	});
 	socket.on('pong', function () {

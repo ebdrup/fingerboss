@@ -1,4 +1,4 @@
-function initWorld(state, world) {
+function initWorld() {
 	world.dClock = 0;
 	world.dClocks = [];
 	world.latency = 120;
@@ -7,7 +7,6 @@ function initWorld(state, world) {
 	world.socket = io();
 	world.textures = {};
 	world.wins = parseInt(readCookie('wins') || '0', 10);
-	world.level = levelFromWins(world.wins);
 	world.sounds = sfx();
 	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: BACKGROUND_COLOR,
@@ -15,8 +14,10 @@ function initWorld(state, world) {
 	});
 	document.body.appendChild(world.renderer.view);
 	world.mainStage = new PIXI.Container();
-	world.background = getInteraction(state, world);
+	world.background = touch();
 	world.mainStage.addChild(world.background);
+	world.starField = new PIXI.Container();
+	world.mainStage.addChild(world.starField);
 	world.stage = new PIXI.Container();
 	world.mainStage.addChild(world.stage);
 
@@ -24,11 +25,11 @@ function initWorld(state, world) {
 		world.renderer.resize(window.innerWidth, window.innerHeight);
 		world.background.width = world.renderer.view.width;
 		world.background.height = world.renderer.view.height;
-		state.circles.forEach(function (c) {
+		/*state.snakes.forEach(function (c) {
 			world.stage.removeChild(c.sprite);
 			c.sprite = generateSpriteForCircle(world, c);
 			world.stage.addChild(c.sprite);
-		});
+		});*/
 	};
 	world.color = COLORS[Math.floor(Math.random() * COLORS.length)];
 	world.velocity = VELOCITY;
@@ -41,13 +42,12 @@ function initWorld(state, world) {
 		world.dClocks.push(world.dClock);
 	});
 
-	world.socket.on('circle', onCircle.bind(null, state, world));
-	world.socket.on('circle', onCircleTime);
+	world.socket.on('move', onMoveTime);
 	world.socket.on('players', onPlayers);
 	world.socket.on('ping', onPing);
 	return;
 
-	function onCircleTime(c) {
+	function onMoveTime(c) {
 		// find median latency
 		if (c.owner === world.id) {
 			world.latencies.push(Date.now() - c.localTime);

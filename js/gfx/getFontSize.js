@@ -1,4 +1,4 @@
-function getFontSize(world, strOrLength){
+function getFontSize(strOrLength){
 	var l = typeof strOrLength === 'number' ? strOrLength : strOrLength.split('\n').reduce(function(l, line){
 		return Math.max(l,line.length);
 	}, 1);
