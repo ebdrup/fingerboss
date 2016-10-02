@@ -34,4 +34,18 @@ function initOnMove() {
 			return state.snakes[data.id].move(data);
 		}
 	});
+
+	world.socket.on('snakes', function (e) {
+		e.forEach(data => {
+			if(state.snakes[data.id]){
+				state.snakes[data.id].update(data);
+			} else {
+				state.snakes[data.id] = new Snake({data})
+			}
+			if (data.id === world.id) {
+				state.pos.x = data.parts[0][0] -0.5;
+				state.pos.y = data.parts[0][1] -0.5;
+			}
+		});
+	});
 }

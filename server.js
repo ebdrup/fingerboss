@@ -7,6 +7,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
+const lineIntersect = require('./lineIntersect');
 
 app.disable('x-powered-by');
 app.use(compression());
@@ -49,6 +50,31 @@ class Game {
 		this.snakes[socket.id] = new Snake({id: socket.id, x: 0.5, y: 0.5, length: 30, color: socket.color});
 		socket.game = this;
 	}
+	removeSnake(socket) {
+		this.sockets.push(socket);
+		socket.color = this.colors[(this.colorIndex + 1) % this.colors.length];
+		this.snakes[socket.id] = new Snake({id: socket.id, x: 0.5, y: 0.5, length: 30, color: socket.color});
+		socket.game = this;
+	}
+
+	detectCollision(movement){
+		return Object.keys(this.snakes)
+			.filter(key => key !== movement.id)
+			.some(key => {
+				let parts = this.snakes[key].parts;
+				for(var i= 1; i< parts.length; i++){
+					if(lineIntersect(Object.assign({}, movement, {
+							x3: parts[i-1].x,
+							y3: parts[i-1].y,
+							x4: parts[i].x,
+							y4: parts[i].y,
+						}))){
+						return true;
+					}
+				}
+				return false;
+			});
+	}
 }
 
 io.on('connection', function (socket) {
@@ -64,8 +90,8 @@ io.on('connection', function (socket) {
 		t: Date.now(),
 		velocity,
 		id: socket.id,
-		snakes: Object.keys(snakes).map(id => snakes[id].serialize())
 	});
+	broadcast('snakes', Object.keys(snakes).map(id => snakes[id].serialize()));
 	socket.on('move', function (angle) {
 		if (typeof angle !== 'number' || isNaN(angle)) {
 			return;
@@ -84,8 +110,13 @@ io.on('connection', function (socket) {
 		if (!move.dx && !move.dy) {
 			return;
 		}
-		socket.game.snakes[socket.id].move(move);
-		broadcast('move', Object.assign(move, {id: socket.id}));
+		var movement = socket.game.snakes[socket.id].move(move);
+		if(socket.game.detectCollision(movement)){
+			socket.game.snakes[socket.id].die();
+			broadcast('snakes', Object.keys(snakes).map(id => snakes[id].serialize()));
+		} else {
+			broadcast('move', Object.assign(move, {id: socket.id}));
+		}
 		checkPlayerCount();
 	});
 	socket.on('pong', function () {
@@ -93,6 +124,8 @@ io.on('connection', function (socket) {
 		checkPlayerCount();
 	});
 	socket.on('disconnect', function () {
+		socket.game.removeSnake(socket);
+		broadcast('snakes', Object.keys(snakes).map(id => snakes[id].serialize()));
 		delete socketLastSeen[socket.id];
 		checkPlayerCount();
 	});
@@ -104,6 +137,7 @@ io.on('connection', function (socket) {
 function checkPlayerCount() {
 	Object.keys(socketLastSeen).forEach(function (socketId) {
 		if ((Date.now() - socketLastSeen[socketId]) > TIMEOUT) {
+			io.sockets.sockets[socketId].disconnect();
 			delete socketLastSeen[socketId];
 		}
 	});

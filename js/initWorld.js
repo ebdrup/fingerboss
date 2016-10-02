@@ -40,9 +40,6 @@ function initWorld() {
 		world.velocity = e.velocity;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
-		e.snakes.forEach(data =>{
-			state.snakes[data.id] = new Snake({data});
-		});
 	});
 
 	//world.socket.on('move', onMoveTime);

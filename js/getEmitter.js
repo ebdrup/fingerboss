@@ -52,9 +52,8 @@ var particleTexture = PIXI.Texture.fromImage('particle.png');
 function getEmitter(part) {
 	var conf = JSON.parse(JSON.stringify(newCircleEmitterConf));
 	conf.color.start = '#' + part.color.toString(16);
-	console.log(conf.color.start);
 	//conf.color.end = 0;
-	var emitter = new cloudkid.Emitter(
+	var emitter = new PIXI.particles.Emitter(
 		world.stage,
 		[particleTexture],
 		conf);

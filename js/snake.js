@@ -1,5 +1,3 @@
-
-
 class Snake {
 	//Either construct with data OR the other properties
 	constructor({id, x, y, length, color, data}) {
@@ -37,6 +35,11 @@ class Snake {
 		last.x = this.parts[0].x + dx;
 		last.y = this.parts[0].y + dy;
 		this.parts.unshift(last);
+		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
+	}
+
+	die() {
+		this.parts.forEach(p => p.x = p.y = 0.5);
 	}
 
 	serialize() {
@@ -51,6 +54,13 @@ class Snake {
 		this.id = data.id;
 		this.color = data.color;
 		this.parts = data.parts.map(p => new Part(p[0], p[1], this.color));
+	}
+
+	update(data) {
+		data.parts.forEach((p, i) => {
+			this.parts[i].x = p[0];
+			this.parts[i].y = p[1];
+		});
 	}
 }
 
