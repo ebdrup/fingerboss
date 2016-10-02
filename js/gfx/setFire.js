@@ -45,7 +45,7 @@ var fire = {
 	}
 };
 var fireTexture = PIXI.Texture.fromImage('fire.png');
-var particleTexture = PIXI.Texture.fromImage('particle.png');
+
 function setFire(container, c) {
 	var sprite = c.sprite;
 	var conf = JSON.parse(JSON.stringify(fire));

@@ -3,7 +3,6 @@ function initWorld() {
 	world.dClocks = [];
 	world.latency = 120;
 	world.latencies = [];
-	world.id = Math.random() + '_' + Date.now();
 	world.socket = io();
 	world.textures = {};
 	world.wins = parseInt(readCookie('wins') || '0', 10);
@@ -18,6 +17,8 @@ function initWorld() {
 	world.mainStage.addChild(world.background);
 	world.starField = new PIXI.Container();
 	world.mainStage.addChild(world.starField);
+	world.borders = new PIXI.Container();
+	world.mainStage.addChild(world.borders);
 	world.stage = new PIXI.Container();
 	world.mainStage.addChild(world.stage);
 
@@ -36,13 +37,17 @@ function initWorld() {
 	world.players = 1;
 
 	world.socket.on('start', function (e) {
+		world.id = e.id;
 		world.color = e.color;
 		world.velocity = e.velocity;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
+		e.snakes.forEach(data =>{
+			state.snakes[data.id] = new Snake({data});
+		});
 	});
 
-	world.socket.on('move', onMoveTime);
+	//world.socket.on('move', onMoveTime);
 	world.socket.on('players', onPlayers);
 	world.socket.on('ping', onPing);
 	return;

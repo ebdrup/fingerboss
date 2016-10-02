@@ -14,42 +14,13 @@ function fingerboss() {
 			world.renderer.render(world.mainStage);
 			return;
 		}
-		var estimatedServerT = getEstimatedServerT(world);
-		state.lastMove = state.lastMove || estimatedServerT;
-		var dt = estimatedServerT - state.lastMove;
-		if (dt <= 0) {
+		var now = Date.now();
+		var lastMove = world.lastMove = world.lastMove || now;
+		var dt = now -lastMove;
+		if(dt<= 50){
 			return world.renderer.render(world.mainStage);
 		}
-		//move
-		var height = world.renderer.view.height;
-		var width = world.renderer.view.width;
-		var velocity = world.velocity;
-		var angle = state.angle;
-		var dx = dt * velocity * Math.cos(angle);
-		var dy = dt * velocity * Math.sin(angle);
-		state.pos.x += dx;
-		state.pos.y += dy;
-		state.snake.move({dx, dy});
-		world.socket.emit('move', state.snake.serialize());
-		world.stars.forEach(s=> {
-			s.position.x -= dx* s.scale.x * 2 * width;
-			s.position.y -= dy* s.scale.y * 2 * height;
-			if (s.position.x < -s.height / 2) {
-				s.position.x = width + s.height / 2;
-				s.position.y = Math.random() * height;
-			} else if (s.position.x > width + s.height / 2) {
-				s.position.x = -s.height / 2;
-				s.position.y = Math.random() * height;
-			} else if (s.position.y < -s.width / 2) {
-				s.position.x = Math.random() * width;
-				s.position.y = height + s.width / 2;
-			} else if (s.position.y > height + s.width / 2) {
-				s.position.x = Math.random() * width;
-				s.position.y = - s.width / 2;
-			}
-		});
-		state.lastMove = estimatedServerT;
-		// render the container
+		world.socket.emit('move', state.angle);
 		world.renderer.render(world.mainStage);
 	}
 }
