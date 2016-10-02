@@ -17,8 +17,6 @@ function initWorld() {
 	world.mainStage.addChild(world.background);
 	world.starField = new PIXI.Container();
 	world.mainStage.addChild(world.starField);
-	world.borders = new PIXI.Container();
-	world.mainStage.addChild(world.borders);
 	world.stage = new PIXI.Container();
 	world.mainStage.addChild(world.stage);
 

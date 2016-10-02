@@ -13,6 +13,23 @@ class Snake {
 		}
 	}
 
+	getMaxMove({dx, dy}) {
+		var head = this.parts[0];
+		if ((head.x + dx) > 1) {
+			dx = 1 - head.x;
+		}
+		if ((head.x + dx) < 0) {
+			dx = -head.x;
+		}
+		if ((head.y + dy) > 1) {
+			dy = 1 - head.y;
+		}
+		if ((head.y + dy) < 0) {
+			dy = -head.y;
+		}
+		return {dx, dy}
+	}
+
 	move({dx, dy}) {
 		if (typeof dx !== 'number') throw new Error('dx not number ' + dx);
 		if (typeof dy !== 'number') throw new Error('dy not number ' + dy);
@@ -48,4 +65,6 @@ class Part {
 	}
 }
 
-module.exports = Snake;
+if (typeof module === 'object' && module && typeof module.exports === 'object') {
+	module.exports = Snake;
+}

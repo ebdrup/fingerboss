@@ -6,6 +6,7 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
+const Snake = require('./js/snake');
 
 app.disable('x-powered-by');
 app.use(compression());
@@ -27,74 +28,6 @@ var colors = [
 ];
 var colorIndex = Math.round(Math.random() * colors.length);
 var socketLastSeen = {};
-class Snake {
-	//Either construct with data OR the other properties
-	constructor({id, x, y, length, color, data}) {
-		if (data) {
-			this.unserialize(data);
-			this.sprites = this.parts.map(p => getEmitter(p))
-		} else {
-			this.id = id;
-			this.color = color;
-			this.parts = Array.apply(null, Array(length)).map(() => new Part(x, y, color));
-		}
-	}
-
-	getMaxMove({dx, dy}) {
-		var head = this.parts[0];
-		if ((head.x + dx) > 1) {
-			dx = 1 - head.x;
-		}
-		if ((head.x + dx) < 0) {
-			dx = -head.x;
-		}
-		if ((head.y + dy) > 1) {
-			dy = 1 - head.y;
-		}
-		if ((head.y + dy) < 0) {
-			dy = -head.y;
-		}
-		return {dx, dy}
-	}
-
-
-	move({dx, dy}) {
-		var last = this.parts.pop();
-		last.x = this.parts[0].x + dx;
-		last.y = this.parts[0].y + dy;
-		this.parts.unshift(last);
-	}
-
-	serialize() {
-		return {
-			id: this.id,
-			color: this.color,
-			parts: this.parts.map(p => [p.x, p.y])
-		}
-	}
-
-	unserialize(data) {
-		this.id = data.id;
-		this.color = data.color;
-		this.parts = data.parts.map(p => new Part(p[0], p[1], this.color));
-	}
-
-	update(data) {
-		data.parts.forEach((p, i) => {
-			this.parts[i].x = p[0];
-			this.parts[i].y = p[1];
-		});
-	}
-}
-
-class Part {
-	constructor(x, y, color) {
-		this.x = x;
-		this.y = y;
-		this.color = color;
-	}
-}
-
 var TIMEOUT = 20 * 1000;
 
 var games = [];
