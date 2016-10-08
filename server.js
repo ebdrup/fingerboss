@@ -28,7 +28,7 @@ var colors = [
 	0xffcc00,
 	0x34aadc
 ];
-var colorIndex = Math.round(Math.random() * colors.length);
+var colorIndex = Math.floor(Math.random() * colors.length);
 var socketLastSeen = {};
 var TIMEOUT = 20 * 1000;
 const VELOCITY = 0.0001;
@@ -69,7 +69,7 @@ class Game {
 
 	addSnake(socket) {
 		this.sockets.push(socket);
-		socket.color = this.colors[(this.colorIndex + 1) % this.colors.length];
+		socket.color = this.colors[(this.colorIndex++) % this.colors.length];
 		this.snakes[socket.id] = new Snake({
 			id: socket.id,
 			length: 30,
@@ -99,8 +99,9 @@ class Game {
 	}
 
 	snakeCollision(movement, now) {
+		var snake = this.snakes[movement.id];
 		return Object.keys(this.snakes)
-			.filter(key => key !== movement.id)
+			.filter(key => snake.color !== this.snakes[key].color)
 			.some(key => {
 				let snake = this.snakes[key];
 				let parts = snake.getParts(now);
