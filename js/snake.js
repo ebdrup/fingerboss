@@ -42,6 +42,7 @@ class Snake {
 			this.color = color;
 			this.velocity = velocity;
 			this.startVelocity = velocity;
+			this.startLength = length;
 			this.parts = Array.apply(null, Array(length)).map(() => new Part(0, 0, color));
 			this.randomPosition();
 		}
@@ -79,6 +80,12 @@ class Snake {
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 
+	addLength(length){
+		for(var i = 0; i < length; i++){
+			this.parts.push(this.parts[this.parts.length-1].clone());
+		}
+	}
+
 	position({x, y}) {
 		var now = Date.now();
 		this.parts.forEach(p => {
@@ -97,6 +104,9 @@ class Snake {
 	die() {
 		this.randomPosition();
 		this.velocity = this.startVelocity;
+		if(this.startLength){
+			this.parts = this.parts.slice(0, this.startLength);
+		}
 	}
 
 	remove() {
@@ -118,7 +128,11 @@ class Snake {
 	}
 
 	update(data) {
+		this.parts = this.parts.slice(0, data.parts.length);
 		data.parts.forEach((p, i) => {
+			if(!this.parts[i]){
+				this.addLength(1)
+			}
 			this.parts[i].x = p[0];
 			this.parts[i].y = p[1];
 		});
@@ -134,6 +148,10 @@ class Part {
 		this.y = y;
 		this.t = Date.now();
 		this.color = color;
+	}
+
+	clone(){
+		return new Part(this.x, this.y, this.color);
 	}
 }
 

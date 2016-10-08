@@ -31,7 +31,7 @@ var colors = [
 var colorIndex = Math.round(Math.random() * colors.length);
 var socketLastSeen = {};
 var TIMEOUT = 20 * 1000;
-const VELOCITY = 0.0002;
+const VELOCITY = 0.0001;
 
 var games = [];
 var miceTypes = ['speed'];//, 'speed', 'shrink'];
@@ -180,7 +180,7 @@ io.on('connection', function (socket) {
 		var move = socket.game.snakes[socket.id].getMaxMove({dx, dy});
 		var movement = socket.game.snakes[socket.id].move(move);
 		if (socket.game.snakeCollision(movement, now)) {
-			socket.game.snakes[socket.id].die(VELOCITY);
+			socket.game.snakes[socket.id].die();
 			var state = game.getState();
 			state.die = socket.id;
 			socket.lastDeath = Date.now();
@@ -189,7 +189,11 @@ io.on('connection', function (socket) {
 		}
 		var mouseEaten = game.mouseCollision(snake, now);
 		if (mouseEaten) {
-			snake.velocity += VELOCITY * 0.1;
+			if(snake.velocity <= VELOCITY * 1.5) {
+				snake.velocity += VELOCITY * 0.1;
+			} else {
+				snake.addLength(10);
+			}
 			broadcast('state', game.getState());
 			return checkPlayerCount();
 		}
