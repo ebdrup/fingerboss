@@ -120,20 +120,17 @@ class Game {
 	}
 
 	mouseCollision(snake, now) {
-		var parts = snake.getParts(now);
-		for (var i = 0; i < parts.length; i++) {
-			var part = parts[i];
-			for (var j = 0; j < this.mice.length; j++) {
-				var mouse = this.mice[j];
-				var distance = Math.sqrt(
-					Math.pow(Math.abs(part.x - mouse.x), 2) +
-					Math.pow(Math.abs(part.y - mouse.y), 2)
-				);
-				if (distance <= mouse.size) {
-					this.mice.splice(j, 1);
-					this.addMouse();
-					return mouse;
-				}
+		var part = snake.parts[0];
+		for (var j = 0; j < this.mice.length; j++) {
+			var mouse = this.mice[j];
+			var distance = Math.sqrt(
+				Math.pow(Math.abs(part.x - mouse.x), 2) +
+				Math.pow(Math.abs(part.y - mouse.y), 2)
+			);
+			if (distance <= mouse.size) {
+				this.mice.splice(j, 1);
+				this.addMouse();
+				return mouse;
 			}
 		}
 		return null;
@@ -190,7 +187,7 @@ io.on('connection', function (socket) {
 		}
 		var mouseEaten = game.mouseCollision(snake, now);
 		if (mouseEaten) {
-			if(snake.velocity <= VELOCITY * 1.5) {
+			if (snake.velocity <= VELOCITY * 1.5) {
 				snake.velocity += VELOCITY * 0.1;
 			} else {
 				snake.addLength(10);
