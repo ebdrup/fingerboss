@@ -1,5 +1,8 @@
-function generateSpriteForMouse({type, size, x, y}) {
-	var color = 0x4cd964;
+function sprite({type, size, x, y}) {
+	var color = {
+		'ball': 0xffffff,
+		'speed': 0x4cd964
+	}[type];
 	var height = world.renderer.view.height;
 	var width = world.renderer.view.width;
 	var s = (width + height) / 2;

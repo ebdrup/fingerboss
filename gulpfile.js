@@ -37,7 +37,7 @@ gulp.task('webserver', function () {
 		tasks: function (changedFiles) {
 			var tasks = [];
 			console.log(changedFiles);
-			changedFiles.forEach && changedFiles.forEach(function (file) {
+			changedFiles && changedFiles.forEach && changedFiles.forEach(function (file) {
 				if (path.extname(file) === '.js' && !~tasks.indexOf('compress')){
 					tasks.push('compress');
 				}

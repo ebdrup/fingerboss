@@ -4,7 +4,7 @@ function fingerboss() {
 	initWorld();
 	initState();
 	initBackground();
-	initOnMove();
+	serverEventListeners();
 
 	// start animating
 	animate();
@@ -22,13 +22,18 @@ function fingerboss() {
 			return world.renderer.render(world.mainStage);
 		}
 		world.socket.emit('move', state.angle);
+		//ball
+		if(state.ball) {
+			world.ball && world.stage.removeChild(world.ball);
+			world.ball = sprite(Object.assign(state.ball, {type: 'ball'}));
+			world.stage.addChild(world.ball);
+		}
 		//mice
 		for (var i = world.mice.children.length - 1; i >= 0; i--) {
 			world.mice.removeChild(world.mice.children[i]);
 		}
-
 		state.mice.forEach(mouse => {
-			world.mice.addChild(generateSpriteForMouse(mouse));
+			world.mice.addChild(sprite(mouse));
 		});
 		world.renderer.render(world.mainStage);
 	}

@@ -8,6 +8,8 @@ const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
 const lineIntersect = require('./lineIntersect');
+const distance = require('./distance');
+const TWEEN = require('tween.js');
 
 app.disable('x-powered-by');
 app.set('case sensitive routing', false);
@@ -54,6 +56,11 @@ class Game {
 		for (var i = 0; i < 10; i++) {
 			this.addMouse();
 		}
+		this.resetBall();
+	}
+
+	resetBall() {
+		this.ball = {x: 0.5, y: 0.5, size: 0.04};
 	}
 
 	addMouse() {
@@ -94,7 +101,8 @@ class Game {
 	getState() {
 		return {
 			snakes: Object.keys(this.snakes).map(id => this.snakes[id].serialize()),
-			mice: this.mice
+			mice: this.mice,
+			ball: this.ball
 		}
 	}
 
@@ -123,11 +131,8 @@ class Game {
 		var part = snake.parts[0];
 		for (var j = 0; j < this.mice.length; j++) {
 			var mouse = this.mice[j];
-			var distance = Math.sqrt(
-				Math.pow(Math.abs(part.x - mouse.x), 2) +
-				Math.pow(Math.abs(part.y - mouse.y), 2)
-			);
-			if (distance <= mouse.size) {
+			var d = distance(part, mouse);
+			if (d <= mouse.size) {
 				this.mice.splice(j, 1);
 				this.addMouse();
 				return mouse;
@@ -135,7 +140,31 @@ class Game {
 		}
 		return null;
 	}
+
+	ballKick(snake) {
+		var part = snake.parts[0];
+		var d = distance(part, this.ball);
+
+		if (d <= (this.ball.size / 2)) {
+			if (this.tween) {
+				this.tween.stop();
+			}
+			var x = this.ball.x + (3*(this.ball.x - part.x));
+			var y = this.ball.y + (3*(this.ball.y - part.y));
+			this.tween = new TWEEN.Tween(this.ball)
+				.to({x, y}, 1500)
+				//.easing(TWEEN.Easing.Cubic.Out)
+				.onUpdate(()=> {
+					console.log('tween update');
+					this.onBallUpdate && this.onBallUpdate();
+				})
+				.start();
+
+		}
+	}
 }
+
+setInterval(()=>TWEEN.update(Date.now()), 50);
 
 io.on('connection', function (socket) {
 	socketLastSeen[socket.id] = Date.now();
@@ -151,6 +180,7 @@ io.on('connection', function (socket) {
 		id: socket.id,
 	});
 	broadcast('state', game.getState());
+	game.onBallUpdate = () => broadcast('ball', game.ball);
 	socket.on('move', function (angle) {
 		if (typeof angle !== 'number' || isNaN(angle)) {
 			return;
@@ -190,6 +220,7 @@ io.on('connection', function (socket) {
 			broadcast('state', game.getState());
 			return checkPlayerCount();
 		}
+		game.ballKick(snake);
 		broadcast('move', Object.assign(move, {id: socket.id}));
 		checkPlayerCount();
 	});
