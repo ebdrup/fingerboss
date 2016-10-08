@@ -167,11 +167,6 @@ io.on('connection', function (socket) {
 			return;
 		}
 		var snake = snakes[socket.id];
-		if (dt > 500) {
-			snake.position(snake.parts[0]);
-			broadcast('state', game.getState());
-			return;
-		}
 		var velocity = snake.velocity;
 		var dx = dt * velocity * Math.cos(angle);
 		var dy = dt * velocity * Math.sin(angle);
