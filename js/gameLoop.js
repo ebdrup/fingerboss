@@ -10,6 +10,7 @@ function fingerboss() {
 	animate();
 	function animate() {
 		requestAnimationFrame(animate);
+		TWEEN.update();
 		if (!state.playing) {
 			world.renderer.render(world.mainStage);
 			return;
@@ -21,6 +22,12 @@ function fingerboss() {
 			return world.renderer.render(world.mainStage);
 		}
 		world.socket.emit('move', state.angle);
+		for (var i = world.mice.children.length - 1; i >= 0; i--) {
+			world.mice.removeChild(world.mice.children[i]);
+		}
+		state.mice.forEach(mouse => {
+			world.mice.addChild(generateSpriteForMouse(mouse));
+		});
 		world.renderer.render(world.mainStage);
 	}
 }

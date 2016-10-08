@@ -35,8 +35,10 @@ function initOnMove() {
 		}
 	});
 
-	world.socket.on('snakes', function (e) {
-		e.forEach(data => {
+	world.socket.on('state', function (e) {
+		var snakeIds = e.snakes.reduce((acc, s) => (acc[s.id] = true) && acc, {});
+		Object.keys(state.snakes).forEach(id => !snakeIds[id] && state.snakes[id].remove());
+		e.snakes.forEach(data => {
 			if(state.snakes[data.id]){
 				state.snakes[data.id].update(data);
 			} else {
@@ -47,5 +49,13 @@ function initOnMove() {
 				state.pos.y = data.parts[0][1] -0.5;
 			}
 		});
+		if(e.die === world.id){
+			world.sounds.crash2();
+			state.died = Date.now();
+			help('You Died');
+			state.playing = false;
+			setTimeout(() => state.playing = true, 2000);
+		}
+		state.mice = e.mice;
 	});
 }

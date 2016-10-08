@@ -9,6 +9,7 @@ function touch() {
 	sprite.interactive = true;
 	sprite.on('mousemove', onMove);
 	sprite.on('touchmove', onMove);
+	sprite.on('touchstart', onMove);
 	return sprite;
 
 	function getX(e) {

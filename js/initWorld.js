@@ -17,6 +17,8 @@ function initWorld() {
 	world.mainStage.addChild(world.background);
 	world.starField = new PIXI.Container();
 	world.mainStage.addChild(world.starField);
+	world.mice = new PIXI.Container();
+	world.mainStage.addChild(world.mice);
 	world.stage = new PIXI.Container();
 	world.mainStage.addChild(world.stage);
 
@@ -37,7 +39,6 @@ function initWorld() {
 	world.socket.on('start', function (e) {
 		world.id = e.id;
 		world.color = e.color;
-		world.velocity = e.velocity;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
 	});

@@ -1,13 +1,47 @@
 class Snake {
 	//Either construct with data OR the other properties
-	constructor({id, x, y, length, color, data}) {
+	constructor({id, length, color, velocity, data}) {
 		if (data) {
 			this.unserialize(data);
-			this.sprites = this.parts.map(p => getEmitter(p))
+			var gfx;
+			var update = (function () {
+				if(this.removed){
+					if (gfx) {
+						world.stage.removeChild(gfx);
+					}
+					return;
+				}
+				requestAnimationFrame(update);
+				if (gfx) {
+					world.stage.removeChild(gfx);
+				}
+				gfx = new PIXI.Graphics();
+				var width = world.renderer.view.width;
+				var height = world.renderer.view.height;
+				gfx.beginFill('#FFFF00');
+				gfx.lineStyle(Math.round((height + width) / 200), data.color);
+				for (var i = this.parts.length - 2; i >= 0; i--) {
+					var x1 = (this.parts[i + 1].x - state.pos.x) * width;
+					var y1 = (this.parts[i + 1].y - state.pos.y) * height;
+					var x2 = (this.parts[i].x - state.pos.x) * width;
+					var y2 = (this.parts[i].y - state.pos.y) * height;
+					gfx.moveTo(x1, y1);
+					gfx.lineTo(x2, y2);
+				}
+				gfx.endFill();
+				gfx.visible = true;
+				gfx.x = 0;
+				gfx.y = 0;
+				world.stage.addChild(gfx);
+			}).bind(this);
+			update();
 		} else {
 			this.id = id;
 			this.color = color;
-			this.parts = Array.apply(null, Array(length)).map(() => new Part(x, y, color));
+			this.velocity = velocity;
+			this.startVelocity = velocity;
+			this.parts = Array.apply(null, Array(length)).map(() => new Part(0, 0, color));
+			this.randomPosition();
 		}
 	}
 
@@ -38,8 +72,26 @@ class Snake {
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 
+	position({x, y}) {
+		this.parts.forEach(p => {
+			p.x = x;
+			p.y = y
+		});
+	}
+
+	randomPosition() {
+		var x = 0.25 + Math.random() / 2;
+		var y = 0.25 + Math.random() / 2;
+		this.position({x, y});
+	}
+
 	die() {
-		this.parts.forEach(p => p.x = p.y = 0.5);
+		this.randomPosition();
+		this.velocity = this.startVelocity;
+	}
+
+	remove() {
+		this.removed = true;
 	}
 
 	serialize() {
