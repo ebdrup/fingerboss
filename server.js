@@ -9,7 +9,7 @@ const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
 const lineIntersect = require('./lineIntersect');
 const distance = require('./distance');
-const TWEEN = require('tween.js');
+const Tweeno = require('tweeno');
 
 app.disable('x-powered-by');
 app.set('case sensitive routing', false);
@@ -144,27 +144,31 @@ class Game {
 	ballKick(snake) {
 		var part = snake.parts[0];
 		var d = distance(part, this.ball);
-
-		if (d <= (this.ball.size / 2)) {
-			if (this.tween) {
-				this.tween.stop();
-			}
-			var x = this.ball.x + (3*(this.ball.x - part.x));
-			var y = this.ball.y + (3*(this.ball.y - part.y));
-			this.tween = new TWEEN.Tween(this.ball)
-				.to({x, y}, 1500)
-				//.easing(TWEEN.Easing.Cubic.Out)
-				.onUpdate(()=> {
-					console.log('tween update');
-					this.onBallUpdate && this.onBallUpdate();
-				})
-				.start();
-
+		if (d > (this.ball.size / 2)) {
+			return false;
 		}
+		var dx = this.ball.x - part.x;
+		var dy = this.ball.y - part.y;
+		//this.ball.x += dx;
+		//this.ball.y += dy;
+		var x = Math.max(Math.min(this.ball.x + (4 + Math.random()) * dx, 0.995), 0.005);
+		var y = Math.max(Math.min(this.ball.y + (4 + Math.random()) * dy, 0.995), 0.005);
+
+		this.tween = new Tweeno.Tween(this.ball, {
+			to: {x, y},
+			duration: 1000,
+			easing: Tweeno.Easing.Cubic.Out,
+			onUpdate: ()=> {
+				this.onBallUpdate && this.onBallUpdate();
+			},
+			onComplete: () => delete this.tween
+		});
+		this.tween.start();
+		return true;
 	}
 }
 
-setInterval(()=>TWEEN.update(Date.now()), 50);
+setInterval(()=>games.forEach(game => game.tween && game.tween.update(Date.now())), 10);
 
 io.on('connection', function (socket) {
 	socketLastSeen[socket.id] = Date.now();
@@ -180,7 +184,9 @@ io.on('connection', function (socket) {
 		id: socket.id,
 	});
 	broadcast('state', game.getState());
-	game.onBallUpdate = () => broadcast('ball', game.ball);
+	game.onBallUpdate = () => {
+		broadcast('ball', game.ball);
+	};
 	socket.on('move', function (angle) {
 		if (typeof angle !== 'number' || isNaN(angle)) {
 			return;
@@ -220,7 +226,9 @@ io.on('connection', function (socket) {
 			broadcast('state', game.getState());
 			return checkPlayerCount();
 		}
-		game.ballKick(snake);
+		if (game.ballKick(snake)) {
+			broadcast('ball', game.ball);
+		}
 		broadcast('move', Object.assign(move, {id: socket.id}));
 		checkPlayerCount();
 	});
@@ -276,7 +284,9 @@ function emit(socket, type, msg) {
 
 function broadcast(type, msg) {
 	if (!process.env.PORT) {
-		msg.t += LATENCY / 2;
+		if (msg.t) {
+			msg.t += LATENCY / 2;
+		}
 		return setTimeout(emit, LATENCY);
 	}
 	return emit();
