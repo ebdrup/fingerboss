@@ -5,6 +5,7 @@ class Snake {
 			this.unserialize(data);
 			var gfx;
 			var update = (function () {
+				var now = Date.now();
 				if(this.removed){
 					if (gfx) {
 						world.stage.removeChild(gfx);
@@ -20,11 +21,12 @@ class Snake {
 				var height = world.renderer.view.height;
 				gfx.beginFill('#FFFF00');
 				gfx.lineStyle(Math.round((height + width) / 200), data.color);
-				for (var i = this.parts.length - 2; i >= 0; i--) {
-					var x1 = (this.parts[i + 1].x - state.pos.x) * width;
-					var y1 = (this.parts[i + 1].y - state.pos.y) * height;
-					var x2 = (this.parts[i].x - state.pos.x) * width;
-					var y2 = (this.parts[i].y - state.pos.y) * height;
+				var parts = this.getParts(now);
+				for (var i = parts.length - 2; i >= 0; i--) {
+					var x1 = (parts[i + 1].x - state.pos.x) * width;
+					var y1 = (parts[i + 1].y - state.pos.y) * height;
+					var x2 = (parts[i].x - state.pos.x) * width;
+					var y2 = (parts[i].y - state.pos.y) * height;
 					gfx.moveTo(x1, y1);
 					gfx.lineTo(x2, y2);
 				}
@@ -45,6 +47,10 @@ class Snake {
 		}
 	}
 
+	getParts(now){
+		return this.parts.filter(p => p.t >= (now - this.parts.length * 50));
+	}
+
 	getMaxMove({dx, dy}) {
 		var head = this.parts[0];
 		if ((head.x + dx) > 1) {
@@ -62,20 +68,23 @@ class Snake {
 		return {dx, dy}
 	}
 
-	move({dx, dy}) {
+	move({dx, dy, t}) {
 		if (typeof dx !== 'number') throw new Error('dx not number ' + dx);
 		if (typeof dy !== 'number') throw new Error('dy not number ' + dy);
 		var last = this.parts.pop();
 		last.x = this.parts[0].x + dx;
 		last.y = this.parts[0].y + dy;
+		last.t = t || Date.now();
 		this.parts.unshift(last);
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 
 	position({x, y}) {
+		var now = Date.now();
 		this.parts.forEach(p => {
 			p.x = x;
-			p.y = y
+			p.y = y;
+			p.t = now;
 		});
 	}
 
@@ -123,6 +132,7 @@ class Part {
 		if (typeof color !== 'number') throw new Error('color not number ' + color);
 		this.x = x;
 		this.y = y;
+		this.t = Date.now();
 		this.color = color;
 	}
 }

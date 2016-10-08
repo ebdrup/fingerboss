@@ -1,5 +1,5 @@
 function generateSpriteForMouse({type, size, x, y}) {
-	var color = 0x11ff11;
+	var color = 0x4cd964;
 	var height = world.renderer.view.height;
 	var width = world.renderer.view.width;
 	var s = (width + height) / 2;

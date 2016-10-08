@@ -13,14 +13,14 @@ gulp.task('compress', function () {
 	return gulp.src([
 		'js/**/*.js',
 	])
-		//.pipe(sourcemaps.init())
+		.pipe(sourcemaps.init())
 		.pipe(babel({
 			presets: ['es2015']
 		}))
 	//	.pipe(uglify())
 		.pipe(addSrc(staticFiles))
 		.pipe(concat('bundle.js'))
-		//.pipe(sourcemaps.write('.'))
+		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest('public'));
 });
 

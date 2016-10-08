@@ -21,7 +21,7 @@ var port = process.env.PORT || 7890;
 var colors = [
 	0x5856d6,
 	0xff2d55,
-	0x4cd964,
+	//0x4cd964,
 	0x007aff,
 	0xff3b30,
 	0x5ac8fa,
@@ -98,11 +98,12 @@ class Game {
 		}
 	}
 
-	snakeCollision(movement) {
+	snakeCollision(movement, now) {
 		return Object.keys(this.snakes)
 			.filter(key => key !== movement.id)
 			.some(key => {
-				let parts = this.snakes[key].parts;
+				let snake = this.snakes[key];
+				let parts = snake.getParts(now);
 				for (var i = 1; i < parts.length; i++) {
 					if (lineIntersect(Object.assign({}, movement, {
 							x3: parts[i - 1].x,
@@ -117,17 +118,17 @@ class Game {
 			});
 	}
 
-	mouseCollision(snake){
-		for(var i = 0; i<snake.parts.length; i++){
-			var part = snake.parts[i];
-			for(var j = 0; j< this.mice.length; j++){
+	mouseCollision(snake, now) {
+		var parts = snake.getParts(now);
+		for (var i = 0; i < parts.length; i++) {
+			var part = parts[i];
+			for (var j = 0; j < this.mice.length; j++) {
 				var mouse = this.mice[j];
 				var distance = Math.sqrt(
 					Math.pow(Math.abs(part.x - mouse.x), 2) +
 					Math.pow(Math.abs(part.y - mouse.y), 2)
 				);
-				if(distance<= mouse.size){
-					console.log('mouse collision');
+				if (distance <= mouse.size) {
 					this.mice.splice(j, 1);
 					this.addMouse();
 					return mouse;
@@ -178,7 +179,7 @@ io.on('connection', function (socket) {
 		var dy = dt * velocity * Math.sin(angle);
 		var move = socket.game.snakes[socket.id].getMaxMove({dx, dy});
 		var movement = socket.game.snakes[socket.id].move(move);
-		if (socket.game.snakeCollision(movement)) {
+		if (socket.game.snakeCollision(movement, now)) {
 			socket.game.snakes[socket.id].die(VELOCITY);
 			var state = game.getState();
 			state.die = socket.id;
@@ -186,9 +187,9 @@ io.on('connection', function (socket) {
 			broadcast('state', state);
 			return checkPlayerCount();
 		}
-		var mouseEaten = game.mouseCollision(snake);
-		if(mouseEaten){
-			snake.velocity += VELOCITY* 0.1;
+		var mouseEaten = game.mouseCollision(snake, now);
+		if (mouseEaten) {
+			snake.velocity += VELOCITY * 0.1;
 			broadcast('state', game.getState());
 			return checkPlayerCount();
 		}
