@@ -27,12 +27,17 @@ function fingerboss() {
 			world.goals && world.goals.forEach(goal => world.stage.removeChild(goal));
 			world.goals = state.goals.map(goal => sprite(goal));
 			world.goals.forEach(goal=> world.stage.addChild(goal));
+			var myGoal = state.goals.filter(goal => goal.color === world.color)[0];
+			if(myGoal){
+				pointer(Object.assign({}, myGoal, {text: 'Goal'}));
+			}
 		}
 		//ball
 		if (state.ball) {
 			world.ball && world.stage.removeChild(world.ball);
 			world.ball = sprite(Object.assign(state.ball, {type: 'ball'}));
 			world.stage.addChild(world.ball);
+			pointer(Object.assign({}, state.ball, {text: 'Ball'}));
 		}
 		//mice
 		for (var i = world.mice.children.length - 1; i >= 0; i--) {

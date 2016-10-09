@@ -6,6 +6,7 @@ function initWorld() {
 	world.socket = io();
 	world.textures = {};
 	world.scores = {};
+	world.pointers = {};
 	world.wins = parseInt(readCookie('wins') || '0', 10);
 	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: BACKGROUND_COLOR,
