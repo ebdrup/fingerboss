@@ -27,7 +27,7 @@ function moveStars({dx, dy}) {
 	});
 }
 
-function serverEventListeners() {
+function listen() {
 	world.socket.on('move', data => {
 		if (data.id === world.id) {
 			state.pos.x += data.dx;
@@ -75,12 +75,20 @@ function serverEventListeners() {
 		state.goals = e.goals;
 		state.scores = e.scores;
 		if (e.winner) {
-			help('Winner!', e.score);
 			sfx.whistle();
-			sfx.win();
+			if(world.color === e.winner) {
+				help('You won!', e.winner);
+				sfx.win();
+			} else {
+				help('You lost');
+			}
 		} else if (e.score) {
 			help('Goal!', e.score);
 			sfx.whistle();
+		}
+		if (e.kick) {
+			var n = Math.floor(Math.random() * 2) + 1;
+			sfx['ball' + n]();
 		}
 	});
 

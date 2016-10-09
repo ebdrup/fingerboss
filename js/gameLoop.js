@@ -4,7 +4,7 @@ function fingerboss() {
 	initWorld();
 	initState();
 	initBackground();
-	serverEventListeners();
+	listen();
 
 	// start animating
 	animate();

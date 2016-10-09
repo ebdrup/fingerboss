@@ -25,7 +25,6 @@ var sfx = [
 		} else {
 			sound.volume(0.3, id);
 		}
-		console.log('play sfx', key);
 	};
 	return acc;
 }, {});

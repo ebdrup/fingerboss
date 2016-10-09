@@ -22,9 +22,9 @@ staticFiles.forEach(p => app.get(path.basename(p).toLowerCase(), (req, res) => r
 var port = process.env.PORT || 7890;
 var colors = [
 	0x5856d6,
-	0xff2d55,
+	//0xff2d55,
 	//0x4cd964,
-	0x007aff,
+	//0x007aff, //too close in colour
 	0xff3b30,
 	0x5ac8fa,
 	0xffcc00,
@@ -36,7 +36,7 @@ var TIMEOUT = 20 * 1000;
 const VELOCITY = 0.0001;
 
 var games = [];
-var miceTypes = ['speed'];//, 'speed', 'shrink'];
+var miceTypes = ['speed', 'power'];
 
 class Game {
 	constructor(socket) {
@@ -163,10 +163,15 @@ class Game {
 		if (!part) {
 			return false;
 		}
+		var kickDistance = 4;
+		if(snake.power){
+			snake.power = false;
+			kickDistance *= 4;
+		}
 		var dx = this.ball.x - part.x;
 		var dy = this.ball.y - part.y;
-		var x = this.ball.x + (4 + Math.random()) * dx;
-		var y = this.ball.y + (4 + Math.random()) * dy;
+		var x = this.ball.x + (kickDistance + Math.random()) * dx;
+		var y = this.ball.y + (kickDistance + Math.random()) * dy;
 		this.tween = new Tweeno.Tween({x: this.ball.x, y: this.ball.y}, {
 			to: {x, y},
 			duration: 1000,
@@ -237,6 +242,7 @@ io.on('connection', function (socket) {
 		if (typeof angle !== 'number' || isNaN(angle)) {
 			return;
 		}
+		var state;
 		var now = Date.now();
 		game.lastMove[color] = now;
 		socketLastSeen[socket.id] = now;
@@ -257,28 +263,37 @@ io.on('connection', function (socket) {
 		var movement = socket.game.snakes[socket.id].move(move);
 		if (socket.game.snakeCollision(movement, now)) {
 			socket.game.snakes[socket.id].die();
-			var state = Object.assign({}, game.getState(), {die: socket.id});
+			state = Object.assign({}, game.getState(), {die: socket.id});
 			socket.lastDeath = Date.now();
 			broadcast('state', state);
 			return checkPlayerCount();
 		}
 		var mouseEaten = game.mouseCollision(snake, now);
 		if (mouseEaten) {
-			if (snake.velocity <= VELOCITY * 1.5) {
-				snake.velocity += VELOCITY * 0.1;
-			} else {
-				snake.addLength(10);
+			switch(mouseEaten.type) {
+				case 'speed':
+					if (snake.velocity <= VELOCITY * 1.5) {
+						snake.velocity += VELOCITY * 0.1;
+					} else {
+						snake.addLength(10);
+					}
+					break;
+				case 'power':
+					snake.power = true;
+					break;
 			}
 			broadcast('state', game.getState());
 			return checkPlayerCount();
 		}
 		if (game.ballKick(snake)) {
-			var ball = Object.assign({}, game.ball, {kick: true});
+			//we need to broadcast full state, because power may have been used
+			state = Object.assign({}, game.getState(), {kick: true});
 			if (game.lastKick && (now - game.lastKick < 100)) {
-				delete ball.kick;
+				delete state.kick;
 			}
 			game.lastKick = now;
-			broadcast('ball', ball);
+			broadcast('state', state);
+			return checkPlayerCount();
 		}
 		broadcast('move', Object.assign({}, move, {id: socket.id}));
 		checkPlayerCount();

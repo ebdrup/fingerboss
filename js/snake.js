@@ -6,7 +6,7 @@ class Snake {
 			var gfx;
 			var update = (function () {
 				var now = Date.now();
-				if(this.removed){
+				if (this.removed) {
 					if (gfx) {
 						world.stage.removeChild(gfx);
 					}
@@ -19,10 +19,16 @@ class Snake {
 				gfx = new PIXI.Graphics();
 				var width = world.renderer.view.width;
 				var height = world.renderer.view.height;
-				gfx.beginFill('#FFFF00');
 				gfx.lineStyle(Math.round((height + width) / 200), data.color);
 				var parts = this.getParts(now);
+				var headColor = 0xffffff;
+				if(this.power){
+					headColor = 0xff0000;
+				}
 				for (var i = parts.length - 2; i >= 0; i--) {
+					if (i == 4) {
+						gfx.lineStyle(Math.round((height + width) / 200), headColor);
+					}
 					var x1 = (parts[i + 1].x - state.pos.x) * width;
 					var y1 = (parts[i + 1].y - state.pos.y) * height;
 					var x2 = (parts[i].x - state.pos.x) * width;
@@ -48,7 +54,7 @@ class Snake {
 		}
 	}
 
-	getParts(now){
+	getParts(now) {
 		return this.parts.filter(p => p.t >= (now - this.parts.length * 50));
 	}
 
@@ -80,9 +86,9 @@ class Snake {
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 
-	addLength(length){
-		for(var i = 0; i < length; i++){
-			this.parts.push(this.parts[this.parts.length-1].clone());
+	addLength(length) {
+		for (var i = 0; i < length; i++) {
+			this.parts.push(this.parts[this.parts.length - 1].clone());
 		}
 	}
 
@@ -104,7 +110,7 @@ class Snake {
 	die() {
 		this.randomPosition();
 		this.velocity = this.startVelocity;
-		if(this.startLength){
+		if (this.startLength) {
 			this.parts = this.parts.slice(0, this.startLength);
 		}
 	}
@@ -117,7 +123,8 @@ class Snake {
 		return {
 			id: this.id,
 			color: this.color,
-			parts: this.parts.map(p => [p.x, p.y])
+			parts: this.parts.map(p => [p.x, p.y]),
+			power: this.power
 		}
 	}
 
@@ -125,17 +132,19 @@ class Snake {
 		this.id = data.id;
 		this.color = data.color;
 		this.parts = data.parts.map(p => new Part(p[0], p[1], this.color));
+		this.power = data.power;
 	}
 
 	update(data) {
 		this.parts = this.parts.slice(0, data.parts.length);
 		data.parts.forEach((p, i) => {
-			if(!this.parts[i]){
+			if (!this.parts[i]) {
 				this.addLength(1)
 			}
 			this.parts[i].x = p[0];
 			this.parts[i].y = p[1];
 		});
+		this.power = data.power;
 	}
 
 	headCollision(element) {
@@ -161,7 +170,7 @@ class Part {
 		this.color = color;
 	}
 
-	clone(){
+	clone() {
 		return new Part(this.x, this.y, this.color);
 	}
 }

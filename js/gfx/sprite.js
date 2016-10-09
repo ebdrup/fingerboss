@@ -1,7 +1,8 @@
 function sprite({type, size, x, y, color}) {
 	color = color || {
 			'ball': 0xffffff,
-			'speed': 0x4cd964
+			'speed': 0x4cd964,
+			'power': 0xff2d55
 		}[type];
 	var height = world.renderer.view.height;
 	var width = world.renderer.view.width;
