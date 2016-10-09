@@ -165,7 +165,7 @@ class Game {
 		}
 		var kickDistance = 4;
 		if(snake.power){
-			snake.power = false;
+			snake.power--;
 			kickDistance *= 4;
 		}
 		var dx = this.ball.x - part.x;
@@ -279,7 +279,7 @@ io.on('connection', function (socket) {
 					}
 					break;
 				case 'power':
-					snake.power = true;
+					snake.power++;
 					break;
 			}
 			broadcast('state', game.getState());

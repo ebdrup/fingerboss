@@ -1,6 +1,7 @@
 class Snake {
 	//Either construct with data OR the other properties
 	constructor({id, length, color, velocity, data}) {
+		this.power = 0;
 		if (data) {
 			this.unserialize(data);
 			var gfx;
@@ -21,9 +22,22 @@ class Snake {
 				var height = world.renderer.view.height;
 				gfx.lineStyle(Math.round((height + width) / 200), data.color);
 				var parts = this.getParts(now);
-				var headColor = 0xffffff;
-				if(this.power){
-					headColor = 0xff0000;
+				var headColor;
+				switch(this.power){
+					case 0:
+						headColor = 0xffffff;
+						break;
+					case 1:
+						headColor = 0x996666;
+						break;
+					case 2:
+						headColor = 0xbb4444;
+						break;
+					case 3:
+						headColor = 0xdd2222;
+						break;
+					default:
+						headColor = 0xff0000;
 				}
 				for (var i = parts.length - 2; i >= 0; i--) {
 					if (i == 4) {
