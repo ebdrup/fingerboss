@@ -147,11 +147,9 @@ class Game {
 	}
 
 	mouseCollision(snake, now) {
-		var part = snake.parts[0];
 		for (var j = 0; j < this.mice.length; j++) {
 			var mouse = this.mice[j];
-			var d = distance(part, mouse);
-			if (d <= mouse.size) {
+			if (this.headCollision(snake, mouse)) {
 				this.mice.splice(j, 1);
 				this.addMouse();
 				return mouse;
@@ -160,17 +158,25 @@ class Game {
 		return null;
 	}
 
+	headCollision(snake, element) {
+		var check = checkPart.bind(this);
+		return check(snake.parts[0]) || check(snake.parts[1]);
+
+		function checkPart(part) {
+			var d = distance(part, element);
+			return d <= (element.size / 2) + 0.0005 ? part : false;
+		}
+	}
+
 	ballKick(snake) {
-		var part = snake.parts[0];
-		var d = distance(part, this.ball);
-		if (d > (this.ball.size / 2)) {
+		var part = this.headCollision(snake, this.ball);
+		if (!part) {
 			return false;
 		}
 		var dx = this.ball.x - part.x;
 		var dy = this.ball.y - part.y;
 		var x = this.ball.x + (4 + Math.random()) * dx;
 		var y = this.ball.y + (4 + Math.random()) * dy;
-
 		this.tween = new Tweeno.Tween({x: this.ball.x, y: this.ball.y}, {
 			to: {x, y},
 			duration: 1000,
@@ -205,8 +211,8 @@ class Game {
 		var score = goal.color;
 		this.scores[score]++;
 		this.resetBall();
-		var winner = Object.keys(this.scores).filter(color => this.scores[color]>=10)[0];
-		if(winner){
+		var winner = Object.keys(this.scores).filter(color => this.scores[color] >= 10)[0];
+		if (winner) {
 			this.colors.forEach(color => this.scores[color] = 0);
 		}
 		return {score, winner};

@@ -4,6 +4,14 @@ function fadeSprite(stage, sprite) {
 		delete sprite.tls;
 	}
 	var duration = 2000;
+	//extra kill of sprite. Sometimes tween fails, for unknown reasons
+	setTimeout(()=>{
+		stage.removeChild(sprite);
+		if (sprite.tls) {
+			sprite.tls.forEach(tl => tl.stop());
+			delete sprite.tls;
+		}
+	}, duration);
 	sprite.tls = [
 		new TWEEN.Tween(sprite)
 			.to({alpha: 0}, duration)
