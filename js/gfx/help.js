@@ -1,10 +1,10 @@
-function help(str) {
+function help(str, color) {
 	var fontSize = getFontSize(str);
+	var fill = color ? '#' + ('000000' + parseInt(color, 10).toString(16)).slice(-6) : '#ffffff';
 	var style = {
 		fontSize: fontSize + 'px',
 		fontFamily: 'Impact, Futura-CondensedExtraBold, DroidSans, Charcoal, sans-serif',
-		//fontStyle: 'bold',
-		fill: '#ffffff',// + ('000000' + parseInt(world.color, 10).toString(16)).slice(-6),
+		fill,
 		align: 'center'
 	};
 	var text = new PIXI.Text(str, style);

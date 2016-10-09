@@ -64,7 +64,7 @@ function serverEventListeners() {
 		if(e.die && (e.die === world.id)){
 			moveStars({dx:0, dy:0});
 			sfx.crash2();
-			//help('You Died');
+			help('You Died');
 			state.playing = false;
 			setTimeout(() => state.playing = true, 2000);
 		}
@@ -73,6 +73,8 @@ function serverEventListeners() {
 		state.goals = e.goals;
 		state.scores = e.scores;
 		if(e.score){
+			console.log('goal', e.score);
+			help('Goal!', e.score);
 			sfx.whistle();
 		}
 	});

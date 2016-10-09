@@ -1,16 +1,26 @@
 function fadeSprite(stage, sprite) {
-	if (sprite.tl) {
-		sprite.tl.stop();
-		delete sprite.tl;
+	if (sprite.tls) {
+		sprite.tls.forEach(tl => tl.stop());
+		delete sprite.tls;
 	}
-	sprite.tl = new TWEEN.Tween(sprite)
-		.to({alpha: 0}, 2000)
-		.onComplete(function () {
-			stage.removeChild(sprite);
-			if (sprite.tl) {
-				sprite.tl.stop();
-				delete sprite.tl;
-			}
-		})
-		.start();
+	console.log(sprite.scale);
+	var duration = 2000;
+	sprite.tls = [
+		new TWEEN.Tween(sprite)
+			.to({alpha: 0}, duration)
+			.onComplete(function () {
+				stage.removeChild(sprite);
+				if (sprite.tls) {
+					sprite.tls.forEach(tl => tl.stop());
+					delete sprite.tls;
+				}
+			})
+			.start(),
+		new TWEEN.Tween({x:1, y:1})
+			.to({x: 1.2, y: 1.2}, duration)
+			.onUpdate(function() {
+				sprite.scale.set(this.x, this.y);
+			})
+			.start()
+	];
 }
