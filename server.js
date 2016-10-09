@@ -57,10 +57,23 @@ class Game {
 			this.addMouse();
 		}
 		this.resetBall();
+		this.goals = this.colors.map((color, i) => ({
+				color,
+				size: 0.06,
+				type: 'goal',
+				x: {'0': 0.1, '1': 0.9}[i],
+				y: {'0': 0.1, '1': 0.9}[i]
+			})
+		);
+		this.scores = this.colors.reduce((acc, color) => {
+			acc[color] = 0;
+			return acc;
+		}, {});
 	}
 
 	resetBall() {
 		this.ball = {x: 0.5, y: 0.5, size: 0.04};
+		delete this.tween;
 	}
 
 	addMouse() {
@@ -102,7 +115,9 @@ class Game {
 		return {
 			snakes: Object.keys(this.snakes).map(id => this.snakes[id].serialize()),
 			mice: this.mice,
-			ball: this.ball
+			ball: this.ball,
+			goals: this.goals,
+			scores: this.scores
 		}
 	}
 
@@ -156,7 +171,7 @@ class Game {
 			to: {x, y},
 			duration: 1000,
 			easing: Tweeno.Easing.Cubic.Out,
-			onUpdate: (target)=> {
+			onUpdate: target => {
 				var x = Math.abs(target.x);
 				if (x > 1) {
 					x = 1 - (x - 1);
@@ -173,6 +188,20 @@ class Game {
 		});
 		this.tween.start();
 		return true;
+	}
+
+	goal() {
+		var goal = this.goals.filter(goal => {
+			var d = distance(goal, this.ball);
+			return d < (goal.size + this.ball.size) / 2;
+		})[0];
+		if (!goal) {
+			return false;
+		}
+		var scoreBy = goal.color;
+		this.scores[scoreBy]++;
+		this.resetBall();
+		return scoreBy;
 	}
 }
 
@@ -193,7 +222,11 @@ io.on('connection', function (socket) {
 	});
 	broadcast('state', game.getState());
 	game.onBallUpdate = () => {
-		broadcast('ball', game.ball);
+		var scoreBy = game.goal();
+		if (!scoreBy) {
+			return broadcast('ball', game.ball);
+		}
+		broadcast('state', Object.assign({}, game.getState(), {scoreBy}));
 	};
 	socket.on('move', function (angle) {
 		if (typeof angle !== 'number' || isNaN(angle)) {
@@ -218,8 +251,7 @@ io.on('connection', function (socket) {
 		var movement = socket.game.snakes[socket.id].move(move);
 		if (socket.game.snakeCollision(movement, now)) {
 			socket.game.snakes[socket.id].die();
-			var state = game.getState();
-			state.die = socket.id;
+			var state = Object.assing({}, game.getState(), {die: socket.id});
 			socket.lastDeath = Date.now();
 			broadcast('state', state);
 			return checkPlayerCount();

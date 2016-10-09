@@ -71,6 +71,8 @@ function serverEventListeners() {
 		}
 		state.mice = e.mice;
 		state.ball = e.ball;
+		state.goals = e.goals;
+		state.scores = e.scores;
 	});
 
 	world.socket.on('start', function (e) {

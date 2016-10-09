@@ -1,5 +1,5 @@
-function sprite({type, size, x, y}) {
-	var color = {
+function sprite({type, size, x, y, color}) {
+	color = color || {
 		'ball': 0xffffff,
 		'speed': 0x4cd964
 	}[type];
