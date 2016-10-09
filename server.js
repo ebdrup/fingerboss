@@ -149,8 +149,6 @@ class Game {
 		}
 		var dx = this.ball.x - part.x;
 		var dy = this.ball.y - part.y;
-		//this.ball.x += dx;
-		//this.ball.y += dy;
 		var x = Math.max(Math.min(this.ball.x + (4 + Math.random()) * dx, 0.995), 0.005);
 		var y = Math.max(Math.min(this.ball.y + (4 + Math.random()) * dy, 0.995), 0.005);
 
@@ -227,9 +225,14 @@ io.on('connection', function (socket) {
 			return checkPlayerCount();
 		}
 		if (game.ballKick(snake)) {
-			broadcast('ball', game.ball);
+			var ball = Object.assign({}, game.ball, {kick: true});
+			if(game.lastKick && (now - game.lastKick < 100)){
+				delete ball.kick;
+			}
+			game.lastKick = now;
+			broadcast('ball', ball);
 		}
-		broadcast('move', Object.assign(move, {id: socket.id}));
+		broadcast('move', Object.assign({}, move, {id: socket.id}));
 		checkPlayerCount();
 	});
 	socket.on('pong', function () {

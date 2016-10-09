@@ -41,6 +41,10 @@ function serverEventListeners() {
 
 	world.socket.on('ball', function (ball) {
 		state.ball = ball;
+		if(ball.kick){
+			var n = Math.floor(Math.random()*2) +1;
+			sfx['ball' + n]();
+		}
 	});
 
 	world.socket.on('state', function (e) {
@@ -58,8 +62,8 @@ function serverEventListeners() {
 			}
 		});
 		if(e.die === world.id){
-			moveStars({dx:0, dy:0})
-			world.sounds.crash2();
+			moveStars({dx:0, dy:0});
+			sfx.crash2();
 			state.died = Date.now();
 			help('You Died');
 			state.playing = false;
