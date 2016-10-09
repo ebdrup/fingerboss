@@ -137,6 +137,17 @@ class Snake {
 			this.parts[i].y = p[1];
 		});
 	}
+
+	headCollision(element) {
+		var check = checkPart.bind(this);
+		return check(this.parts[0]) || check(this.parts[1]);
+
+		function checkPart(part) {
+			var d = distance(part, element);
+			return d <= (element.size / 2) + 0.0003 ? part : false;
+		}
+	}
+
 }
 
 class Part {

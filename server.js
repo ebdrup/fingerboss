@@ -8,7 +8,7 @@ const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
 const lineIntersect = require('./lineIntersect');
-const distance = require('./js/distance');
+global.distance = require('./js/distance');
 const Tweeno = require('tweeno');
 
 app.disable('x-powered-by');
@@ -149,7 +149,7 @@ class Game {
 	mouseCollision(snake, now) {
 		for (var j = 0; j < this.mice.length; j++) {
 			var mouse = this.mice[j];
-			if (this.headCollision(snake, mouse)) {
+			if (snake.headCollision(mouse)) {
 				this.mice.splice(j, 1);
 				this.addMouse();
 				return mouse;
@@ -158,18 +158,8 @@ class Game {
 		return null;
 	}
 
-	headCollision(snake, element) {
-		var check = checkPart.bind(this);
-		return check(snake.parts[0]) || check(snake.parts[1]);
-
-		function checkPart(part) {
-			var d = distance(part, element);
-			return d <= (element.size / 2) + 0.0005 ? part : false;
-		}
-	}
-
 	ballKick(snake) {
-		var part = this.headCollision(snake, this.ball);
+		var part = snake.headCollision(this.ball);
 		if (!part) {
 			return false;
 		}
