@@ -208,6 +208,7 @@ class Game {
 		this.resetBall();
 		var winner = Object.keys(this.scores).filter(color => this.scores[color] >= 10)[0];
 		if (winner) {
+			winner = parseInt(winner, 10);
 			this.colors.forEach(color => this.scores[color] = 0);
 		}
 		return {score, winner};
@@ -229,6 +230,7 @@ io.on('connection', function (socket) {
 	emit(socket, 'start', {
 		t: Date.now(),
 		id: socket.id,
+		color
 	});
 	broadcast('state', game.getState());
 	game.onBallUpdate = () => {

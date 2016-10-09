@@ -20,7 +20,8 @@ class Snake {
 				gfx = new PIXI.Graphics();
 				var width = world.renderer.view.width;
 				var height = world.renderer.view.height;
-				gfx.lineStyle(Math.round((height + width) / 200), data.color);
+				var lineThickness = (height + width) / 200;
+				gfx.lineStyle(lineThickness, data.color, 0.8);
 				var parts = this.getParts(now);
 				var headColor;
 				switch(this.power){
@@ -41,7 +42,7 @@ class Snake {
 				}
 				for (var i = parts.length - 2; i >= 0; i--) {
 					if (i == 4) {
-						gfx.lineStyle(Math.round((height + width) / 200), headColor);
+						gfx.lineStyle(lineThickness, headColor, 0.8);
 					}
 					var x1 = (parts[i + 1].x - state.pos.x) * width;
 					var y1 = (parts[i + 1].y - state.pos.y) * height;

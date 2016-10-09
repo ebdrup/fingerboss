@@ -1,8 +1,8 @@
 var sfx = [
-	'newCircle',
 	'crash1',
 	'crash2',
-	'shrink',
+	'clap1',
+	'clap2',
 	'fingerboss',
 	'loose',
 	'ball1',

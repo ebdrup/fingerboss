@@ -42,8 +42,7 @@ function listen() {
 	world.socket.on('ball', function (ball) {
 		state.ball = ball;
 		if (ball.kick) {
-			var n = Math.floor(Math.random() * 2) + 1;
-			sfx['ball' + n]();
+			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
 		}
 	});
 
@@ -62,7 +61,7 @@ function listen() {
 			}
 		});
 		if (e.die) {
-			sfx.crash2();
+			sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
 			if (e.die === world.id) {
 				moveStars({dx: 0, dy: 0});
 				help('You Died');
@@ -79,16 +78,21 @@ function listen() {
 			if(world.color === e.winner) {
 				help('You won!', e.winner);
 				sfx.win();
+				setTimeout(() =>{
+					sfx.fingerboss(0.8);
+					help('You\'re the\nfingerboss', e.winner);
+				}, 5000);
 			} else {
 				help('You lost');
+				sfx.loose();
 			}
 		} else if (e.score) {
 			help('Goal!', e.score);
 			sfx.whistle();
+			sfx['clap' + (Math.floor(Math.random() * 2) + 1)]();
 		}
 		if (e.kick) {
-			var n = Math.floor(Math.random() * 2) + 1;
-			sfx['ball' + n]();
+			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
 		}
 	});
 
