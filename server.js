@@ -205,7 +205,7 @@ class Game {
 		var score = goal.color;
 		this.scores[score]++;
 		this.resetBall();
-		var winner = Object.keys(this.scores).filter(color => this.scores[color]>=1)[0];
+		var winner = Object.keys(this.scores).filter(color => this.scores[color]>=10)[0];
 		if(winner){
 			this.colors.forEach(color => this.scores[color] = 0);
 		}
