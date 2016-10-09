@@ -41,8 +41,8 @@ function serverEventListeners() {
 
 	world.socket.on('ball', function (ball) {
 		state.ball = ball;
-		if(ball.kick){
-			var n = Math.floor(Math.random()*2) +1;
+		if (ball.kick) {
+			var n = Math.floor(Math.random() * 2) + 1;
 			sfx['ball' + n]();
 		}
 	});
@@ -51,32 +51,34 @@ function serverEventListeners() {
 		var snakeIds = e.snakes.reduce((acc, s) => (acc[s.id] = true) && acc, {});
 		Object.keys(state.snakes).forEach(id => !snakeIds[id] && state.snakes[id].remove());
 		e.snakes.forEach(data => {
-			if(state.snakes[data.id]){
+			if (state.snakes[data.id]) {
 				state.snakes[data.id].update(data);
 			} else {
 				state.snakes[data.id] = new Snake({data})
 			}
 			if (data.id === world.id) {
-				state.pos.x = data.parts[0][0] -0.5;
-				state.pos.y = data.parts[0][1] -0.5;
+				state.pos.x = data.parts[0][0] - 0.5;
+				state.pos.y = data.parts[0][1] - 0.5;
 			}
 		});
-		if(e.die && (e.die === world.id)){
-			moveStars({dx:0, dy:0});
+		if (e.die) {
 			sfx.crash2();
-			help('You Died');
-			state.playing = false;
-			setTimeout(() => state.playing = true, 2000);
+			if (e.die === world.id) {
+				moveStars({dx: 0, dy: 0});
+				help('You Died');
+				state.playing = false;
+				setTimeout(() => state.playing = true, 2000);
+			}
 		}
 		state.mice = e.mice;
 		state.ball = e.ball;
 		state.goals = e.goals;
 		state.scores = e.scores;
-		if(e.winner){
+		if (e.winner) {
 			help('Winner!', e.score);
 			sfx.whistle();
 			sfx.win();
-		} else if(e.score){
+		} else if (e.score) {
 			help('Goal!', e.score);
 			sfx.whistle();
 		}

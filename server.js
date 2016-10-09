@@ -8,7 +8,7 @@ const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
 const lineIntersect = require('./lineIntersect');
-const distance = require('./distance');
+const distance = require('./js/distance');
 const Tweeno = require('tweeno');
 
 app.disable('x-powered-by');
@@ -327,7 +327,7 @@ function checkPlayerCount() {
 	});
 }
 
-var LATENCY = 300;
+var LATENCY = 100;
 
 function emit(socket, type, msg) {
 	if (!process.env.PORT) {
