@@ -222,11 +222,11 @@ io.on('connection', function (socket) {
 	});
 	broadcast('state', game.getState());
 	game.onBallUpdate = () => {
-		var scoreBy = game.goal();
-		if (!scoreBy) {
+		var score = game.goal();
+		if (!score) {
 			return broadcast('ball', game.ball);
 		}
-		broadcast('state', Object.assign({}, game.getState(), {scoreBy}));
+		broadcast('state', Object.assign({}, game.getState(), {score}));
 	};
 	socket.on('move', function (angle) {
 		if (typeof angle !== 'number' || isNaN(angle)) {

@@ -70,7 +70,6 @@ function fingerboss() {
 						scoreSprite.style = style;
 					} else {
 						scoreSprite = world.scores[color] = new PIXI.Text(score + '', style);
-						console.log('Adding score', score, color);
 						scoreSprite.anchor.y = 0.5;
 						world.stage.addChild(scoreSprite);
 					}

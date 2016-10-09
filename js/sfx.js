@@ -6,7 +6,8 @@ var sfx = [
 	'fingerboss',
 	'loose',
 	'ball1',
-	'ball2'
+	'ball2',
+	'whistle'
 ].reduce(function (acc, key) {
 	var exts = (window.intel && window.intel.xdk) ? ['wav'] : ['mp3'];
 	var urls = exts.map(function (ext) {
@@ -23,6 +24,7 @@ var sfx = [
 		} else {
 			sound.volume(0.3, id);
 		}
+		console.log('play sfx', key);
 	};
 	return acc;
 }, {});

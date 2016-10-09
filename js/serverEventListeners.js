@@ -73,6 +73,9 @@ function serverEventListeners() {
 		state.ball = e.ball;
 		state.goals = e.goals;
 		state.scores = e.scores;
+		if(e.score){
+			sfx.whistle();
+		}
 	});
 
 	world.socket.on('start', function (e) {
