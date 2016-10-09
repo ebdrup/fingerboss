@@ -2,7 +2,7 @@ function touch() {
 	var gfx = new PIXI.Graphics();
 	gfx.beginFill(BACKGROUND_COLOR);
 	gfx.drawRect(0, 0, 1, 1);
-	var sprite = new PIXI.Sprite(gfx.generateTexture());
+	var sprite = new PIXI.Sprite(gfx.generateCanvasTexture());
 	// center the sprite's anchor point
 	sprite.width = world.renderer.view.width;
 	sprite.height = world.renderer.view.height;

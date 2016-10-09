@@ -251,7 +251,7 @@ io.on('connection', function (socket) {
 		var movement = socket.game.snakes[socket.id].move(move);
 		if (socket.game.snakeCollision(movement, now)) {
 			socket.game.snakes[socket.id].die();
-			var state = Object.assing({}, game.getState(), {die: socket.id});
+			var state = Object.assign({}, game.getState(), {die: socket.id});
 			socket.lastDeath = Date.now();
 			broadcast('state', state);
 			return checkPlayerCount();

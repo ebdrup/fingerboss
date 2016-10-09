@@ -61,11 +61,10 @@ function serverEventListeners() {
 				state.pos.y = data.parts[0][1] -0.5;
 			}
 		});
-		if(e.die === world.id){
+		if(e.die && (e.die === world.id)){
 			moveStars({dx:0, dy:0});
 			sfx.crash2();
-			state.died = Date.now();
-			help('You Died');
+			//help('You Died');
 			state.playing = false;
 			setTimeout(() => state.playing = true, 2000);
 		}

@@ -2,7 +2,6 @@ function initState() {
 	state.snakes = {};
 	state.mice = [];
 	state.angle = 0;
-	state.died = 0;
 	state.readyToPlay = true;
 	state.playing = true;
 	state.pos = {
