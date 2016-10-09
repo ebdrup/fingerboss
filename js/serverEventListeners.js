@@ -72,8 +72,11 @@ function serverEventListeners() {
 		state.ball = e.ball;
 		state.goals = e.goals;
 		state.scores = e.scores;
-		if(e.score){
-			console.log('goal', e.score);
+		if(e.winner){
+			help('Winner!', e.score);
+			sfx.whistle();
+			sfx.win();
+		} else if(e.score){
 			help('Goal!', e.score);
 			sfx.whistle();
 		}

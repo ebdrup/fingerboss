@@ -202,10 +202,14 @@ class Game {
 		if (!goal) {
 			return false;
 		}
-		var scoreBy = goal.color;
-		this.scores[scoreBy]++;
+		var score = goal.color;
+		this.scores[score]++;
 		this.resetBall();
-		return scoreBy;
+		var winner = Object.keys(this.scores).filter(color => this.scores[color]>=1)[0];
+		if(winner){
+			this.colors.forEach(color => this.scores[color] = 0);
+		}
+		return {score, winner};
 	}
 }
 
@@ -231,7 +235,7 @@ io.on('connection', function (socket) {
 		if (!score) {
 			return broadcast('ball', game.ball);
 		}
-		broadcast('state', Object.assign({}, game.getState(), {score}));
+		broadcast('state', Object.assign({}, game.getState(), score));
 	};
 	socket.on('move', function (angle) {
 		if (typeof angle !== 'number' || isNaN(angle)) {

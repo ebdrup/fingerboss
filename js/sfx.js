@@ -7,7 +7,8 @@ var sfx = [
 	'loose',
 	'ball1',
 	'ball2',
-	'whistle'
+	'whistle',
+	'win'
 ].reduce(function (acc, key) {
 	var exts = (window.intel && window.intel.xdk) ? ['wav'] : ['mp3'];
 	var urls = exts.map(function (ext) {
