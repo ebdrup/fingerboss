@@ -149,14 +149,24 @@ class Game {
 		}
 		var dx = this.ball.x - part.x;
 		var dy = this.ball.y - part.y;
-		var x = Math.max(Math.min(this.ball.x + (4 + Math.random()) * dx, 0.995), 0.005);
-		var y = Math.max(Math.min(this.ball.y + (4 + Math.random()) * dy, 0.995), 0.005);
+		var x = this.ball.x + (4 + Math.random()) * dx;
+		var y = this.ball.y + (4 + Math.random()) * dy;
 
-		this.tween = new Tweeno.Tween(this.ball, {
+		this.tween = new Tweeno.Tween({x: this.ball.x, y: this.ball.y}, {
 			to: {x, y},
 			duration: 1000,
 			easing: Tweeno.Easing.Cubic.Out,
-			onUpdate: ()=> {
+			onUpdate: (target)=> {
+				var x = Math.abs(target.x);
+				if (x > 1) {
+					x = 1 - (x - 1);
+				}
+				this.ball.x = x;
+				var y = Math.abs(target.y);
+				if (y > 1) {
+					y = 1 - (y - 1);
+				}
+				this.ball.y = y;
 				this.onBallUpdate && this.onBallUpdate();
 			},
 			onComplete: () => delete this.tween
@@ -226,7 +236,7 @@ io.on('connection', function (socket) {
 		}
 		if (game.ballKick(snake)) {
 			var ball = Object.assign({}, game.ball, {kick: true});
-			if(game.lastKick && (now - game.lastKick < 100)){
+			if (game.lastKick && (now - game.lastKick < 100)) {
 				delete ball.kick;
 			}
 			game.lastKick = now;

@@ -12,7 +12,6 @@ function sprite({type, size, x, y}) {
 		var gfx = new PIXI.Graphics();
 		gfx.beginFill(color, 0.8);
 		gfx.drawCircle(0, 0, 0.1 * s);
-		console.log({color, s});
 		world.textures[key] = texture = gfx.generateTexture(world.renderer);
 	}
 	var sprite = new PIXI.Sprite(texture);
