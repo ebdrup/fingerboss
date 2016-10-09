@@ -3,7 +3,6 @@ function fadeSprite(stage, sprite) {
 		sprite.tls.forEach(tl => tl.stop());
 		delete sprite.tls;
 	}
-	console.log(sprite.scale);
 	var duration = 2000;
 	sprite.tls = [
 		new TWEEN.Tween(sprite)

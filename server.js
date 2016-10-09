@@ -69,6 +69,10 @@ class Game {
 			acc[color] = 0;
 			return acc;
 		}, {});
+		this.lastMove = this.colors.reduce((acc, color) => {
+			acc[color] = 0;
+			return acc;
+		}, {})
 	}
 
 	resetBall() {
@@ -89,7 +93,7 @@ class Game {
 
 	addSnake(socket) {
 		this.sockets.push(socket);
-		socket.color = this.colors[(this.colorIndex++) % this.colors.length];
+		socket.color = this.colors.sort((c1, c2) => this.lastMove[c1] - this.lastMove[c2])[0];
 		this.snakes[socket.id] = new Snake({
 			id: socket.id,
 			length: 30,
@@ -216,6 +220,7 @@ io.on('connection', function (socket) {
 	}
 	var game = socket.game;
 	var snakes = socket.game.snakes;
+	var color = socket.color;
 	emit(socket, 'start', {
 		t: Date.now(),
 		id: socket.id,
@@ -232,8 +237,9 @@ io.on('connection', function (socket) {
 		if (typeof angle !== 'number' || isNaN(angle)) {
 			return;
 		}
-		socketLastSeen[socket.id] = Date.now();
 		var now = Date.now();
+		game.lastMove[color] = now;
+		socketLastSeen[socket.id] = now;
 		var lastMove = socket.lastMove || now;
 		socket.lastMove = now;
 		if (socket.lastDeath && now - socket.lastDeath < 2000) {
