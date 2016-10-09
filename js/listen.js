@@ -77,7 +77,7 @@ function listen() {
 			sfx.whistle();
 			if(world.color === e.winner) {
 				help('You won!', e.winner);
-				sfx.win();
+				sfx.win(0.7);
 				setTimeout(() =>{
 					sfx.fingerboss(0.8);
 					help('You\'re the\nfingerboss', e.winner);
