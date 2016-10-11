@@ -3,6 +3,7 @@ function initWorld() {
 	world.dClocks = [];
 	world.latency = 120;
 	world.latencies = [];
+	world.peers = [];
 	world.socket = io();
 	world.textures = {};
 	world.scores = {};

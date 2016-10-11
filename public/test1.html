@@ -1,0 +1,39 @@
+<html>
+<title>WebRTC test - </title>
+
+<body>
+<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
+<script>
+	var x = 0;
+	var clientCount = 2;
+	var id = 'fingerboss-x-' + x;
+	var otherId = 'fingerboss-x-' + ((x + 1) % clientCount);
+	console.log('id', id, 'otherId', otherId);
+	var peer = new Peer(id, {key: '9hehijcmhh4u0udi', debug: 3});
+	var conn = peer.connect(otherId);
+	conn.on('open', function () {
+		setInterval(function () {
+			var str = new Date().toString() + ' from ' + id;
+			console.log(id, 'sending', str);
+			conn.send(str);
+		}, 2000);
+	});
+	peer.on('connection', function (conn) {
+		conn.on('data', function (data) {
+			// Will print 'hi!'
+			console.log(id, 'received:', data);
+		});
+	});
+
+	peer.on('error', function(err) {
+		console.log(err);
+	});
+
+	window.onunload = window.onbeforeunload = function(e) {
+		if (!!peer && !peer.destroyed) {
+			peer.destroy();
+		}
+	};
+</script>
+</body>
+</html>

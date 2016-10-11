@@ -41,6 +41,7 @@ var miceTypes = ['speed', 'power'];
 class Game {
 	constructor(socket) {
 		this.sockets = [socket];
+		this.peers = [];
 		this.mice = [];
 		this.colorIndex = 0;
 		this.colors = [colors[(colorIndex++) % colors.length], colors[(colorIndex++) % colors.length]];
@@ -303,6 +304,14 @@ io.on('connection', function (socket) {
 	socket.on('pong', function () {
 		socketLastSeen[socket.id] = Date.now();
 		checkPlayerCount();
+	});
+	socket.on('peer_connected', function (id) {
+		console.log('peer_connected', id);
+		if(!game.peers.some(p => p.peerId === id)){
+			game.peers.push({socketId: socket.id, peerId: id});
+			broadcast('peers', game.peers);
+			console.log('peer_connected breadcast', game.peers);
+		}
 	});
 	socket.on('disconnect', function () {
 		socket.game.removeSnake(socket);

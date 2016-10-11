@@ -75,10 +75,10 @@ function listen() {
 		state.scores = e.scores;
 		if (e.winner) {
 			sfx.whistle();
-			if(world.color === e.winner) {
+			if (world.color === e.winner) {
 				help('You won!', e.winner);
 				sfx.win(0.7);
-				setTimeout(() =>{
+				setTimeout(() => {
 					sfx.fingerboss(0.8);
 					help('You\'re the\nfingerboss', e.winner);
 				}, 5000);
@@ -101,8 +101,45 @@ function listen() {
 		world.color = e.color;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
-	});
+		world.peerId = world.id.replace('/#', '');
+		world.peer = new Peer(world.peerId, {key: '9hehijcmhh4u0udi', debug: 3});
+		world.socket.emit('peer_connected', world.peerId);
+		world.peer.on('error', function (err) {
+			console.log(err);
+		});
+		world.peer.on('connection', function (conn) {
+			conn.on('data', function (data) {
+				// Will print 'hi!'
+				console.log(world.peerId, 'received:', data, {dt: Date.now() - data.now});
+			});
+		});
 
+		window.onunload = window.onbeforeunload = function () {
+			if (!world.peer.destroyed) {
+				world.peer.destroy();
+			}
+		};
+
+	});
+	world.socket.on('peers', function (peers) {
+		var existingIds = world.peers.reduce((acc, p) => (acc[p.peerId] = true) && acc, {});
+		world.peers = peers
+			.filter(p => p.peerId !== world.peerId && !existingIds[p.peerId])
+			.map(p => Object.assign(world.peer.connect(p.peerId), p));
+		world.peers.forEach(p =>
+			p
+				.on('open', function () {
+					p.interval = setInterval(function () {
+						p.send({now: Date.now(), from: world.peerId});
+					}, 2000);
+				})
+				.on('error', function (err) {
+					console.error('peer error, removing peer', err);
+					p.interval && clearInterval(p.interval);
+					world.peers = world.peers.filter(peer => peer !== p);
+				})
+		);
+	});
 	//world.socket.on('move', onMoveTime);
 	world.socket.on('players', onPlayers);
 	world.socket.on('ping', onPing);
@@ -139,5 +176,4 @@ function listen() {
 			world.socket.emit('pong', 1);
 		}
 	}
-
 }
