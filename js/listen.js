@@ -87,7 +87,8 @@ function listen() {
 				sfx.loose();
 			}
 		} else if (e.score) {
-			help({text: 'Goal!', color: e.score});
+			var score = Object.keys(state.scores).map(key => state.scores[key]).join(' - ');
+			help({text: `Goal!\n${score}`, color: e.score});
 			sfx.whistle();
 			sfx['clap' + (Math.floor(Math.random() * 2) + 1)]();
 		}
