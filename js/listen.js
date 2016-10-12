@@ -88,7 +88,7 @@ function listen() {
 			}
 		} else if (e.score) {
 			var score = Object.keys(state.scores)
-				.sort((a, b) => a === world.color.toString() ? 1 : -1)
+				.sort((a, b) => a === world.color.toString() ? -1 : 1)
 				.map(key => state.scores[key]).join(' - ');
 			help({text: `Goal!\n${score}`, color: e.score});
 			sfx.whistle();
