@@ -1,5 +1,5 @@
-function help(str, color) {
-	var fontSize = getFontSize(str);
+function help({text, color, alpha, duration}) {
+	var fontSize = getFontSize(text);
 	var fill = color ? '#' + ('000000' + parseInt(color, 10).toString(16)).slice(-6) : '#ffffff';
 	var style = {
 		fontSize: fontSize + 'px',
@@ -7,12 +7,13 @@ function help(str, color) {
 		fill,
 		align: 'center'
 	};
-	var text = new PIXI.Text(str, style);
-	text.anchor.x = 0.5;
-	text.anchor.y = 0.5;
-	var h = text.height;
-	text.x = Math.round(world.renderer.view.width / 2);
-	text.y = Math.round(h / 2 + (world.renderer.view.height - h) * Math.random());
-	world.stage.addChild(text);
-	fadeSprite(world.stage, text)
+	var sprite = new PIXI.Text(text, style);
+	sprite.anchor.x = 0.5;
+	sprite.anchor.y = 0.5;
+	var h = sprite.height;
+	sprite.x = Math.round(world.renderer.view.width / 2);
+	sprite.y = Math.round(h / 2 + (world.renderer.view.height - h) * Math.random());
+	typeof alpha === 'number' && (sprite.alpha = alpha);
+	world.stage.addChild(sprite);
+	fadeSprite(world.stage, sprite, duration)
 }

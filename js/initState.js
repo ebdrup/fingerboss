@@ -13,5 +13,5 @@ function initState() {
 			world.stage.removeChild(world.stage.children[i]);
 		}
 	}
-	help('fingerboss')
+	help({text: 'fingerboss'})
 }

@@ -64,7 +64,7 @@ function listen() {
 			sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
 			if (e.die === world.id) {
 				moveStars({dx: 0, dy: 0});
-				help('You Died');
+				help({text: 'You Died'});
 				state.playing = false;
 				setTimeout(() => state.playing = true, 2000);
 			}
@@ -75,24 +75,27 @@ function listen() {
 		state.scores = e.scores;
 		if (e.winner) {
 			sfx.whistle();
-			if(world.color === e.winner) {
-				help('You won!', e.winner);
+			if (world.color === e.winner) {
+				help({text: 'You won!', color: e.winner});
 				sfx.win(0.7);
-				setTimeout(() =>{
+				setTimeout(() => {
 					sfx.fingerboss(0.8);
-					help('You\'re the\nfingerboss', e.winner);
+					help({text: 'You\'re the\nfingerboss', color: e.winner});
 				}, 5000);
 			} else {
-				help('You lost');
+				help({text: 'You lost'});
 				sfx.loose();
 			}
 		} else if (e.score) {
-			help('Goal!', e.score);
+			help({text: 'Goal!', color: e.score});
 			sfx.whistle();
 			sfx['clap' + (Math.floor(Math.random() * 2) + 1)]();
 		}
 		if (e.kick) {
 			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
+		}
+		if (e.help) {
+			help({text: e.help, alpha: 0.5, duration: 500});
 		}
 	});
 

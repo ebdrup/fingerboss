@@ -272,19 +272,25 @@ io.on('connection', function (socket) {
 		}
 		var mouseEaten = game.mouseCollision(snake, now);
 		if (mouseEaten) {
+			state = game.getState();
+			var help;
 			switch(mouseEaten.type) {
 				case 'speed':
 					if (snake.velocity <= VELOCITY * 1.5) {
 						snake.velocity += VELOCITY * 0.1;
+						help = 'faster';
 					} else {
 						snake.addLength(10);
+						help = 'longer';
 					}
 					break;
 				case 'power':
+					help = '+1 power kick';
 					snake.power++;
 					break;
 			}
-			broadcast('state', game.getState());
+			help && (state = Object.assign({}, state, {help}));
+			broadcast('state', state);
 			return checkPlayerCount();
 		}
 		if (game.ballKick(snake)) {
