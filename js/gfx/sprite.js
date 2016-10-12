@@ -8,7 +8,14 @@ function sprite({type, size, x, y, color}) {
 	var height = world.renderer.view.height;
 	var width = world.renderer.view.width;
 	var s = (width + height) / 2;
-	var spriteKey = [type, size, x, y, color].join('_');
+	var spriteKey;
+	switch (type) {
+		case 'ball':
+			spriteKey = type;
+			break;
+		default:
+			spriteKey = [type, size, x, y, color].join('_');
+	}
 	var sprite;
 	if (spriteCache[spriteKey]) {
 		sprite = spriteCache[spriteKey];
@@ -19,6 +26,9 @@ function sprite({type, size, x, y, color}) {
 			switch (type) {
 				case 'power':
 					world.textures[textureKey] = texture = new PIXI.Texture.fromImage('power.png');
+					break;
+				case 'ball':
+					world.textures[textureKey] = texture = new PIXI.Texture.fromImage('ball.png');
 					break;
 				case 'speed':
 					world.textures[textureKey] = texture = new PIXI.Texture.fromImage('spiral.png');
