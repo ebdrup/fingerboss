@@ -3,13 +3,14 @@ const express = require('express');
 const compression = require('compression');
 const path = require('path');
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
 const lineIntersect = require('./lineIntersect');
 global.distance = require('./js/distance');
 const Tweeno = require('tweeno');
+const ExpressPeerServer = require('peer').ExpressPeerServer;
 
 app.disable('x-powered-by');
 app.set('case sensitive routing', false);
@@ -165,7 +166,7 @@ class Game {
 			return false;
 		}
 		var kickDistance = 4;
-		if(snake.power){
+		if (snake.power) {
 			snake.power--;
 			kickDistance *= 4;
 		}
@@ -273,7 +274,7 @@ io.on('connection', function (socket) {
 		}
 		var mouseEaten = game.mouseCollision(snake, now);
 		if (mouseEaten) {
-			switch(mouseEaten.type) {
+			switch (mouseEaten.type) {
 				case 'speed':
 					if (snake.velocity <= VELOCITY * 1.5) {
 						snake.velocity += VELOCITY * 0.1;
@@ -307,7 +308,7 @@ io.on('connection', function (socket) {
 	});
 	socket.on('peer_connected', function (id) {
 		console.log('peer_connected', id);
-		if(!game.peers.some(p => p.peerId === id)){
+		if (!game.peers.some(p => p.peerId === id)) {
 			game.peers.push({socketId: socket.id, peerId: id});
 			broadcast('peers', game.peers);
 			console.log('peer_connected breadcast', game.peers);
@@ -373,7 +374,9 @@ function broadcast(type, msg) {
 	}
 }
 
-http.listen(port, function () {
-	console.log('listening on http://localhost:%s', port);
+app.use('/peer', ExpressPeerServer(server, {debug: true}));
+
+server.listen(port, function () {
+	console.log('listening on app://localhost:%s', port);
 });
 

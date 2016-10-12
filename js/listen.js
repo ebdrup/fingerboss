@@ -102,7 +102,7 @@ function listen() {
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
 		world.peerId = world.id.replace('/#', '');
-		world.peer = new Peer(world.peerId, {key: '9hehijcmhh4u0udi', debug: 3});
+		world.peer = new Peer(world.peerId, {host: '192.168.1.134', port: 7890, path: '/peer', debug: 3});
 		world.socket.emit('peer_connected', world.peerId);
 		world.peer.on('error', function (err) {
 			console.log(err);
