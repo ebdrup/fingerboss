@@ -273,23 +273,23 @@ io.on('connection', function (socket) {
 		var mouseEaten = game.mouseCollision(snake, now);
 		if (mouseEaten) {
 			state = game.getState();
-			var help;
+			var text;
 			switch(mouseEaten.type) {
 				case 'speed':
 					if (snake.velocity <= VELOCITY * 1.5) {
 						snake.velocity += VELOCITY * 0.1;
-						help = 'faster';
+						text = 'faster';
 					} else {
 						snake.addLength(10);
-						help = 'longer';
+						text = 'longer';
 					}
 					break;
 				case 'power':
-					help = '+1 power kick';
+					text = '+1 power kick';
 					snake.power++;
 					break;
 			}
-			help && (state = Object.assign({}, state, {help}));
+			text && (state = Object.assign({}, state, {help:{text, id: socket.id}}));
 			broadcast('state', state);
 			return checkPlayerCount();
 		}

@@ -97,8 +97,8 @@ function listen() {
 		if (e.kick) {
 			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
 		}
-		if (e.help) {
-			help({text: e.help, alpha: 0.5, duration: 500});
+		if (e.help && e.help.id === world.id) {
+			help({text: e.help.text, alpha: 0.5, duration: 500});
 		}
 	});
 
