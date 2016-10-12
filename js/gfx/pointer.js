@@ -28,7 +28,7 @@ function pointer({x, y, text, size}) {
 	world.stage.addChild(sprite);
 	//text
 	if(!sprite.text){
-		var fontSize = sprite.width/1.3;
+		var fontSize = sprite.width;
 		sprite.text = getText({text, fontSize})
 	}
 	sprite.text.position.x = px +(dx/1.3 * width);
