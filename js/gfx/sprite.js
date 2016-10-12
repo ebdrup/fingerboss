@@ -1,10 +1,5 @@
 var spriteCache = {};
 function sprite({type, size, x, y, color}) {
-	color = color || {
-			'ball': 0xffffff,
-			'speed': 0x4cd964,
-			'power': 0xff2d55
-		}[type];
 	var height = world.renderer.view.height;
 	var width = world.renderer.view.width;
 	var s = (width + height) / 2;
@@ -24,6 +19,9 @@ function sprite({type, size, x, y, color}) {
 		var texture = world.textures[textureKey];
 		if (!texture) {
 			switch (type) {
+				case 'goal-net':
+					world.textures[textureKey] = texture = new PIXI.Texture.fromImage('goal.png');
+					break;
 				case 'power':
 					world.textures[textureKey] = texture = new PIXI.Texture.fromImage('power.png');
 					break;
@@ -58,18 +56,8 @@ function sprite({type, size, x, y, color}) {
 	sprite.t = sprite.t || now;
 	var dt = now - sprite.t;
 	switch (type) {
+		case 'goal-net':
 		case 'power':
-			sprite.alphaStep = sprite.alphaStep || 1;
-			sprite.alpha += dt * sprite.alphaStep * Math.random() / 500;
-			if (sprite.alpha >= 1) {
-				sprite.alphaStep = -1;
-				sprite.alpha = 1;
-			} else if (sprite.alpha <= 0.5) {
-				sprite.alphaStep = 1;
-				sprite.alpha = 0.5;
-			}
-			sprite.rotation = (Math.random() - 0.5) / 6;
-			break;
 		case 'speed':
 			sprite.alphaStep = sprite.alphaStep || 1;
 			sprite.alpha += dt * sprite.alphaStep * Math.random() / 500;
@@ -80,6 +68,15 @@ function sprite({type, size, x, y, color}) {
 				sprite.alphaStep = 1;
 				sprite.alpha = 0.5;
 			}
+			break;
+		default:
+			sprite.color = color;
+	}
+	switch (type) {
+		case 'power':
+			sprite.rotation = (Math.random() - 0.5) / 6;
+			break;
+		case 'speed':
 			sprite.rotation += -dt / 500;
 			break;
 		default:

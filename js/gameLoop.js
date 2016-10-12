@@ -25,10 +25,13 @@ function fingerboss() {
 		//goals
 		if (state.goals) {
 			world.goals && world.goals.forEach(goal => world.stage.removeChild(goal));
-			world.goals = state.goals.map(goal => sprite(goal));
+			world.goals = state.goals.map(goal => sprite(goal))
+				.concat(
+					state.goals.map(goal => sprite(Object.assign({}, goal, {type: 'goal-net'})))
+				);
 			world.goals.forEach(goal=> world.stage.addChild(goal));
 			var myGoal = state.goals.filter(goal => goal.color === world.color)[0];
-			if(myGoal){
+			if (myGoal) {
 				pointer(Object.assign({}, myGoal, {text: 'Goal'}));
 			}
 		}
@@ -47,9 +50,9 @@ function fingerboss() {
 			world.mice.addChild(sprite(mouse));
 		});
 		//scores
-		if(state.scores) {
+		if (state.scores) {
 			Object.keys(world.scores).forEach(color => {
-				if(typeof state.scores[color] !== 'number'){
+				if (typeof state.scores[color] !== 'number') {
 					world.stage.removeChild(world.scores[color]);
 					delete world.scores[color];
 				}
