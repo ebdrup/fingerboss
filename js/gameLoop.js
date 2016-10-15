@@ -108,7 +108,7 @@ function fingerboss() {
 		if (state.scores) {
 			Object.keys(world.scores).forEach(color => {
 				if (typeof state.scores[color] !== 'number') {
-					world.stage.removeChild(world.scores[color]);
+					world.text.removeChild(world.scores[color]);
 					delete world.scores[color];
 				}
 			});
@@ -134,7 +134,7 @@ function fingerboss() {
 					} else {
 						scoreSprite = world.scores[color] = new PIXI.Text(score + '', style);
 						scoreSprite.anchor.y = 0.5;
-						world.stage.addChild(scoreSprite);
+						world.text.addChild(scoreSprite);
 					}
 					scoreSprite.position.y = 10 + Math.round((i * fontSize * 1.1) + scoreSprite.height / 2);
 					scoreSprite.position.x = 20;
