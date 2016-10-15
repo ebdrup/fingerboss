@@ -221,6 +221,11 @@ io.on('connection', function (socket) {
 		var mice = game.mouseEaten(mouseId);
 		broadcast('mice', mice);
 	});
+	socket.on('die', function (snakeData) {
+		var snake = snakes[socket.id];
+		snake.unserialize(snakeData);
+		socket.broadcast.emit('snake', snakeData);
+	});
 	socket.on('move', function (move) {
 		var now = Date.now();
 		game.lastMove[color] = now;
@@ -229,40 +234,7 @@ io.on('connection', function (socket) {
 		var snake = snakes[socket.id];
 		move.id = socket.id;
 		snake.move(move);
-		/*
-		if (socket.game.snakeCollision(movement, now)) {
-			socket.game.snakes[socket.id].die();
-			state = Object.assign({}, game.getState(), {die: socket.id});
-			socket.lastDeath = Date.now();
-			broadcast('state', state);
-			return checkPlayerCount();
-		}
-		var mouseEaten = game.mouseCollision(snake, now);
-		if (mouseEaten) {
-			state = game.getState();
-			var text;
-			switch(mouseEaten.type) {
-				case 'speed':
-					if (snake.velocity <= VELOCITY * 1.5) {
-						snake.velocity += VELOCITY * 0.1;
-						text = 'faster';
-					} else {
-						snake.addLength(10);
-						text = 'longer';
-					}
-					break;
-				case 'power':
-					text = '+1 power kick';
-					snake.power++;
-					break;
-			}
-			text && (state = Object.assign({}, state, {help:{text, id: socket.id}}));
-			broadcast('state', state);
-			return checkPlayerCount();
-		}
-		*/
 		if (game.ballKick(snake)) {
-			//we need to broadcast full state, because power may have been used
 			var ballState = Object.assign({}, game.ball, {kick: true});
 			if (game.lastKick && (now - game.lastKick < 100)) {
 				delete ballState.kick;

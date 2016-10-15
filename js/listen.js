@@ -19,6 +19,13 @@ function listen() {
 		state.mice = mice;
 	});
 
+	world.socket.on('snake', function (data) {
+		if (data.id === world.id) {
+			throw new Error('got snake for ourselves');
+		}
+		state.snakes[data.id].unserialize(data);
+	});
+
 	world.socket.on('state', function (e) {
 		if(!state.initialized){
 			state.initialized = true;
@@ -37,15 +44,6 @@ function listen() {
 				state.pos.y = data.parts[0][1] - 0.5;
 			}
 		});
-		if (e.die) {
-			sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
-			if (e.die === world.id) {
-				moveStars({dx: 0, dy: 0});
-				help({text: 'You Died'});
-				state.playing = false;
-				setTimeout(() => state.playing = true, 2000);
-			}
-		}
 		state.mice = e.mice;
 		state.ball = e.ball;
 		state.goals = e.goals;

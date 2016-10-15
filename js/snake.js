@@ -7,6 +7,7 @@ class Snake {
 		this.moveCache = {};
 		if (data) {
 			this.unserialize(data);
+			this.startVelocity = data.velocity;
 			var gfx;
 			var update = (function () {
 				var now = Date.now();

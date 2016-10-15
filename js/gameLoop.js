@@ -31,6 +31,7 @@ function fingerboss() {
 		var dx = dt * velocity * Math.cos(state.angle);
 		var dy = dt * velocity * Math.sin(state.angle);
 		var move = Object.assign(snake.getMaxMove({dx, dy}), {playerT: now, counter: ++snake.sendCounter});
+		console.log(move);
 		world.socket.emit('move', move);
 		setTimeout(()=> {
 			state.pos.x += move.dx;
@@ -38,7 +39,19 @@ function fingerboss() {
 			moveStars(move);
 			var movement = snake.move(move);
 			if (snake.snakeCollision(movement, now)) {
+				var oldPos = snake.parts[0];
 				snake.die();
+				sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
+				help({text: 'You Died'});
+				state.playing = false;
+				setTimeout(() => {
+					state.playing = true;
+					var x = snake.parts[0].x;
+					var y = snake.parts[0].y;
+					state.pos.x = x - 0.5;
+					state.pos.y = y - 0.5;
+					moveStars({dx: x - oldPos.x, dy: y - oldPos.y});
+				}, 2000);
 				return world.socket.emit('die', snake.serialize());
 			}
 			var mouseEaten = snake.mouseCollision();
