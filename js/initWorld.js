@@ -7,7 +7,7 @@ function initWorld() {
 	world.textures = {};
 	world.scores = {};
 	world.pointers = {};
-	world.zoom = 2;
+	world.zoom = 3;
 	world.wins = parseInt(readCookie('wins') || '0', 10);
 	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: BACKGROUND_COLOR,
