@@ -22,8 +22,8 @@ function fingerboss() {
 		if (dt <= 10) {
 			return world.renderer.render(world.mainStage);
 		}
-		if (dt > 20) {
-			dt = 10;
+		if (dt > 100) {
+			dt = 100;
 		}
 		world.lastMove = now;
 		var snake = state.snakes[world.id];
