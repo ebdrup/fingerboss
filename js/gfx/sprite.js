@@ -1,7 +1,7 @@
 var spriteCache = {};
 function sprite({type, size, x, y, color}) {
-	var height = world.renderer.view.height;
-	var width = world.renderer.view.width;
+	var height = world.height;
+	var width = world.width;
 	var s = (width + height) / 2;
 	var spriteKey;
 	switch (type) {

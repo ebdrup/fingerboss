@@ -145,8 +145,8 @@ function fingerboss() {
 }
 
 function initBackground() {
-	var width = world.renderer.view.width;
-	var height = world.renderer.view.height;
+	var width = world.width;
+	var height = world.height;
 	var texture = PIXI.Texture.fromImage('/particle.png');
 	world.stars = Array.apply(null, Array(600)).map(() => {
 		var star = new PIXI.Sprite(texture);

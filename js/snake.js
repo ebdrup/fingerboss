@@ -25,8 +25,8 @@ class Snake {
 					return;
 				}
 				gfx = new PIXI.Graphics();
-				var width = world.renderer.view.width;
-				var height = world.renderer.view.height;
+				var width = world.width;
+				var height = world.height;
 				var lineThickness = (height + width) / 200;
 				gfx.lineStyle(lineThickness, data.color, 0.8);
 				var parts = this.getParts(now);

@@ -31,6 +31,8 @@ function initWorld() {
 	world.dyZoom = (1 - world.zoom) / 2 * world.renderer.view.height;
 	world.stage.position.x = world.starField.position.x = world.mice.position.x = world.dxZoom;
 	world.stage.position.y = world.starField.position.y = world.mice.position.y = world.dyZoom;
+	world.height = world.renderer.view.height;
+	world.width = world.renderer.view.width;
 	window.onresize = function () {
 		world.renderer.resize(window.innerWidth, window.innerHeight);
 		world.background.width = world.renderer.view.width;

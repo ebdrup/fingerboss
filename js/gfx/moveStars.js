@@ -1,6 +1,6 @@
 function moveStars({dx, dy}) {
-	var height = world.renderer.view.height;
-	var width = world.renderer.view.width;
+	var height = world.height;
+	var width = world.width;
 	world.stars.forEach(s=> {
 		s.position.x -= dx * s.scale.x * 2 * width;
 		s.position.y -= dy * s.scale.y * 2 * height;
