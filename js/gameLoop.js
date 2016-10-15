@@ -33,10 +33,10 @@ function fingerboss() {
 		var move = Object.assign(snake.getMaxMove({dx, dy}), {c: ++snake.sendCounter});
 		world.socket.emit('move', move);
 		setTimeout(()=> {
-			state.pos.x += move.dx;
-			state.pos.y += move.dy;
 			moveStars(move);
 			var movement = snake.move(move);
+			state.pos.x = snake.parts[0].x - 0.5;
+			state.pos.y = snake.parts[0].y - 0.5;
 			if (snake.snakeCollision(movement, now)) {
 				var oldPos = snake.parts[0];
 				snake.die();
