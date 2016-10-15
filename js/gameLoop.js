@@ -148,7 +148,7 @@ function initBackground() {
 	var width = world.renderer.view.width;
 	var height = world.renderer.view.height;
 	var texture = PIXI.Texture.fromImage('/particle.png');
-	world.stars = Array.apply(null, Array(300)).map(() => {
+	world.stars = Array.apply(null, Array(600)).map(() => {
 		var star = new PIXI.Sprite(texture);
 		star.anchor.x = star.anchor.y = 0.5;
 		star.position.x = Math.random() * width;
@@ -157,7 +157,7 @@ function initBackground() {
 		star.alpha = (1.15 - star.scale.x * 2) / 1.15 * (0.95 + 0.1 * Math.random());
 		world.starField.addChild(star);
 		return star;
-	}).concat(Array.apply(null, Array(500)).map(() => {
+	}).concat(Array.apply(null, Array(1000)).map(() => {
 		var star = new PIXI.Sprite(texture);
 		star.anchor.x = star.anchor.y = 0.5;
 		star.position.x = Math.random() * width;
