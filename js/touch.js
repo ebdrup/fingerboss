@@ -53,6 +53,11 @@ function touch() {
 			world.stage.position.x = world.starField.position.x = world.mice.position.x = world.dxZoom;
 			world.stage.position.y = world.starField.position.y = world.mice.position.y = world.dyZoom;
 		}
+		var sprite = new PIXI.Sprite.fromImage('pointer.png');
+		sprite.anchor.x = 0.5;
+		sprite.anchor.y = 0.5;
+		sprite.width = sprite.height = world.touch.height * 0.2;
+		/*
 		world.touch.pointers = ['up', 'down', 'left', 'right'].reduce((acc, direction, i) => {
 			var sprite = new PIXI.Sprite.fromImage('pointer.png');
 			sprite.anchor.x = 0.5;
@@ -71,6 +76,7 @@ function touch() {
 			acc[direction] = sprite;
 			return acc;
 		}, {});
+		*/
 	}
 }
 
