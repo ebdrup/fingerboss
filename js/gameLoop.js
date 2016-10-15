@@ -32,51 +32,50 @@ function fingerboss() {
 		var dy = dt * velocity * Math.sin(state.angle);
 		var move = Object.assign(snake.getMaxMove({dx, dy}), {c: ++snake.sendCounter});
 		world.socket.emit('move', move);
-		setTimeout(()=> {
-			moveStars(move);
-			var movement = snake.move(move);
-			state.pos.x = snake.parts[0].x - 0.5;
-			state.pos.y = snake.parts[0].y - 0.5;
-			if (snake.snakeCollision(movement, now)) {
-				var oldPos = snake.parts[0];
-				snake.die();
-				sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
-				help({text: 'You Died'});
-				state.playing = false;
-				setTimeout(() => {
-					state.playing = true;
-					var x = snake.parts[0].x;
-					var y = snake.parts[0].y;
-					state.pos.x = x - 0.5;
-					state.pos.y = y - 0.5;
-					moveStars({dx: x - oldPos.x, dy: y - oldPos.y});
-				}, 2000);
-				return world.socket.emit('die', snake.serialize());
+		moveStars(move);
+		var movement = snake.move(move);
+		state.pos.x = snake.parts[0].x - 0.5;
+		state.pos.y = snake.parts[0].y - 0.5;
+		if (snake.snakeCollision(movement, now)) {
+			var oldPos = snake.parts[0];
+			snake.die();
+			sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
+			help({text: 'You Died'});
+			state.playing = false;
+			setTimeout(() => {
+				state.playing = true;
+				var x = snake.parts[0].x;
+				var y = snake.parts[0].y;
+				state.pos.x = x - 0.5;
+				state.pos.y = y - 0.5;
+				moveStars({dx: x - oldPos.x, dy: y - oldPos.y});
+			}, 2000);
+			return world.socket.emit('die', snake.serialize());
+		}
+		var mouseEaten = snake.mouseCollision();
+		if (mouseEaten) {
+			var text;
+			switch (mouseEaten.type) {
+				case 'speed':
+					if (snake.velocity <= VELOCITY * 1.5) {
+						snake.velocity += VELOCITY * 0.1;
+						text = 'faster';
+					} else {
+						snake.addLength(10);
+						text = 'longer';
+					}
+					break;
+				case 'power':
+					text = '+1 power kick';
+					snake.power++;
+					break;
 			}
-			var mouseEaten = snake.mouseCollision();
-			if (mouseEaten) {
-				var text;
-				switch (mouseEaten.type) {
-					case 'speed':
-						if (snake.velocity <= VELOCITY * 1.5) {
-							snake.velocity += VELOCITY * 0.1;
-							text = 'faster';
-						} else {
-							snake.addLength(10);
-							text = 'longer';
-						}
-						break;
-					case 'power':
-						text = '+1 power kick';
-						snake.power++;
-						break;
-				}
-				if (text) {
-					help({text, alpha: 0.5, duration: 500});
-				}
-				world.socket.emit('mouseEaten', {mouseId: mouseEaten.id, snake: snake.serialize()});
+			if (text) {
+				help({text, alpha: 0.5, duration: 500});
 			}
-		}, 50);
+			world.socket.emit('mouseEaten', {mouseId: mouseEaten.id, snake: snake.serialize()});
+		}
+
 		//goals
 		if (state.goals) {
 			world.goals && world.goals.forEach(goal => world.stage.removeChild(goal));
