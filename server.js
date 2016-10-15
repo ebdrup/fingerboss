@@ -94,8 +94,8 @@ class Game {
 	}
 
 	mouseEaten(mouseId) {
-		this.mice = this.mice.filter(mouse => mouse.id !== mouseId);
-		while(this.mice.lenght<10){
+		this.mice = this.mice.filter(m => mouseId !== m.id);
+		while (this.mice.length < 10) {
 			this.addMouse()
 		}
 		return this.mice;
@@ -140,10 +140,12 @@ class Game {
 		if (!part) {
 			return false;
 		}
+		var power = false;
 		var kickDistance = 4;
-		if(snake.power){
+		if (snake.power) {
 			snake.power--;
 			kickDistance *= 4;
+			power = true;
 		}
 		var dx = this.ball.x - part.x;
 		var dy = this.ball.y - part.y;
@@ -169,7 +171,7 @@ class Game {
 			onComplete: () => delete this.tween
 		});
 		this.tween.start();
-		return true;
+		return {power};
 	}
 
 	goal() {
@@ -217,9 +219,12 @@ io.on('connection', function (socket) {
 		}
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
-	socket.on('mouseEaten', function (mouseId) {
-		var mice = game.mouseEaten(mouseId);
+	socket.on('mouseEaten', function (data) {
+		var mice = game.mouseEaten(data.mouseId);
+		var snake = snakes[socket.id];
+		snake.unserialize(data.snake);
 		broadcast('mice', mice);
+		socket.broadcast.emit('snake', data.snake);
 	});
 	socket.on('die', function (snakeData) {
 		var snake = snakes[socket.id];
@@ -234,13 +239,17 @@ io.on('connection', function (socket) {
 		var snake = snakes[socket.id];
 		move.id = socket.id;
 		snake.move(move);
-		if (game.ballKick(snake)) {
+		var kick = game.ballKick(snake);
+		if (kick) {
 			var ballState = Object.assign({}, game.ball, {kick: true});
 			if (game.lastKick && (now - game.lastKick < 100)) {
 				delete ballState.kick;
 			}
 			game.lastKick = now;
 			broadcast('ball', ballState);
+			if(kick.power){
+				broadcast('snakePower', {id: snake.id, power: snake.power});
+			}
 		}
 		socket.broadcast.emit('move', move);
 		checkPlayerCount();

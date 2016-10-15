@@ -26,6 +26,10 @@ function listen() {
 		state.snakes[data.id].unserialize(data);
 	});
 
+	world.socket.on('snakePower', function (data) {
+		state.snakes[data.id].power = data.power;
+	});
+
 	world.socket.on('state', function (e) {
 		if(!state.initialized){
 			state.initialized = true;

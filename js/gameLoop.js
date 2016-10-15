@@ -75,7 +75,7 @@ function fingerboss() {
 				if (text) {
 					help({text, alpha: 0.5, duration: 500});
 				}
-				world.socket.emit('mouseEaten', mouseEaten.id);
+				world.socket.emit('mouseEaten', {mouseId: mouseEaten.id, snake: snake.serialize()});
 			}
 		}, 50);
 		//goals
