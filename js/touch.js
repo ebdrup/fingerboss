@@ -53,30 +53,14 @@ function touch() {
 			world.stage.position.x = world.starField.position.x = world.mice.position.x = world.dxZoom;
 			world.stage.position.y = world.starField.position.y = world.mice.position.y = world.dyZoom;
 		}
-		var sprite = new PIXI.Sprite.fromImage('pointer.png');
+		var sprite = new PIXI.Sprite.fromImage('fingerboss.png');
 		sprite.anchor.x = 0.5;
 		sprite.anchor.y = 0.5;
-		sprite.width = sprite.height = world.touch.height * 0.2;
-		/*
-		world.touch.pointers = ['up', 'down', 'left', 'right'].reduce((acc, direction, i) => {
-			var sprite = new PIXI.Sprite.fromImage('pointer.png');
-			sprite.anchor.x = 0.5;
-			sprite.anchor.y = 0.5;
-			sprite.width = sprite.height = world.touch.height * 0.2;
-			sprite.rotation = i * Math.PI / 2 + Math.PI / 4;
-			var d = {
-				'0': 1,
-				'1': 0,
-				'2': -1,
-				'3': 0
-			};
-			sprite.position.x = world.touch.width / 2 + d[i%4] * world.touch.height * 0.2;
-			sprite.position.y = world.touch.height / 2+ d[(i+3)%4] * world.touch.height * 0.2;
-			world.touchStage.addChild(sprite);
-			acc[direction] = sprite;
-			return acc;
-		}, {});
-		*/
+		sprite.width = world.touch.height * 0.3;
+		sprite.height = world.touch.height * 0.3 * 512 / 312;
+		sprite.position.x = world.touch.width / 2;
+		sprite.position.y = world.touch.height / 2;
+		world.touchStage.addChild(sprite);
 	}
 }
 
