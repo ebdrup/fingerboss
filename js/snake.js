@@ -36,27 +36,26 @@ class Snake {
 						headColor = 0xffffff;
 						break;
 					case 1:
-						headColor = 0x996666;
-						break;
-					case 2:
 						headColor = 0xbb4444;
 						break;
-					case 3:
+					case 2:
 						headColor = 0xdd2222;
 						break;
 					default:
 						headColor = 0xff0000;
 				}
-				for (var i = parts.length - 2; i >= 0; i--) {
+				for (var i = parts.length - 3; i >= 0; i--) {
 					if (i == 4) {
 						gfx.lineStyle(lineThickness, headColor, 0.8);
 					}
-					var x1 = (parts[i + 1].x - state.pos.x) * width;
-					var y1 = (parts[i + 1].y - state.pos.y) * height;
-					var x2 = (parts[i].x - state.pos.x) * width;
-					var y2 = (parts[i].y - state.pos.y) * height;
+					var x1 = (parts[i + 2].x - state.pos.x) * width;
+					var y1 = (parts[i + 2].y - state.pos.y) * height;
+					var x2 = (parts[i + 1].x - state.pos.x) * width;
+					var y2 = (parts[i + 1].y - state.pos.y) * height;
+					var x3 = (parts[i].x - state.pos.x) * width;
+					var y3 = (parts[i].y - state.pos.y) * height;
 					gfx.moveTo(x1, y1);
-					gfx.lineTo(x2, y2);
+					gfx.bezierCurveTo(x1, y1, x2, y2, x3, y3);
 				}
 				gfx.endFill();
 				gfx.visible = true;
