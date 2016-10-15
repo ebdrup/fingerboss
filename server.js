@@ -240,29 +240,15 @@ io.on('connection', function (socket) {
 		}
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
-	socket.on('move', function (angle) {
-		if (typeof angle !== 'number' || isNaN(angle)) {
-			return;
-		}
-		var state;
+	socket.on('move', function (move) {
 		var now = Date.now();
 		game.lastMove[color] = now;
 		socketLastSeen[socket.id] = now;
-		var lastMove = socket.lastMove || now;
 		socket.lastMove = now;
-		if (socket.lastDeath && now - socket.lastDeath < 2000) {
-			return;
-		}
-		var dt = now - lastMove;
-		if (dt <= 0) {
-			return;
-		}
 		var snake = snakes[socket.id];
-		var velocity = snake.velocity;
-		var dx = dt * velocity * Math.cos(angle);
-		var dy = dt * velocity * Math.sin(angle);
-		var move = socket.game.snakes[socket.id].getMaxMove({dx, dy});
-		var movement = socket.game.snakes[socket.id].move(move);
+		move.id = socket.id;
+		snake.move(move);
+		/*
 		if (socket.game.snakeCollision(movement, now)) {
 			socket.game.snakes[socket.id].die();
 			state = Object.assign({}, game.getState(), {die: socket.id});
@@ -293,17 +279,17 @@ io.on('connection', function (socket) {
 			broadcast('state', state);
 			return checkPlayerCount();
 		}
+		*/
 		if (game.ballKick(snake)) {
 			//we need to broadcast full state, because power may have been used
-			state = Object.assign({}, game.getState(), {kick: true});
+			var ballState = Object.assign({}, game.ball, {kick: true});
 			if (game.lastKick && (now - game.lastKick < 100)) {
-				delete state.kick;
+				delete ballState.kick;
 			}
 			game.lastKick = now;
-			broadcast('state', state);
-			return checkPlayerCount();
+			broadcast('ball', ballState);
 		}
-		broadcast('move', Object.assign({}, move, {id: socket.id}));
+		socket.broadcast.emit('move', move);
 		checkPlayerCount();
 	});
 	socket.on('pong', function () {

@@ -39,11 +39,21 @@ I can be better at teaching them.
 
 ## Ideas
 - A ball and two goals
-- Collide with the ball to pick it up
-- Click to shoot the ball
-- If you hit another snake when you have the ball you die, and respawn
+- Kick the ball when head of snake hits it
 - A map in the corner of the playing field
-- Eat things to get bigger/smaller/split
+- Eat things (mice) to get bigger/faster/power kick
+
+- Zoom (phone is too small)
+- Joystick at bottom(portrait) left(landscape) on touch devices
+
+Avoiding lag
+- Each player is master of it's own snake
+- sends dx/dy to server, that broadcasts to others
+- updates own dx/dy after 2*lag (to even playing chances and make player views similar)
+- counter on dx/dy
+	- if server is missing dx/dy (see it on counter) asks player for it's snake and sends snake to all players
+	- if player is missing dx/dy (see it on counter) asks server for snake, server sends it's copy of snake
+- player sends to server when eating mouse and when dying
 
 
 ## Winning

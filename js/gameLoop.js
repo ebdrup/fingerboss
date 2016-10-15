@@ -15,13 +15,29 @@ function fingerboss() {
 			world.renderer.render(world.mainStage);
 			return;
 		}
+		//sending snake move to server
 		var now = Date.now();
 		var lastMove = world.lastMove = world.lastMove || now;
 		var dt = now - lastMove;
-		if (dt <= 50) {
+		if (dt <= 10) {
 			return world.renderer.render(world.mainStage);
 		}
-		world.socket.emit('move', state.angle);
+		if (dt > 20) {
+			dt = 10;
+		}
+		world.lastMove = now;
+		var snake = state.snakes[world.id];
+		var velocity = snake.velocity;
+		var dx = dt * velocity * Math.cos(state.angle);
+		var dy = dt * velocity * Math.sin(state.angle);
+		var move = Object.assign(snake.getMaxMove({dx, dy}), {playerT: now, counter: ++snake.sendCounter});
+		world.socket.emit('move', move);
+		setTimeout(()=> {
+			state.pos.x += move.dx;
+			state.pos.y += move.dy;
+			moveStars(move);
+			snake.move(move);
+		}, 50);
 		//goals
 		if (state.goals) {
 			world.goals && world.goals.forEach(goal => world.stage.removeChild(goal));
