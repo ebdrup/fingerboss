@@ -7,6 +7,7 @@ function initWorld() {
 	world.textures = {};
 	world.scores = {};
 	world.pointers = {};
+	world.zoom = 2;
 	world.wins = parseInt(readCookie('wins') || '0', 10);
 	world.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {
 		backgroundColor: BACKGROUND_COLOR,
@@ -18,11 +19,18 @@ function initWorld() {
 	world.mainStage.addChild(world.background);
 	world.starField = new PIXI.Container();
 	world.mainStage.addChild(world.starField);
-	world.mice = new PIXI.Container();
-	world.mainStage.addChild(world.mice);
 	world.stage = new PIXI.Container();
 	world.mainStage.addChild(world.stage);
-
+	world.mice = new PIXI.Container();
+	world.mainStage.addChild(world.mice);
+	world.text = new PIXI.Container();
+	world.mainStage.addChild(world.text);
+	world.stage.scale.x = world.starField.scale.x = world.mice.scale.x =  world.zoom;
+	world.stage.scale.y = world.starField.scale.y = world.mice.scale.y = world.zoom;
+	world.dxZoom = (1-world.zoom)/2 * world.renderer.view.width;
+	world.dyZoom = (1-world.zoom)/2 * world.renderer.view.height;
+	world.stage.position.x = world.starField.position.x  = world.mice.position.x = world.dxZoom;
+	world.stage.position.y = world.starField.position.y  = world.mice.position.y = world.dxZoom;
 	window.onresize = function () {
 		world.renderer.resize(window.innerWidth, window.innerHeight);
 		world.background.width = world.renderer.view.width;

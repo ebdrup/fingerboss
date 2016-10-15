@@ -14,6 +14,6 @@ function help({text, color, alpha, duration}) {
 	sprite.x = Math.round(world.renderer.view.width / 2);
 	sprite.y = Math.round(h / 2 + (world.renderer.view.height - h) * Math.random());
 	typeof alpha === 'number' && (sprite.alpha = alpha);
-	world.stage.addChild(sprite);
-	fadeSprite(world.stage, sprite, duration)
+	world.text.addChild(sprite);
+	fadeSprite(world.text, sprite, duration)
 }
