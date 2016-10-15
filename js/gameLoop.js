@@ -15,13 +15,69 @@ function fingerboss() {
 			world.renderer.render(world.mainStage);
 			return;
 		}
+		//sending snake move to server
 		var now = Date.now();
 		var lastMove = world.lastMove = world.lastMove || now;
 		var dt = now - lastMove;
-		if (dt <= 50) {
+		if (dt <= 10) {
 			return world.renderer.render(world.mainStage);
 		}
-		world.socket.emit('move', state.angle);
+		if (dt > 20) {
+			dt = 10;
+		}
+		world.lastMove = now;
+		var snake = state.snakes[world.id];
+		var velocity = snake.velocity;
+		var dx = dt * velocity * Math.cos(state.angle);
+		var dy = dt * velocity * Math.sin(state.angle);
+		var move = Object.assign(snake.getMaxMove({dx, dy}), {playerT: now, counter: ++snake.sendCounter});
+		console.log(move);
+		world.socket.emit('move', move);
+		setTimeout(()=> {
+			state.pos.x += move.dx;
+			state.pos.y += move.dy;
+			moveStars(move);
+			var movement = snake.move(move);
+			if (snake.snakeCollision(movement, now)) {
+				var oldPos = snake.parts[0];
+				snake.die();
+				sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
+				help({text: 'You Died'});
+				state.playing = false;
+				setTimeout(() => {
+					state.playing = true;
+					var x = snake.parts[0].x;
+					var y = snake.parts[0].y;
+					state.pos.x = x - 0.5;
+					state.pos.y = y - 0.5;
+					moveStars({dx: x - oldPos.x, dy: y - oldPos.y});
+				}, 2000);
+				return world.socket.emit('die', snake.serialize());
+			}
+			var mouseEaten = snake.mouseCollision();
+			if (mouseEaten) {
+				var text;
+				switch (mouseEaten.type) {
+					case 'speed':
+						if (snake.velocity <= VELOCITY * 1.5) {
+							snake.velocity += VELOCITY * 0.1;
+							text = 'faster';
+						} else {
+							snake.addLength(10);
+							text = 'longer';
+						}
+						break;
+					case 'power':
+						text = '+1 power kick';
+						snake.power++;
+						break;
+				}
+				if (text) {
+					help({text, alpha: 0.5, duration: 500});
+				}
+				world.socket.emit('mouseEaten', {mouseId: mouseEaten.id, snake: snake.serialize()});
+			}
+		}, 50);
 		//goals
 		if (state.goals) {
 			world.goals && world.goals.forEach(goal => world.stage.removeChild(goal));

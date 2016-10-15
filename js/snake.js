@@ -2,8 +2,12 @@ class Snake {
 	//Either construct with data OR the other properties
 	constructor({id, length, color, velocity, data}) {
 		this.power = 0;
+		this.counter = 0;
+		this.sendCounter = 0;
+		this.moveCache = {};
 		if (data) {
 			this.unserialize(data);
+			this.startVelocity = data.velocity;
 			var gfx;
 			var update = (function () {
 				var now = Date.now();
@@ -17,6 +21,9 @@ class Snake {
 				if (gfx) {
 					world.stage.removeChild(gfx);
 				}
+				if (!state.playing) {
+					return;
+				}
 				gfx = new PIXI.Graphics();
 				var width = world.renderer.view.width;
 				var height = world.renderer.view.height;
@@ -24,7 +31,7 @@ class Snake {
 				gfx.lineStyle(lineThickness, data.color, 0.8);
 				var parts = this.getParts(now);
 				var headColor;
-				switch(this.power){
+				switch (this.power) {
 					case 0:
 						headColor = 0xffffff;
 						break;
@@ -90,9 +97,62 @@ class Snake {
 		return {dx, dy}
 	}
 
-	move({dx, dy, t}) {
+	snakeCollision(movement, now) {
+		var snake = this;
+		return Object.keys(state.snakes)
+			.filter(key => snake.color !== state.snakes[key].color)
+			.some(key => {
+				let snake = state.snakes[key];
+				let parts = snake.getParts(now);
+				for (var i = 1; i < parts.length; i++) {
+					if (lineIntersect(Object.assign({}, movement, {
+							x3: parts[i - 1].x,
+							y3: parts[i - 1].y,
+							x4: parts[i].x,
+							y4: parts[i].y,
+						}))) {
+						return true;
+					}
+				}
+				return false;
+			});
+	}
+
+	mouseCollision() {
+		for (var j = 0; j < state.mice.length; j++) {
+			var mouse = state.mice[j];
+			if (this.headCollision(mouse)) {
+				state.mice.splice(j, 1);
+				return mouse;
+			}
+		}
+		return null;
+	}
+
+	headCollision(element) {
+		var check = checkPart.bind(this);
+		return check(this.parts[0]) || check(this.parts[1]);
+
+		function checkPart(part) {
+			var d = distance(part, element);
+			return d <= (element.size / 2) + 0.0003 ? part : false;
+		}
+	}
+
+	move({dx, dy, t, counter}) {
 		if (typeof dx !== 'number') throw new Error('dx not number ' + dx);
 		if (typeof dy !== 'number') throw new Error('dy not number ' + dy);
+		if (typeof counter !== 'number') throw new Error('counter not number ' + counter);
+		if (counter !== this.counter + 1) {
+			console.log('Expecting counter ' + (counter + 1) + ' got ', counter);
+			this.moveCache[counter] = arguments[0];
+			var move;
+			for (var i = this.counter + 1; move = this.moveCache[i]; i++) {
+				this.move(move);
+				delete this.moveCache[i];
+			}
+		}
+		this.counter = counter;
 		var last = this.parts.pop();
 		last.x = this.parts[0].x + dx;
 		last.y = this.parts[0].y + dy;
@@ -139,7 +199,9 @@ class Snake {
 			id: this.id,
 			color: this.color,
 			parts: this.parts.map(p => [p.x, p.y]),
-			power: this.power
+			power: this.power,
+			velocity: this.velocity,
+			counter: this.counter
 		}
 	}
 
@@ -148,6 +210,8 @@ class Snake {
 		this.color = data.color;
 		this.parts = data.parts.map(p => new Part(p[0], p[1], this.color));
 		this.power = data.power;
+		this.velocity = data.velocity;
+		this.counter = data.counter;
 	}
 
 	update(data) {
@@ -161,17 +225,6 @@ class Snake {
 		});
 		this.power = data.power;
 	}
-
-	headCollision(element) {
-		var check = checkPart.bind(this);
-		return check(this.parts[0]) || check(this.parts[1]);
-
-		function checkPart(part) {
-			var d = distance(part, element);
-			return d <= (element.size / 2) + 0.0003 ? part : false;
-		}
-	}
-
 }
 
 class Part {

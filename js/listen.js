@@ -1,41 +1,10 @@
-function moveStars({dx, dy}) {
-	var height = world.renderer.view.height;
-	var width = world.renderer.view.width;
-	world.stars.forEach(s=> {
-		s.position.x -= dx * s.scale.x * 2 * width;
-		s.position.y -= dy * s.scale.y * 2 * height;
-		if (s.position.x < -s.height / 2) {
-			s.position.x = width + s.height / 2;
-			s.position.y = Math.random() * height;
-		} else if (s.position.x > width + s.height / 2) {
-			s.position.x = -s.height / 2;
-			s.position.y = Math.random() * height;
-		} else if (s.position.y < -s.width / 2) {
-			s.position.x = Math.random() * width;
-			s.position.y = height + s.width / 2;
-		} else if (s.position.y > height + s.width / 2) {
-			s.position.x = Math.random() * width;
-			s.position.y = -s.width / 2;
-		}
-		var x = state.pos.x + s.position.x / width;
-		var y = state.pos.y + s.position.y / height;
-		if (x < 0 || x > 1 || y < 0 || y > 1) {
-			s.visible = false;
-		} else {
-			s.visible = true;
-		}
-	});
-}
-
 function listen() {
-	world.socket.on('move', data => {
-		if (data.id === world.id) {
-			state.pos.x += data.dx;
-			state.pos.y += data.dy;
-			moveStars(data);
+	world.socket.on('move', move => {
+		if (move.id === world.id) {
+			throw new Error('got move for ourselves');
 		}
-		if (state.snakes[data.id]) {
-			return state.snakes[data.id].move(data);
+		if (state.snakes[move.id]) {
+			return state.snakes[move.id].move(move);
 		}
 	});
 
@@ -46,7 +15,26 @@ function listen() {
 		}
 	});
 
+	world.socket.on('mice', function (mice) {
+		state.mice = mice;
+	});
+
+	world.socket.on('snake', function (data) {
+		if (data.id === world.id) {
+			throw new Error('got snake for ourselves');
+		}
+		state.snakes[data.id].unserialize(data);
+	});
+
+	world.socket.on('snakePower', function (data) {
+		state.snakes[data.id].power = data.power;
+	});
+
 	world.socket.on('state', function (e) {
+		if(!state.initialized){
+			state.initialized = true;
+			state.playing = true;
+		}
 		var snakeIds = e.snakes.reduce((acc, s) => (acc[s.id] = true) && acc, {});
 		Object.keys(state.snakes).forEach(id => !snakeIds[id] && state.snakes[id].remove());
 		e.snakes.forEach(data => {
@@ -60,15 +48,6 @@ function listen() {
 				state.pos.y = data.parts[0][1] - 0.5;
 			}
 		});
-		if (e.die) {
-			sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
-			if (e.die === world.id) {
-				moveStars({dx: 0, dy: 0});
-				help({text: 'You Died'});
-				state.playing = false;
-				setTimeout(() => state.playing = true, 2000);
-			}
-		}
 		state.mice = e.mice;
 		state.ball = e.ball;
 		state.goals = e.goals;
@@ -96,9 +75,6 @@ function listen() {
 		}
 		if (e.kick) {
 			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
-		}
-		if (e.help && e.help.id === world.id) {
-			help({text: e.help.text, alpha: 0.5, duration: 500});
 		}
 	});
 

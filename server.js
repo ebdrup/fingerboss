@@ -7,7 +7,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
-const lineIntersect = require('./lineIntersect');
+const lineIntersect = require('./js/lineIntersect');
 global.distance = require('./js/distance');
 const Tweeno = require('tweeno');
 
@@ -43,6 +43,7 @@ class Game {
 		this.sockets = [socket];
 		this.mice = [];
 		this.colorIndex = 0;
+		this.mouseCounter = 0;
 		this.colors = [colors[(colorIndex++) % colors.length], colors[(colorIndex++) % colors.length]];
 		socket.color = this.colors[(this.colorIndex++) % this.colors.length];
 		this.snakes = {};
@@ -87,8 +88,17 @@ class Game {
 			x,
 			y,
 			size: 0.02,
+			id: ++this.mouseCounter,
 			type: miceTypes[Math.floor(Math.random() * (miceTypes.length))]
 		})
+	}
+
+	mouseEaten(mouseId) {
+		this.mice = this.mice.filter(m => mouseId !== m.id);
+		while (this.mice.length < 10) {
+			this.addMouse()
+		}
+		return this.mice;
 	}
 
 	addSnake(socket) {
@@ -125,48 +135,17 @@ class Game {
 		}
 	}
 
-	snakeCollision(movement, now) {
-		var snake = this.snakes[movement.id];
-		return Object.keys(this.snakes)
-			.filter(key => snake.color !== this.snakes[key].color)
-			.some(key => {
-				let snake = this.snakes[key];
-				let parts = snake.getParts(now);
-				for (var i = 1; i < parts.length; i++) {
-					if (lineIntersect(Object.assign({}, movement, {
-							x3: parts[i - 1].x,
-							y3: parts[i - 1].y,
-							x4: parts[i].x,
-							y4: parts[i].y,
-						}))) {
-						return true;
-					}
-				}
-				return false;
-			});
-	}
-
-	mouseCollision(snake, now) {
-		for (var j = 0; j < this.mice.length; j++) {
-			var mouse = this.mice[j];
-			if (snake.headCollision(mouse)) {
-				this.mice.splice(j, 1);
-				this.addMouse();
-				return mouse;
-			}
-		}
-		return null;
-	}
-
 	ballKick(snake) {
 		var part = snake.headCollision(this.ball);
 		if (!part) {
 			return false;
 		}
+		var power = false;
 		var kickDistance = 4;
-		if(snake.power){
+		if (snake.power) {
 			snake.power--;
 			kickDistance *= 4;
+			power = true;
 		}
 		var dx = this.ball.x - part.x;
 		var dy = this.ball.y - part.y;
@@ -192,7 +171,7 @@ class Game {
 			onComplete: () => delete this.tween
 		});
 		this.tween.start();
-		return true;
+		return {power};
 	}
 
 	goal() {
@@ -240,70 +219,39 @@ io.on('connection', function (socket) {
 		}
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
-	socket.on('move', function (angle) {
-		if (typeof angle !== 'number' || isNaN(angle)) {
-			return;
-		}
-		var state;
+	socket.on('mouseEaten', function (data) {
+		var mice = game.mouseEaten(data.mouseId);
+		var snake = snakes[socket.id];
+		snake.unserialize(data.snake);
+		broadcast('mice', mice);
+		socket.broadcast.emit('snake', data.snake);
+	});
+	socket.on('die', function (snakeData) {
+		var snake = snakes[socket.id];
+		snake.unserialize(snakeData);
+		socket.broadcast.emit('snake', snakeData);
+	});
+	socket.on('move', function (move) {
 		var now = Date.now();
 		game.lastMove[color] = now;
 		socketLastSeen[socket.id] = now;
-		var lastMove = socket.lastMove || now;
 		socket.lastMove = now;
-		if (socket.lastDeath && now - socket.lastDeath < 2000) {
-			return;
-		}
-		var dt = now - lastMove;
-		if (dt <= 0) {
-			return;
-		}
 		var snake = snakes[socket.id];
-		var velocity = snake.velocity;
-		var dx = dt * velocity * Math.cos(angle);
-		var dy = dt * velocity * Math.sin(angle);
-		var move = socket.game.snakes[socket.id].getMaxMove({dx, dy});
-		var movement = socket.game.snakes[socket.id].move(move);
-		if (socket.game.snakeCollision(movement, now)) {
-			socket.game.snakes[socket.id].die();
-			state = Object.assign({}, game.getState(), {die: socket.id});
-			socket.lastDeath = Date.now();
-			broadcast('state', state);
-			return checkPlayerCount();
-		}
-		var mouseEaten = game.mouseCollision(snake, now);
-		if (mouseEaten) {
-			state = game.getState();
-			var text;
-			switch(mouseEaten.type) {
-				case 'speed':
-					if (snake.velocity <= VELOCITY * 1.5) {
-						snake.velocity += VELOCITY * 0.1;
-						text = 'faster';
-					} else {
-						snake.addLength(10);
-						text = 'longer';
-					}
-					break;
-				case 'power':
-					text = '+1 power kick';
-					snake.power++;
-					break;
-			}
-			text && (state = Object.assign({}, state, {help:{text, id: socket.id}}));
-			broadcast('state', state);
-			return checkPlayerCount();
-		}
-		if (game.ballKick(snake)) {
-			//we need to broadcast full state, because power may have been used
-			state = Object.assign({}, game.getState(), {kick: true});
+		move.id = socket.id;
+		snake.move(move);
+		var kick = game.ballKick(snake);
+		if (kick) {
+			var ballState = Object.assign({}, game.ball, {kick: true});
 			if (game.lastKick && (now - game.lastKick < 100)) {
-				delete state.kick;
+				delete ballState.kick;
 			}
 			game.lastKick = now;
-			broadcast('state', state);
-			return checkPlayerCount();
+			broadcast('ball', ballState);
+			if(kick.power){
+				broadcast('snakePower', {id: snake.id, power: snake.power});
+			}
 		}
-		broadcast('move', Object.assign({}, move, {id: socket.id}));
+		socket.broadcast.emit('move', move);
 		checkPlayerCount();
 	});
 	socket.on('pong', function () {
