@@ -7,7 +7,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
-const lineIntersect = require('./lineIntersect');
+const lineIntersect = require('./js/lineIntersect');
 global.distance = require('./js/distance');
 const Tweeno = require('tweeno');
 
@@ -43,6 +43,7 @@ class Game {
 		this.sockets = [socket];
 		this.mice = [];
 		this.colorIndex = 0;
+		this.mouseCounter = 0;
 		this.colors = [colors[(colorIndex++) % colors.length], colors[(colorIndex++) % colors.length]];
 		socket.color = this.colors[(this.colorIndex++) % this.colors.length];
 		this.snakes = {};
@@ -87,8 +88,17 @@ class Game {
 			x,
 			y,
 			size: 0.02,
+			id: ++this.mouseCounter,
 			type: miceTypes[Math.floor(Math.random() * (miceTypes.length))]
 		})
+	}
+
+	mouseEaten(mouseId) {
+		this.mice = this.mice.filter(mouse => mouse.id !== mouseId);
+		while(this.mice.lenght<10){
+			this.addMouse()
+		}
+		return this.mice;
 	}
 
 	addSnake(socket) {
@@ -123,39 +133,6 @@ class Game {
 			goals: this.goals,
 			scores: this.scores
 		}
-	}
-
-	snakeCollision(movement, now) {
-		var snake = this.snakes[movement.id];
-		return Object.keys(this.snakes)
-			.filter(key => snake.color !== this.snakes[key].color)
-			.some(key => {
-				let snake = this.snakes[key];
-				let parts = snake.getParts(now);
-				for (var i = 1; i < parts.length; i++) {
-					if (lineIntersect(Object.assign({}, movement, {
-							x3: parts[i - 1].x,
-							y3: parts[i - 1].y,
-							x4: parts[i].x,
-							y4: parts[i].y,
-						}))) {
-						return true;
-					}
-				}
-				return false;
-			});
-	}
-
-	mouseCollision(snake, now) {
-		for (var j = 0; j < this.mice.length; j++) {
-			var mouse = this.mice[j];
-			if (snake.headCollision(mouse)) {
-				this.mice.splice(j, 1);
-				this.addMouse();
-				return mouse;
-			}
-		}
-		return null;
 	}
 
 	ballKick(snake) {
@@ -240,6 +217,10 @@ io.on('connection', function (socket) {
 		}
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
+	socket.on('mouseEaten', function (mouseId) {
+		var mice = game.mouseEaten(mouseId);
+		broadcast('mice', mice);
+	});
 	socket.on('move', function (move) {
 		var now = Date.now();
 		game.lastMove[color] = now;

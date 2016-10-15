@@ -96,6 +96,48 @@ class Snake {
 		return {dx, dy}
 	}
 
+	snakeCollision(movement, now) {
+		var snake = this;
+		return Object.keys(state.snakes)
+			.filter(key => snake.color !== state.snakes[key].color)
+			.some(key => {
+				let snake = state.snakes[key];
+				let parts = snake.getParts(now);
+				for (var i = 1; i < parts.length; i++) {
+					if (lineIntersect(Object.assign({}, movement, {
+							x3: parts[i - 1].x,
+							y3: parts[i - 1].y,
+							x4: parts[i].x,
+							y4: parts[i].y,
+						}))) {
+						return true;
+					}
+				}
+				return false;
+			});
+	}
+
+	mouseCollision() {
+		for (var j = 0; j < state.mice.length; j++) {
+			var mouse = state.mice[j];
+			if (this.headCollision(mouse)) {
+				state.mice.splice(j, 1);
+				return mouse;
+			}
+		}
+		return null;
+	}
+
+	headCollision(element) {
+		var check = checkPart.bind(this);
+		return check(this.parts[0]) || check(this.parts[1]);
+
+		function checkPart(part) {
+			var d = distance(part, element);
+			return d <= (element.size / 2) + 0.0003 ? part : false;
+		}
+	}
+
 	move({dx, dy, t, counter}) {
 		if (typeof dx !== 'number') throw new Error('dx not number ' + dx);
 		if (typeof dy !== 'number') throw new Error('dy not number ' + dy);
@@ -182,17 +224,6 @@ class Snake {
 		});
 		this.power = data.power;
 	}
-
-	headCollision(element) {
-		var check = checkPart.bind(this);
-		return check(this.parts[0]) || check(this.parts[1]);
-
-		function checkPart(part) {
-			var d = distance(part, element);
-			return d <= (element.size / 2) + 0.0003 ? part : false;
-		}
-	}
-
 }
 
 class Part {

@@ -3,7 +3,6 @@ function listen() {
 		if (move.id === world.id) {
 			throw new Error('got move for ourselves');
 		}
-		console.log('move', move);
 		if (state.snakes[move.id]) {
 			return state.snakes[move.id].move(move);
 		}
@@ -14,6 +13,10 @@ function listen() {
 		if (ball.kick) {
 			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
 		}
+	});
+
+	world.socket.on('mice', function (mice) {
+		state.mice = mice;
 	});
 
 	world.socket.on('state', function (e) {
@@ -70,9 +73,6 @@ function listen() {
 		}
 		if (e.kick) {
 			sfx['ball' + (Math.floor(Math.random() * 2) + 1)]();
-		}
-		if (e.help && e.help.id === world.id) {
-			help({text: e.help.text, alpha: 0.5, duration: 500});
 		}
 	});
 
