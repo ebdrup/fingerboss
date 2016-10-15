@@ -37,18 +37,21 @@ const VELOCITY = 0.0001;
 
 var games = [];
 var miceTypes = ['speed', 'power'];
+var snakeCounter = 0;
 
 class Game {
 	constructor(socket) {
 		this.sockets = [socket];
 		this.mice = [];
 		this.colorIndex = 0;
+
 		this.mouseCounter = 0;
 		this.colors = [colors[(colorIndex++) % colors.length], colors[(colorIndex++) % colors.length]];
 		socket.color = this.colors[(this.colorIndex++) % this.colors.length];
 		this.snakes = {};
-		this.snakes[socket.id] = new Snake({
-			id: socket.id,
+		socket.playId = snakeCounter++;
+		this.snakes[socket.playId] = new Snake({
+			id: socket.playId,
 			length: 30,
 			color: socket.color,
 			velocity: VELOCITY
@@ -102,10 +105,11 @@ class Game {
 	}
 
 	addSnake(socket) {
+		socket.playId = snakeCounter++;
 		this.sockets.push(socket);
 		socket.color = this.colors.sort((c1, c2) => this.lastMove[c1] - this.lastMove[c2])[0];
-		this.snakes[socket.id] = new Snake({
-			id: socket.id,
+		this.snakes[socket.playId] = new Snake({
+			id: socket.playId,
 			length: 30,
 			color: socket.color,
 			velocity: VELOCITY
@@ -114,15 +118,7 @@ class Game {
 	}
 
 	removeSnake(socket) {
-		this.sockets.push(socket);
-		socket.color = this.colors[(this.colorIndex + 1) % this.colors.length];
-		this.snakes[socket.id] = new Snake({
-			id: socket.id,
-			length: 30,
-			color: socket.color,
-			velocity: VELOCITY
-		});
-		socket.game = this;
+		delete this.snakes[socket.playId];
 	}
 
 	getState() {
@@ -208,7 +204,7 @@ io.on('connection', function (socket) {
 	var color = socket.color;
 	emit(socket, 'start', {
 		t: Date.now(),
-		id: socket.id,
+		id: socket.playId,
 		color
 	});
 	broadcast('state', game.getState());
@@ -221,13 +217,13 @@ io.on('connection', function (socket) {
 	};
 	socket.on('mouseEaten', function (data) {
 		var mice = game.mouseEaten(data.mouseId);
-		var snake = snakes[socket.id];
+		var snake = snakes[socket.playId];
 		snake.unserialize(data.snake);
 		broadcast('mice', mice);
 		socket.broadcast.emit('snake', data.snake);
 	});
 	socket.on('die', function (snakeData) {
-		var snake = snakes[socket.id];
+		var snake = snakes[socket.playId];
 		snake.unserialize(snakeData);
 		socket.broadcast.emit('snake', snakeData);
 	});
@@ -236,8 +232,8 @@ io.on('connection', function (socket) {
 		game.lastMove[color] = now;
 		socketLastSeen[socket.id] = now;
 		socket.lastMove = now;
-		var snake = snakes[socket.id];
-		move.id = socket.id;
+		var snake = snakes[socket.playId];
+		move.id = socket.playId;
 		snake.move(move);
 		var kick = game.ballKick(snake);
 		if (kick) {

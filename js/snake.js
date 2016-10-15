@@ -2,8 +2,8 @@ class Snake {
 	//Either construct with data OR the other properties
 	constructor({id, length, color, velocity, data}) {
 		this.power = 0;
-		this.counter = 0;
-		this.sendCounter = 0;
+		this.counter = 1;
+		this.sendCounter = 1;
 		this.moveCache = {};
 		if (data) {
 			this.unserialize(data);
@@ -139,24 +139,23 @@ class Snake {
 		}
 	}
 
-	move({dx, dy, t, counter}) {
+	move({dx, dy, c}) {
 		if (typeof dx !== 'number') throw new Error('dx not number ' + dx);
 		if (typeof dy !== 'number') throw new Error('dy not number ' + dy);
-		if (typeof counter !== 'number') throw new Error('counter not number ' + counter);
-		if (counter !== this.counter + 1) {
-			console.log('Expecting counter ' + (counter + 1) + ' got ', counter);
-			this.moveCache[counter] = arguments[0];
+		if (c && (c !== this.counter + 1)) {
+			console.log('Expecting counter ' + (c + 1) + ' got ', c);
+			this.moveCache[c] = arguments[0];
 			var move;
 			for (var i = this.counter + 1; move = this.moveCache[i]; i++) {
 				this.move(move);
 				delete this.moveCache[i];
 			}
 		}
-		this.counter = counter;
+		this.counter = c;
 		var last = this.parts.pop();
 		last.x = this.parts[0].x + dx;
 		last.y = this.parts[0].y + dy;
-		last.t = t || Date.now();
+		last.t = Date.now();
 		this.parts.unshift(last);
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}

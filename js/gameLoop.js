@@ -30,8 +30,7 @@ function fingerboss() {
 		var velocity = snake.velocity;
 		var dx = dt * velocity * Math.cos(state.angle);
 		var dy = dt * velocity * Math.sin(state.angle);
-		var move = Object.assign(snake.getMaxMove({dx, dy}), {playerT: now, counter: ++snake.sendCounter});
-		console.log(move);
+		var move = Object.assign(snake.getMaxMove({dx, dy}), {c: ++snake.sendCounter});
 		world.socket.emit('move', move);
 		setTimeout(()=> {
 			state.pos.x += move.dx;
