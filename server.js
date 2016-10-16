@@ -39,7 +39,7 @@ var games = [];
 var miceTypes = [
 	{
 		type: 'speed',
-		chance: 50
+		chance: 60
 	},
 	{
 		type: 'power',
@@ -59,6 +59,30 @@ var miceTypes = [
 	},
 	{
 		type: 'item_glasses_4',
+		chance: 2
+	},
+	{
+		type: 'item_glasses_5',
+		chance: 1
+	},
+	{
+		type: 'item_bow_1',
+		chance: 2
+	},
+	{
+		type: 'item_bow_2',
+		chance: 2
+	},
+	{
+		type: 'item_bow_3',
+		chance: 2
+	},
+	{
+		type: 'item_bow_4',
+		chance: 2
+	},
+	{
+		type: 'item_bow_5',
 		chance: 2
 	}
 ].reduce((acc, mt) => {

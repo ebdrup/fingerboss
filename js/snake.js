@@ -68,13 +68,23 @@ class Snake {
 				if (this.items) {
 					this.itemSprites = Object.keys(this.items).map(key => {
 						var type = ['item', key, this.items[key]].join('_');
-						var rotation = -Math.atan2(
-							(this.parts[0].x - this.parts[1].x) * world.width,
-							(this.parts[0].y - this.parts[1].y) * world.height
+						var position, rotation = 0;
+						switch (key) {
+							case 'glasses':
+								position = 3;
+								break;
+							case 'bow':
+								position = this.parts.length - 4;
+								rotation = Math.PI;
+								break;
+						}
+						rotation -= Math.atan2(
+							(this.parts[position].x - this.parts[position + 1].x) * world.width,
+							(this.parts[position].y - this.parts[position + 1].y) * world.height
 						);
 						return sprite({
-							x: this.parts[3].x,
-							y: this.parts[3].y,
+							x: this.parts[position].x,
+							y: this.parts[position].y,
 							type,
 							snakeId: this.id,
 							rotation,
