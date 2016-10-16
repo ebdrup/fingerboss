@@ -66,28 +66,21 @@ var miceTypes = [
 		chance: 1
 	},
 	{
-		type: 'item_bow_1',
-		chance: 2
-	},
-	{
-		type: 'item_bow_2',
-		chance: 2
-	},
-	{
-		type: 'item_bow_3',
-		chance: 2
-	},
-	{
-		type: 'item_bow_4',
-		chance: 2
-	},
-	{
-		type: 'item_bow_5',
+		type: 'item_glasses_6',
 		chance: 2
 	}
-].reduce((acc, mt) => {
-	return acc.concat(new Array(mt.chance).fill(mt.type));
-}, []);
+]
+	.concat(new Array(5).fill(1).map((_, i) => ({
+		type: 'item_bow_' + (i + 1),
+		chance: 2
+	})))
+	.concat(new Array(22).fill(1).map((_, i) => ({
+		type: 'item_clothes_' + (i + 1),
+		chance: 2
+	})))
+	.reduce((acc, mt) => {
+		return acc.concat(new Array(mt.chance).fill(mt.type));
+	}, []);
 var snakeCounter = 1;
 
 class Game {
