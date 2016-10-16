@@ -45,32 +45,8 @@ var miceTypes = [
 		type: 'power',
 		chance: 80
 	},
-	{
-		type: 'item_headgear_1',
-		chance: 2
-	},
-	{
-		type: 'item_headgear_2',
-		chance: 2
-	},
-	{
-		type: 'item_headgear_3',
-		chance: 2
-	},
-	{
-		type: 'item_headgear_4',
-		chance: 2
-	},
-	{
-		type: 'item_headgear_5',
-		chance: 1
-	},
-	{
-		type: 'item_headgear_6',
-		chance: 2
-	}
 ]
-	.concat(new Array(5).fill(1).map((_, i) => ({
+	.concat(new Array(7).fill(1).map((_, i) => ({
 		type: 'item_headgear_' + (i + 1),
 		chance: 2
 	})))
