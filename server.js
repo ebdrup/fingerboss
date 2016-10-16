@@ -270,6 +270,10 @@ io.on('connection', function (socket) {
 		socket.broadcast.emit('move', move);
 		checkPlayerCount();
 	};
+	snakes[socket.playId].onMissingMove = () => {
+		console.log('onMissingMove');
+		socket.emit('missingMove');
+	};
 	game.onBallUpdate = () => {
 		var score = game.goal();
 		if (!score) {
@@ -282,6 +286,12 @@ io.on('connection', function (socket) {
 		var snake = snakes[socket.playId];
 		snake.unserialize(data.snake);
 		broadcast('mice', mice);
+		socket.broadcast.emit('snake', data.snake);
+	});
+	socket.on('snake', function (data) {
+		console.log('got snake');
+		var snake = snakes[socket.playId];
+		snake.unserialize(data);
 		socket.broadcast.emit('snake', data.snake);
 	});
 	socket.on('die', function (snakeData) {

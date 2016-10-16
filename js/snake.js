@@ -8,6 +8,7 @@ class Snake {
 		if (data) {
 			this.unserialize(data);
 			this.startVelocity = data.velocity;
+			this.startLength = data.parts.length;
 			var gfx;
 			var update = (function () {
 				var now = Date.now();
@@ -207,6 +208,10 @@ class Snake {
 		if (c && (c !== this.counter + 1)) {
 			console.log('Expecting counter ' + (c + 1) + ' got ', c);
 			this.moveCache[c] = arguments[0];
+			if (Object.keys(this.moveCache).length >= 50 && !this.waitingForUnserialize) {
+				this.waitingForUnserialize = true;
+				this.onMoveMissing && this.onMoveMissing();
+			}
 			var move;
 			for (var i = this.counter + 1; move = this.moveCache[i]; i++) {
 				this.move(move);
@@ -246,11 +251,10 @@ class Snake {
 	}
 
 	die() {
-		this.randomPosition();
 		this.velocity = this.startVelocity;
-		if (this.startLength) {
-			this.parts = this.parts.slice(0, this.startLength);
-		}
+		this.parts = this.parts.slice(0, this.startLength);
+		this.items = {};
+		this.randomPosition();
 	}
 
 	remove() {
@@ -277,6 +281,8 @@ class Snake {
 		this.velocity = data.velocity;
 		this.counter = data.counter;
 		this.items = data.items;
+		this.waitingForUnserialize = false;
+		Object.keys(this.moveCache).forEach(counter => (this.counter >= counter) && (delete this.moveCache[counter]));
 	}
 
 	update(data) {

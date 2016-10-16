@@ -26,6 +26,10 @@ function listen() {
 		state.snakes[data.id].unserialize(data);
 	});
 
+	world.socket.on('missingMove', function (data) {
+		world.socket.emit('snake', state.snakes[world.id].serialize());
+	});
+
 	world.socket.on('snakePower', function (data) {
 		state.snakes[data.id].power = data.power;
 	});
