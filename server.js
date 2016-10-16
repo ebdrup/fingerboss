@@ -96,7 +96,7 @@ class Game {
 		socket.playId = snakeCounter++;
 		this.snakes[socket.playId] = new Snake({
 			id: socket.playId,
-			length: 30,
+			length: 50,
 			color: socket.color,
 			velocity: VELOCITY
 		});
@@ -154,7 +154,7 @@ class Game {
 		socket.color = this.colors.sort((c1, c2) => this.lastMove[c1] - this.lastMove[c2])[0];
 		this.snakes[socket.playId] = new Snake({
 			id: socket.playId,
-			length: 30,
+			length: 50,
 			color: socket.color,
 			velocity: VELOCITY
 		});
