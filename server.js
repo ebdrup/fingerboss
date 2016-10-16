@@ -43,7 +43,7 @@ var miceTypes = [
 	},
 	{
 		type: 'power',
-		chance: 40
+		chance: 80
 	},
 	{
 		type: 'item_glasses_1',
