@@ -26,7 +26,7 @@ function listen() {
 		state.snakes[data.id].unserialize(data);
 	});
 
-	world.socket.on('missingMove', function (data) {
+	world.socket.on('missingMove', function () {
 		world.socket.emit('snake', state.snakes[world.id].serialize());
 	});
 
@@ -45,7 +45,10 @@ function listen() {
 			if (state.snakes[data.id]) {
 				state.snakes[data.id].update(data);
 			} else {
-				state.snakes[data.id] = new Snake({data})
+				state.snakes[data.id] = new Snake({data});
+				state.snakes[data.id].onMissingMove = id => {
+					world.socket.emit('missingMove', id);
+				}
 			}
 			if (data.id === world.id) {
 				state.pos.x = data.parts[0][0] - 0.5;

@@ -100,6 +100,7 @@ class Game {
 			color: socket.color,
 			velocity: VELOCITY
 		});
+		this.snakes[socket.playId].socket = socket;
 		socket.game = this;
 		for (var i = 0; i < 25; i++) {
 			this.addMouse();
@@ -159,6 +160,7 @@ class Game {
 			velocity: VELOCITY
 		});
 		socket.game = this;
+		this.snakes[socket.playId].socket = socket;
 	}
 
 	removeSnake(socket) {
@@ -271,7 +273,6 @@ io.on('connection', function (socket) {
 		checkPlayerCount();
 	};
 	snakes[socket.playId].onMissingMove = () => {
-		console.log('onMissingMove');
 		socket.emit('missingMove');
 	};
 	game.onBallUpdate = () => {
@@ -281,6 +282,12 @@ io.on('connection', function (socket) {
 		}
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
+	socket.on('missingMove', function (playId) {
+		var socketMissingMove = (snakes[playId]|| {}).socket;
+		if(socketMissingMove){
+			socketMissingMove.emit('missingMove');
+		}
+	});
 	socket.on('mouseEaten', function (data) {
 		var mice = game.mouseEaten(data.mouseId);
 		var snake = snakes[socket.playId];
@@ -292,7 +299,7 @@ io.on('connection', function (socket) {
 		console.log('got snake');
 		var snake = snakes[socket.playId];
 		snake.unserialize(data);
-		socket.broadcast.emit('snake', data.snake);
+		socket.broadcast.emit('snake', data);
 	});
 	socket.on('die', function (snakeData) {
 		var snake = snakes[socket.playId];

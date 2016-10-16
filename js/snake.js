@@ -3,8 +3,8 @@ class Snake {
 	constructor({id, length, color, velocity, data}) {
 		this.power = 0;
 		this.counter = 1;
-		this.sendCounter = 1;
 		this.moveCache = {};
+		this.lastMoves = [];
 		if (data) {
 			this.unserialize(data);
 			this.startVelocity = data.velocity;
@@ -205,12 +205,17 @@ class Snake {
 	move({dx, dy, c}) {
 		if (typeof dx !== 'number') throw new Error('dx not number ' + dx);
 		if (typeof dy !== 'number') throw new Error('dy not number ' + dy);
+		if (c <= this.counter) {
+			return;
+		}
 		if (c && (c !== this.counter + 1)) {
-			console.log('Expecting counter ' + (c + 1) + ' got ', c);
+			var worldId = (typeof module !== 'object') && world && world.id || 'NA';
+			console.log(`Expecting counter ${this.counter + 1} got ${c}. id: ${this.id}, worldId: ${worldId}`);
 			this.moveCache[c] = arguments[0];
 			if (Object.keys(this.moveCache).length >= 50 && !this.waitingForUnserialize) {
 				this.waitingForUnserialize = true;
-				this.onMoveMissing && this.onMoveMissing();
+				console.log('onMissingMove');
+				this.onMissingMove && this.onMissingMove(this.id);
 			}
 			var move;
 			for (var i = this.counter + 1; move = this.moveCache[i]; i++) {
@@ -226,6 +231,8 @@ class Snake {
 		last.t = Date.now();
 		this.parts.unshift(last);
 		this.onMove && this.onMove(arguments[0]);
+		this.lastMoves.push(arguments[0]);
+		this.lastMoves.slice(this.lastMoves.length - 100, 100);
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 
@@ -283,6 +290,12 @@ class Snake {
 		this.items = data.items;
 		this.waitingForUnserialize = false;
 		Object.keys(this.moveCache).forEach(counter => (this.counter >= counter) && (delete this.moveCache[counter]));
+		//replay any lost moves
+		this.lastMoves.forEach(move => {
+			if (move.c === this.counter + 1) {
+				this.move(move);
+			}
+		})
 	}
 
 	update(data) {
