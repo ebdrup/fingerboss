@@ -149,6 +149,7 @@ class Snake {
 				this.move(move);
 				delete this.moveCache[i];
 			}
+			return;
 		}
 		this.counter = c;
 		var last = this.parts.pop();
@@ -156,6 +157,7 @@ class Snake {
 		last.y = this.parts[0].y + dy;
 		last.t = Date.now();
 		this.parts.unshift(last);
+		this.onMove && this.onMove(arguments[0]);
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 

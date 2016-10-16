@@ -33,7 +33,7 @@ var colors = [
 var colorIndex = Math.floor(Math.random() * colors.length);
 var socketLastSeen = {};
 var TIMEOUT = 20 * 1000;
-const VELOCITY = 0.0001;
+const VELOCITY = 0.00006;
 
 var games = [];
 var miceTypes = ['speed', 'power'];
@@ -208,6 +208,24 @@ io.on('connection', function (socket) {
 		color
 	});
 	broadcast('state', game.getState());
+	snakes[socket.playId].onMove = move => {
+		var now = Date.now();
+		var snake = snakes[socket.playId];
+		var kick = game.ballKick(snake);
+		if (kick) {
+			var ballState = Object.assign({}, game.ball, {kick: true});
+			if (game.lastKick && (now - game.lastKick < 100)) {
+				delete ballState.kick;
+			}
+			game.lastKick = now;
+			broadcast('ball', ballState);
+			if(kick.power){
+				broadcast('snakePower', {id: snake.id, power: snake.power});
+			}
+		}
+		socket.broadcast.emit('move', move);
+		checkPlayerCount();
+	};
 	game.onBallUpdate = () => {
 		var score = game.goal();
 		if (!score) {
@@ -235,20 +253,6 @@ io.on('connection', function (socket) {
 		var snake = snakes[socket.playId];
 		move.id = socket.playId;
 		snake.move(move);
-		var kick = game.ballKick(snake);
-		if (kick) {
-			var ballState = Object.assign({}, game.ball, {kick: true});
-			if (game.lastKick && (now - game.lastKick < 100)) {
-				delete ballState.kick;
-			}
-			game.lastKick = now;
-			broadcast('ball', ballState);
-			if(kick.power){
-				broadcast('snakePower', {id: snake.id, power: snake.power});
-			}
-		}
-		socket.broadcast.emit('move', move);
-		checkPlayerCount();
 	});
 	socket.on('pong', function () {
 		socketLastSeen[socket.id] = Date.now();
