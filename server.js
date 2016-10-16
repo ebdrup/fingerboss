@@ -27,7 +27,7 @@ var colors = [
 	//0x007aff, //too close in colour
 	0xff3b30,
 	0x5ac8fa,
-	0xffcc00,
+	//0xffcc00,//too close in colour
 	0x34aadc
 ];
 var colorIndex = Math.floor(Math.random() * colors.length);
