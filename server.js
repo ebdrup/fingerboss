@@ -36,8 +36,35 @@ var TIMEOUT = 20 * 1000;
 const VELOCITY = 0.00006;
 
 var games = [];
-var miceTypes = ['speed', 'power'];
-var snakeCounter = 0;
+var miceTypes = [
+	{
+		type: 'speed',
+		chance: 50
+	},
+	{
+		type: 'power',
+		chance: 40
+	},
+	{
+		type: 'item_glasses_1',
+		chance: 2
+	},
+	{
+		type: 'item_glasses_2',
+		chance: 2
+	},
+	{
+		type: 'item_glasses_3',
+		chance: 2
+	},
+	{
+		type: 'item_glasses_4',
+		chance: 2
+	}
+].reduce((acc, mt) => {
+	return acc.concat(new Array(mt.chance).fill(mt.type));
+}, []);
+var snakeCounter = 1;
 
 class Game {
 	constructor(socket) {
@@ -57,7 +84,7 @@ class Game {
 			velocity: VELOCITY
 		});
 		socket.game = this;
-		for (var i = 0; i < 10; i++) {
+		for (var i = 0; i < 25; i++) {
 			this.addMouse();
 		}
 		this.resetBall();
@@ -219,7 +246,7 @@ io.on('connection', function (socket) {
 			}
 			game.lastKick = now;
 			broadcast('ball', ballState);
-			if(kick.power){
+			if (kick.power) {
 				broadcast('snakePower', {id: snake.id, power: snake.power});
 			}
 		}

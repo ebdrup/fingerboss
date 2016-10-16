@@ -20,10 +20,12 @@ class Snake {
 				requestAnimationFrame(update);
 				if (gfx) {
 					world.stage.removeChild(gfx);
+					this.itemSprites && this.itemSprites.forEach(s => world.stage.removeChild(s));
 				}
 				if (!state.playing) {
 					return;
 				}
+				//snake
 				gfx = new PIXI.Graphics();
 				var width = world.width;
 				var height = world.height;
@@ -62,6 +64,22 @@ class Snake {
 				gfx.x = 0;
 				gfx.y = 0;
 				world.stage.addChild(gfx);
+				//items
+				if (this.items) {
+					this.itemSprites = Object.keys(this.items).map(key => {
+						var type = ['item', key, this.items[key]].join('_');
+						var rotation = -Math.atan2(this.parts[0].x - this.parts[1].x, this.parts[0].y - this.parts[1].y);
+						return sprite({
+							x: this.parts[3].x,
+							y: this.parts[3].y,
+							type,
+							snakeId: this.id,
+							rotation,
+							size: 0.015
+						});
+					});
+					this.itemSprites.forEach(s => world.stage.addChild(s));
+				}
 			}).bind(this);
 			update();
 		} else {
@@ -71,6 +89,7 @@ class Snake {
 			this.startVelocity = velocity;
 			this.startLength = length;
 			this.parts = Array.apply(null, Array(length)).map(() => new Part(0, 0, color));
+			this.items = {};
 			this.randomPosition();
 		}
 	}
@@ -126,6 +145,32 @@ class Snake {
 			}
 		}
 		return null;
+	}
+
+	mouseEaten(mouse){
+		var text;
+		switch (mouse.type) {
+			case 'speed':
+				if (this.velocity <= VELOCITY * 1.5) {
+					this.velocity += VELOCITY * 0.1;
+					text = 'faster';
+				} else {
+					this.addLength(5);
+					text = 'longer';
+				}
+				break;
+			case 'power':
+				text = '+1 power kick';
+				this.power++;
+				break;
+			default:
+				if(mouse.type.indexOf('item_') === 0) {
+					var itemParts = mouse.type.split('_');
+					this.items[itemParts[1]] = itemParts[2];
+					text = itemParts[1];
+				}
+		}
+		return text;
 	}
 
 	headCollision(element) {
@@ -201,7 +246,8 @@ class Snake {
 			parts: this.parts.map(p => [p.x, p.y]),
 			power: this.power,
 			velocity: this.velocity,
-			counter: this.counter
+			counter: this.counter,
+			items: this.items
 		}
 	}
 
@@ -212,6 +258,7 @@ class Snake {
 		this.power = data.power;
 		this.velocity = data.velocity;
 		this.counter = data.counter;
+		this.items = data.items;
 	}
 
 	update(data) {
@@ -224,6 +271,7 @@ class Snake {
 			this.parts[i].y = p[1];
 		});
 		this.power = data.power;
+		this.items = data.items;
 	}
 }
 

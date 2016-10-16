@@ -1,15 +1,20 @@
 var spriteCache = {};
-function sprite({type, size, x, y, color}) {
+function sprite({type, size, x, y, color, snakeId, rotation}) {
 	var height = world.height;
 	var width = world.width;
 	var s = (width + height) / 2;
 	var spriteKey;
+	var isItem = type.indexOf('item_') === 0;
 	switch (type) {
 		case 'ball':
 			spriteKey = type;
 			break;
 		default:
-			spriteKey = [type, size, x, y, color].join('_');
+			if (isItem && snakeId) {
+				spriteKey = [type, snakeId].join('_');
+			} else {
+				spriteKey = [type, size, x, y, color].join('_');
+			}
 	}
 	var sprite;
 	if (spriteCache[spriteKey]) {
@@ -32,10 +37,14 @@ function sprite({type, size, x, y, color}) {
 					world.textures[textureKey] = texture = new PIXI.Texture.fromImage('spiral.png');
 					break;
 				default:
-					var gfx = new PIXI.Graphics({cacheAsBitmap: true});
-					gfx.beginFill(color, 0.8);
-					gfx.drawCircle(0, 0, 0.1 * s);
-					world.textures[textureKey] = texture = gfx.generateCanvasTexture(world.renderer);
+					if (isItem) {
+						world.textures[textureKey] = texture = new PIXI.Texture.fromImage(`${type.replace('item_', '')}.png`)
+					} else {
+						var gfx = new PIXI.Graphics({cacheAsBitmap: true});
+						gfx.beginFill(color, 0.8);
+						gfx.drawCircle(0, 0, 0.1 * s);
+						world.textures[textureKey] = texture = gfx.generateCanvasTexture(world.renderer);
+					}
 			}
 		}
 		sprite = new PIXI.Sprite(texture);
@@ -80,7 +89,12 @@ function sprite({type, size, x, y, color}) {
 			sprite.rotation += -dt / 500;
 			break;
 		default:
-			sprite.color = color;
+			if (typeof color !== undefined) {
+				sprite.color = color;
+			}
+	}
+	if (typeof rotation !== 'undefined') {
+		sprite.rotation = rotation;
 	}
 	sprite.t = now;
 	return sprite;

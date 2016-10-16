@@ -54,22 +54,7 @@ function fingerboss() {
 		}
 		var mouseEaten = snake.mouseCollision();
 		if (mouseEaten) {
-			var text;
-			switch (mouseEaten.type) {
-				case 'speed':
-					if (snake.velocity <= VELOCITY * 1.5) {
-						snake.velocity += VELOCITY * 0.1;
-						text = 'faster';
-					} else {
-						snake.addLength(10);
-						text = 'longer';
-					}
-					break;
-				case 'power':
-					text = '+1 power kick';
-					snake.power++;
-					break;
-			}
+			var text = snake.mouseEaten(mouseEaten);
 			if (text) {
 				help({text, alpha: 0.5, duration: 500});
 			}
