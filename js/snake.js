@@ -71,7 +71,7 @@ class Snake {
 						var type = ['item', key, this.items[key]].join('_');
 						var position, rotation = 0, size = 0.015;
 						switch (key) {
-							case 'glasses':
+							case 'headgear':
 								position = 3;
 								break;
 							case 'bow':
