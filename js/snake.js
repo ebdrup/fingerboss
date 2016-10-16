@@ -68,7 +68,10 @@ class Snake {
 				if (this.items) {
 					this.itemSprites = Object.keys(this.items).map(key => {
 						var type = ['item', key, this.items[key]].join('_');
-						var rotation = -Math.atan2(this.parts[0].x - this.parts[1].x, this.parts[0].y - this.parts[1].y);
+						var rotation = -Math.atan2(
+							(this.parts[0].x - this.parts[1].x) * world.width,
+							(this.parts[0].y - this.parts[1].y) * world.height
+						);
 						return sprite({
 							x: this.parts[3].x,
 							y: this.parts[3].y,
@@ -147,7 +150,7 @@ class Snake {
 		return null;
 	}
 
-	mouseEaten(mouse){
+	mouseEaten(mouse) {
 		var text;
 		switch (mouse.type) {
 			case 'speed':
@@ -164,7 +167,7 @@ class Snake {
 				this.power++;
 				break;
 			default:
-				if(mouse.type.indexOf('item_') === 0) {
+				if (mouse.type.indexOf('item_') === 0) {
 					var itemParts = mouse.type.split('_');
 					this.items[itemParts[1]] = itemParts[2];
 					text = itemParts[1];
