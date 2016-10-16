@@ -102,7 +102,7 @@ class Game {
 		});
 		this.snakes[socket.playId].socket = socket;
 		socket.game = this;
-		for (var i = 0; i < 25; i++) {
+		for (var i = 0; i < 35; i++) {
 			this.addMouse();
 		}
 		this.resetBall();
