@@ -15,20 +15,64 @@ function fingerboss() {
 			world.renderer.render(world.mainStage);
 			return;
 		}
+		//sending snake move to server
 		var now = Date.now();
 		var lastMove = world.lastMove = world.lastMove || now;
 		var dt = now - lastMove;
-		if (dt <= 50) {
+		if (dt <= 10) {
 			return world.renderer.render(world.mainStage);
 		}
-		world.socket.emit('move', state.angle);
+		if (dt > 100) {
+			dt = 100;
+		}
+		world.lastMove = now;
+		var snake = state.snakes[world.id];
+		var velocity = snake.velocity;
+		var dx = dt * velocity * Math.cos(state.angle);
+		var dy = dt * velocity * Math.sin(state.angle);
+		var move = Object.assign(snake.getMaxMove({dx, dy}), {c: snake.counter+1});
+		world.socket.emit('move', move);
+		moveStars(move);
+		var movement = snake.move(move);
+		if(movement) {
+			state.pos.x = snake.parts[0].x - 0.5;
+			state.pos.y = snake.parts[0].y - 0.5;
+			if (snake.snakeCollision(movement, now)) {
+				var oldPos = snake.parts[0];
+				snake.die();
+				sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
+				help({text: 'You Died'});
+				state.playing = false;
+				setTimeout(() => {
+					state.playing = true;
+					var x = snake.parts[0].x;
+					var y = snake.parts[0].y;
+					state.pos.x = x - 0.5;
+					state.pos.y = y - 0.5;
+					moveStars({dx: x - oldPos.x, dy: y - oldPos.y});
+				}, 2000);
+				return world.socket.emit('die', snake.serialize());
+			}
+			var mouseEaten = snake.mouseCollision();
+			if (mouseEaten) {
+				var text = snake.mouseEaten(mouseEaten);
+				if (text) {
+					help({text, alpha: 0.5, duration: 500});
+				}
+				world.socket.emit('mouseEaten', {mouseId: mouseEaten.id, snake: snake.serialize()});
+			}
+		}
+
 		//goals
 		if (state.goals) {
 			world.goals && world.goals.forEach(goal => world.stage.removeChild(goal));
-			world.goals = state.goals.map(goal => sprite(goal));
+			world.goals = state.goals.map(goal => sprite(goal))
+				.concat(
+					state.goals.map(goal => sprite(Object.assign({}, goal, {type: 'goal-net'})))
+				);
 			world.goals.forEach(goal=> world.stage.addChild(goal));
 			var myGoal = state.goals.filter(goal => goal.color === world.color)[0];
-			if(myGoal){
+			if (myGoal) {
 				pointer(Object.assign({}, myGoal, {text: 'Goal'}));
 			}
 		}
@@ -47,10 +91,10 @@ function fingerboss() {
 			world.mice.addChild(sprite(mouse));
 		});
 		//scores
-		if(state.scores) {
+		if (state.scores) {
 			Object.keys(world.scores).forEach(color => {
-				if(typeof state.scores[color] !== 'number'){
-					world.stage.removeChild(world.scores[color]);
+				if (typeof state.scores[color] !== 'number') {
+					world.text.removeChild(world.scores[color]);
 					delete world.scores[color];
 				}
 			});
@@ -76,7 +120,7 @@ function fingerboss() {
 					} else {
 						scoreSprite = world.scores[color] = new PIXI.Text(score + '', style);
 						scoreSprite.anchor.y = 0.5;
-						world.stage.addChild(scoreSprite);
+						world.text.addChild(scoreSprite);
 					}
 					scoreSprite.position.y = 10 + Math.round((i * fontSize * 1.1) + scoreSprite.height / 2);
 					scoreSprite.position.x = 20;
@@ -87,10 +131,10 @@ function fingerboss() {
 }
 
 function initBackground() {
-	var width = world.renderer.view.width;
-	var height = world.renderer.view.height;
+	var width = world.width;
+	var height = world.height;
 	var texture = PIXI.Texture.fromImage('/particle.png');
-	world.stars = Array.apply(null, Array(300)).map(() => {
+	world.stars = Array.apply(null, Array(600)).map(() => {
 		var star = new PIXI.Sprite(texture);
 		star.anchor.x = star.anchor.y = 0.5;
 		star.position.x = Math.random() * width;
@@ -99,7 +143,7 @@ function initBackground() {
 		star.alpha = (1.15 - star.scale.x * 2) / 1.15 * (0.95 + 0.1 * Math.random());
 		world.starField.addChild(star);
 		return star;
-	}).concat(Array.apply(null, Array(500)).map(() => {
+	}).concat(Array.apply(null, Array(1000)).map(() => {
 		var star = new PIXI.Sprite(texture);
 		star.anchor.x = star.anchor.y = 0.5;
 		star.position.x = Math.random() * width;

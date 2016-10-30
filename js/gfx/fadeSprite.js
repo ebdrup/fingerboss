@@ -1,9 +1,9 @@
-function fadeSprite(stage, sprite) {
+function fadeSprite(stage, sprite, duration) {
 	if (sprite.tls) {
 		sprite.tls.forEach(tl => tl.stop());
 		delete sprite.tls;
 	}
-	var duration = 2000;
+	duration = duration || 2000;
 	//extra kill of sprite. Sometimes tween fails, for unknown reasons
 	setTimeout(()=>{
 		stage.removeChild(sprite);

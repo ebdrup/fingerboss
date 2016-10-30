@@ -1,43 +1,21 @@
-function moveStars({dx, dy}) {
-	var height = world.renderer.view.height;
-	var width = world.renderer.view.width;
-	world.stars.forEach(s=> {
-		s.position.x -= dx * s.scale.x * 2 * width;
-		s.position.y -= dy * s.scale.y * 2 * height;
-		if (s.position.x < -s.height / 2) {
-			s.position.x = width + s.height / 2;
-			s.position.y = Math.random() * height;
-		} else if (s.position.x > width + s.height / 2) {
-			s.position.x = -s.height / 2;
-			s.position.y = Math.random() * height;
-		} else if (s.position.y < -s.width / 2) {
-			s.position.x = Math.random() * width;
-			s.position.y = height + s.width / 2;
-		} else if (s.position.y > height + s.width / 2) {
-			s.position.x = Math.random() * width;
-			s.position.y = -s.width / 2;
-		}
-		var x = state.pos.x + s.position.x / width;
-		var y = state.pos.y + s.position.y / height;
-		if (x < 0 || x > 1 || y < 0 || y > 1) {
-			s.visible = false;
-		} else {
-			s.visible = true;
-		}
-	});
-}
-
 function listen() {
-	world.socket.on('move', data => {
-		if (data.id === world.id) {
-			state.pos.x += data.dx;
-			state.pos.y += data.dy;
-			moveStars(data);
+	world.emit = function (type, data) {
+		var peers = world.peers.map(p => p.peerId).concat([world.peerId]);
+		world.peers.forEach(p => p.send({type, data}));
+		data = peers.length > 1 ? Object.assing({}, data, {peers}) : data;
+		world.socket.emit(type, data);
+	};
+
+	world.socket.on('move', move);
+
+	function move(move) {
+		if (move.id === world.id) {
+			throw new Error('got move for ourselves');
 		}
-		if (state.snakes[data.id]) {
-			return state.snakes[data.id].move(data);
+		if (state.snakes[move.id]) {
+			return state.snakes[move.id].move(move);
 		}
-	});
+	}
 
 	world.socket.on('ball', function (ball) {
 		state.ball = ball;
@@ -46,29 +24,46 @@ function listen() {
 		}
 	});
 
+	world.socket.on('mice', function (mice) {
+		state.mice = mice;
+	});
+
+	world.socket.on('snake', function (data) {
+		if (data.id === world.id) {
+			throw new Error('got snake for ourselves');
+		}
+		state.snakes[data.id].unserialize(data);
+	});
+
+	world.socket.on('missingMove', function () {
+		world.socket.emit('snake', state.snakes[world.id].serialize());
+	});
+
+	world.socket.on('snakePower', function (data) {
+		state.snakes[data.id].power = data.power;
+	});
+
 	world.socket.on('state', function (e) {
+		if (!state.initialized) {
+			state.initialized = true;
+			state.playing = true;
+		}
 		var snakeIds = e.snakes.reduce((acc, s) => (acc[s.id] = true) && acc, {});
 		Object.keys(state.snakes).forEach(id => !snakeIds[id] && state.snakes[id].remove());
 		e.snakes.forEach(data => {
 			if (state.snakes[data.id]) {
 				state.snakes[data.id].update(data);
 			} else {
-				state.snakes[data.id] = new Snake({data})
+				state.snakes[data.id] = new Snake({data});
+				state.snakes[data.id].onMissingMove = id => {
+					world.socket.emit('missingMove', id);
+				}
 			}
 			if (data.id === world.id) {
 				state.pos.x = data.parts[0][0] - 0.5;
 				state.pos.y = data.parts[0][1] - 0.5;
 			}
 		});
-		if (e.die) {
-			sfx['crash' + (Math.floor(Math.random() * 2) + 1)]();
-			if (e.die === world.id) {
-				moveStars({dx: 0, dy: 0});
-				help('You Died');
-				state.playing = false;
-				setTimeout(() => state.playing = true, 2000);
-			}
-		}
 		state.mice = e.mice;
 		state.ball = e.ball;
 		state.goals = e.goals;
@@ -76,18 +71,21 @@ function listen() {
 		if (e.winner) {
 			sfx.whistle();
 			if (world.color === e.winner) {
-				help('You won!', e.winner);
+				help({text: 'You won!', color: e.winner});
 				sfx.win(0.7);
 				setTimeout(() => {
 					sfx.fingerboss(0.8);
-					help('You\'re the\nfingerboss', e.winner);
+					help({text: 'You\'re the\nfingerboss', color: e.winner});
 				}, 5000);
 			} else {
-				help('You lost');
+				help({text: 'You lost'});
 				sfx.loose();
 			}
 		} else if (e.score) {
-			help('Goal!', e.score);
+			var score = Object.keys(state.scores)
+				.sort((a, b) => a === world.color.toString() ? -1 : 1)
+				.map(key => state.scores[key]).join(' - ');
+			help({text: `Goal!\n${score}`, color: e.score});
 			sfx.whistle();
 			sfx['clap' + (Math.floor(Math.random() * 2) + 1)]();
 		}
@@ -101,16 +99,22 @@ function listen() {
 		world.color = e.color;
 		world.dClock = Date.now() - e.t;
 		world.dClocks.push(world.dClock);
-		world.peerId = world.id.replace('/#', '');
+		world.peerId = world.id;
 		world.peer = new Peer(world.peerId, {host: '192.168.1.134', port: 7890, path: '/peer', debug: 3});
 		world.socket.emit('peer_connected', world.peerId);
 		world.peer.on('error', function (err) {
 			console.log(err);
 		});
 		world.peer.on('connection', function (conn) {
-			conn.on('data', function (data) {
-				// Will print 'hi!'
-				console.log(world.peerId, 'received:', data, {dt: Date.now() - data.now});
+			conn.on('data', function (msg) {
+				switch (msg.type) {
+					case 'move':
+						move(msg.data);
+						break;
+					default:
+						console.log(world.peerId, 'received:', msg, {dt: Date.now() - msg.now});
+
+				}
 			});
 		});
 

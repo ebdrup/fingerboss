@@ -66,8 +66,8 @@ function getEmitter(part) {
 			emitter.emit = true;
 			emitter.maxStartRotation = 0;
 			emitter.minStartRotation = 0;
-			emitter.spawnPos.x = (part.x - state.pos.x) * world.renderer.view.width;
-			emitter.spawnPos.y = (part.y - state.pos.y) * world.renderer.view.height;
+			emitter.spawnPos.x = (part.x - state.pos.x) * world.width;
+			emitter.spawnPos.y = (part.y - state.pos.y) * world.height;
 		}
 		var now = Date.now();
 		var dt = now - elapsed;

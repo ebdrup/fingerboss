@@ -2,8 +2,8 @@ function initState() {
 	state.snakes = {};
 	state.mice = [];
 	state.angle = 0;
-	state.readyToPlay = true;
-	state.playing = true;
+	state.initialized = false;
+	state.playing = false;
 	state.pos = {
 		x: 0,
 		y: 0
@@ -13,5 +13,5 @@ function initState() {
 			world.stage.removeChild(world.stage.children[i]);
 		}
 	}
-	help('fingerboss')
+	help({text: 'fingerboss'})
 }
