@@ -232,7 +232,7 @@ class Snake {
 		this.parts.unshift(last);
 		this.onMove && this.onMove(arguments[0]);
 		this.lastMoves.push(arguments[0]);
-		this.lastMoves.slice(this.lastMoves.length - 100, 100);
+		this.lastMoves.slice(Math.max(this.lastMoves.length - 1000, 0), 1000);
 		return {x1: this.parts[0].x, y1: this.parts[0].y, x2: this.parts[1].x, y2: this.parts[1].y, id: this.id};
 	}
 
