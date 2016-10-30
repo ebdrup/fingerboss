@@ -1,8 +1,13 @@
 function listen() {
 	world.emit = function (type, data) {
-		var peers = world.peers.map(p => p.peerId).concat([world.peerId]);
-		world.peers.forEach(p => p.send({type, data}));
-		data = peers.length > 1 ? Object.assing({}, data, {peers}) : data;
+		var peers = world.peers
+			.filter(p => p.open)
+			.map(p => p.peerId)
+			.concat([world.peerId]);
+		world.peers
+			.filter(p => p.open)
+			.forEach(p => p.send({type, data: Object.assign({}, data, {id: world.id})}));
+		data = peers.length > 1 ? Object.assign({}, data, {peers}) : data;
 		world.socket.emit(type, data);
 	};
 
@@ -32,7 +37,7 @@ function listen() {
 		if (data.id === world.id) {
 			throw new Error('got snake for ourselves');
 		}
-		state.snakes[data.id].unserialize(data);
+		state.snakes[data.id] && state.snakes[data.id].unserialize(data);
 	});
 
 	world.socket.on('missingMove', function () {
@@ -101,19 +106,22 @@ function listen() {
 		world.dClocks.push(world.dClock);
 		world.peerId = world.id;
 		world.peer = new Peer(world.peerId, {host: '192.168.1.134', port: 7890, path: '/peer', debug: 3});
-		world.socket.emit('peer_connected', world.peerId);
 		world.peer.on('error', function (err) {
-			console.log(err);
+			console.log(world.peerId, err);
+		});
+		world.peer.on('open', function () {
+			world.socket.emit('peer_open', world.peerId);
 		});
 		world.peer.on('connection', function (conn) {
+			world.socket.emit('peer_connected', world.peerId);
 			conn.on('data', function (msg) {
+				console.log(new Date(), 'Got peer message', msg);
 				switch (msg.type) {
 					case 'move':
 						move(msg.data);
 						break;
 					default:
-						console.log(world.peerId, 'received:', msg, {dt: Date.now() - msg.now});
-
+						console.log(world.peerId, 'received uknown message:', msg);
 				}
 			});
 		});
@@ -127,22 +135,21 @@ function listen() {
 	});
 	world.socket.on('peers', function (peers) {
 		var existingIds = world.peers.reduce((acc, p) => (acc[p.peerId] = true) && acc, {});
-		world.peers = peers
-			.filter(p => p.peerId !== world.peerId && !existingIds[p.peerId])
+		var newPeers = peers
+			.filter(p => (p.peerId !== world.peerId) && (!existingIds[p.peerId]))
 			.map(p => Object.assign(world.peer.connect(p.peerId), p));
-		world.peers.forEach(p =>
+		newPeers.forEach(p =>
 			p
-				.on('open', function () {
-					p.interval = setInterval(function () {
-						p.send({now: Date.now(), from: world.peerId});
-					}, 2000);
+				.on('open', () => {
+					console.log('open', p.peerId);
+					p.open = true;
 				})
 				.on('error', function (err) {
 					console.error('peer error, removing peer', err);
-					p.interval && clearInterval(p.interval);
 					world.peers = world.peers.filter(peer => peer !== p);
 				})
 		);
+		world.peers = world.peers.concat(newPeers);
 	});
 	//world.socket.on('move', onMoveTime);
 	world.socket.on('players', onPlayers);

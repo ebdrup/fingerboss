@@ -251,7 +251,17 @@ io.on('connection', function (socket) {
 				broadcast('snakePower', {id: snake.id, power: snake.power});
 			}
 		}
-		socket.broadcast.emit('move', move);
+		if (!move.peers) {
+			//console.log('broadcasting move');
+			socket.broadcast.emit('move', move);
+		} else {
+			game.sockets
+				.filter(s => s.connected && move.peers.indexOf(s.playId) === -1)
+				.forEach(s=> {
+					s.emit('move', move);
+					//console.log('emitting move to ', s.playId);
+				})
+		}
 		checkPlayerCount();
 	};
 	snakes[socket.playId].onMissingMove = () => {
@@ -265,8 +275,8 @@ io.on('connection', function (socket) {
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
 	socket.on('missingMove', function (playId) {
-		var socketMissingMove = (snakes[playId]|| {}).socket;
-		if(socketMissingMove){
+		var socketMissingMove = (snakes[playId] || {}).socket;
+		if (socketMissingMove) {
 			socketMissingMove.emit('missingMove');
 		}
 	});
@@ -301,12 +311,12 @@ io.on('connection', function (socket) {
 		socketLastSeen[socket.id] = Date.now();
 		checkPlayerCount();
 	});
-	socket.on('peer_connected', function (id) {
-		console.log('peer_connected', id);
+	socket.on('peer_open', function (id) {
+		console.log('peer_open', id);
 		if (!game.peers.some(p => p.peerId === id)) {
 			game.peers.push({socketId: socket.id, peerId: id});
 			broadcast('peers', game.peers);
-			console.log('peer_connected breadcast', game.peers);
+			console.log('peer_connected broaddcast', game.peers);
 		}
 	});
 	socket.on('disconnect', function () {
@@ -372,6 +382,6 @@ function broadcast(type, msg) {
 app.use('/peer', ExpressPeerServer(server, {debug: true}));
 
 server.listen(port, function () {
-	console.log('listening on app://localhost:%s', port);
+	console.log('listening on http://localhost:%s', port);
 });
 
