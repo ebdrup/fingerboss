@@ -3,13 +3,14 @@ const express = require('express');
 const compression = require('compression');
 const path = require('path');
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 const staticFiles = require('./staticFiles');
 const Snake = require('./js/snake');
 const lineIntersect = require('./js/lineIntersect');
 global.distance = require('./js/distance');
 const Tweeno = require('tweeno');
+const ExpressPeerServer = require('peer').ExpressPeerServer;
 
 app.disable('x-powered-by');
 app.set('case sensitive routing', false);
@@ -66,6 +67,7 @@ var snakeCounter = 1;
 class Game {
 	constructor(socket) {
 		this.sockets = [socket];
+		this.peers = [];
 		this.mice = [];
 		this.colorIndex = 0;
 
@@ -249,7 +251,17 @@ io.on('connection', function (socket) {
 				broadcast('snakePower', {id: snake.id, power: snake.power});
 			}
 		}
-		socket.broadcast.emit('move', move);
+		if (!move.peers) {
+			//console.log('broadcasting move');
+			socket.broadcast.emit('move', move);
+		} else {
+			game.sockets
+				.filter(s => s.connected && move.peers.indexOf(s.playId) === -1)
+				.forEach(s=> {
+					s.emit('move', move);
+					//console.log('emitting move to ', s.playId);
+				})
+		}
 		checkPlayerCount();
 	};
 	snakes[socket.playId].onMissingMove = () => {
@@ -263,8 +275,8 @@ io.on('connection', function (socket) {
 		broadcast('state', Object.assign({}, game.getState(), score));
 	};
 	socket.on('missingMove', function (playId) {
-		var socketMissingMove = (snakes[playId]|| {}).socket;
-		if(socketMissingMove){
+		var socketMissingMove = (snakes[playId] || {}).socket;
+		if (socketMissingMove) {
 			socketMissingMove.emit('missingMove');
 		}
 	});
@@ -298,6 +310,14 @@ io.on('connection', function (socket) {
 	socket.on('pong', function () {
 		socketLastSeen[socket.id] = Date.now();
 		checkPlayerCount();
+	});
+	socket.on('peer_open', function (id) {
+		console.log('peer_open', id);
+		if (!game.peers.some(p => p.peerId === id)) {
+			game.peers.push({socketId: socket.id, peerId: id});
+			broadcast('peers', game.peers);
+			console.log('peer_connected broaddcast', game.peers);
+		}
 	});
 	socket.on('disconnect', function () {
 		socket.game.removeSnake(socket);
@@ -359,7 +379,9 @@ function broadcast(type, msg) {
 	}
 }
 
-http.listen(port, function () {
+app.use('/peer', ExpressPeerServer(server, {debug: true}));
+
+server.listen(port, function () {
 	console.log('listening on http://localhost:%s', port);
 });
 

@@ -5,5 +5,6 @@ module.exports = [
 	path.join(path.dirname(require.resolve('socket.io-client')), '../socket.io.js'),
 	path.join(path.dirname(require.resolve('pixi.js')), '../bin/pixi.min.js'),
 	path.join(path.dirname(require.resolve('howler')), '../dist/howler.min.js'),
-	path.join(path.dirname(require.resolve('pixi-particles')), '../dist/pixi-particles.min.js')
+	path.join(path.dirname(require.resolve('pixi-particles')), '../dist/pixi-particles.min.js'),
+	path.join(path.dirname(require.resolve('peerjs')), '../dist/peer.min.js')
 ].map(p => p.replace('.min.', '.'));
