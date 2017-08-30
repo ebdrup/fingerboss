@@ -2,7 +2,7 @@
 
 Webserver for the [fingerboss game](http://fingerboss.com).
 
-You need [Node.js](http://nodejs.org) to run it.
+You need [Node.js](http://nodejs.org) to run it..
 
 # License
 [Attribution-NonCommercial-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-nc-sa/4.0/)
