@@ -72,7 +72,7 @@ class Game {
 		this.colorIndex = 0;
 
 		this.mouseCounter = 0;
-		this.colors = [colors[(colorIndex++) % colors.length], colors[(colorIndex++) % colors.length]];
+		this.colors = [0x5856d6, 0xff3b30];
 		socket.color = this.colors[(this.colorIndex++) % this.colors.length];
 		this.snakes = {};
 		socket.playId = snakeCounter++;
